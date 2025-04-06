@@ -1,5 +1,23 @@
 @import url('reset.css');
 
+:root {
+    /*  COLOR SCHEME  */
+    --clr-bg: #FFF;
+    --clr-bg-muted: #F3F3F3;
+    --clr-bg-inverse: #111827;
+    --clr-surface: rgb(24, 24, 27, 0.1);
+    --clr-surface-muted:  rgb(24, 24, 27, 0.05);
+    --clr-text-header: #FFF;
+    --clr-text-primary: #18181B;
+    --clr-text-inverse: #FAFAFA;
+    --clr-text-inverse-muted: rgba(250,250,250,0.8);
+    --clr-border: rgb(228, 228, 231);
+    --clr-positive: rgb(34, 197, 94);
+    --clr-negative: rgb(239, 68, 68);
+    --rounded-corners: 0.75rem;
+}
+
+
 html {
     font-size: 16px;
     font-family: Geist, Arial, Helvetica, sans-serif;
@@ -9,13 +27,13 @@ body {
     max-width: 1020px;
     margin: 0 auto;
     padding: 40px 0;
-    background-color: #F3F3F3;
+    background-color: var(--clr-bg);
 }
 
-/* TODO - Review how can we have BEM structure for tese 2  */
+/* TODO - Review how can we have BEM structure for these 2  */
 .page {
-    border-radius: 0.5rem;
-    border: rgb(228, 228, 231) 2px solid;
+    border-radius: var(--rounded-corners);
+    border: var(--clr-border) 2px solid;
 }
 
 .main-content {
@@ -23,7 +41,8 @@ body {
 }
 
 .header {
-    background: linear-gradient(to right, #000, #464649)
+    border-radius: var(--rounded-corners) var(--rounded-corners) 0 0;
+    background: linear-gradient(to right, var(--clr-bg-inverse), rgb(55, 65, 81));
 }
 
 .header__content {
