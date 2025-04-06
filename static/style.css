@@ -1,0 +1,53 @@
+@import url('reset.css');
+
+html {
+    font-size: 16px;
+    font-family: Geist, Arial, Helvetica, sans-serif;
+}
+
+body {
+    max-width: 1020px;
+    margin: 0 auto;
+    padding: 40px 0;
+    background-color: #F3F3F3;
+}
+
+/* TODO - Review how can we have BEM structure for tese 2  */
+.page {
+    border-radius: 0.5rem;
+    border: rgb(228, 228, 231) 2px solid;
+}
+
+.main-content {
+    padding: 24px;
+}
+
+.header {
+    background: linear-gradient(to right, #000, #464649)
+}
+
+.header__content {
+    display: flex;
+    justify-content: space-between;
+}
+
+.header__title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 8px;
+    line-height: 2.25rem;
+}
+
+.header__subtitle {
+    color: rgba(250, 250, 250, 0.8);
+    font-size: 1rem;
+}
+
+.header__logo {
+    background-color: #69696B;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    padding: 12px;
+}
