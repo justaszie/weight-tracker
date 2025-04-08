@@ -100,6 +100,7 @@ body {
 
 .goal-selection__option {
     list-style: none;
+    flex-shrink: 0;
 }
 
 .goal-selection__cta {
@@ -110,6 +111,7 @@ body {
     border: 1px solid var(--clr-border);
     color: var(--clr-text-inverse);
     text-decoration: none;
+    flex-shrink: 0;
 }
 
 .goal-selection__cta--active,
