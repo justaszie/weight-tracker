@@ -98,6 +98,7 @@ body {
 .goal-selection__intro {
     color: var(--clr-text-inverse-muted);
     flex-shrink: 0;
+    font-weight: 500;
 }
 .goal-selection__container {
     display: flex;
@@ -115,6 +116,7 @@ body {
     color: var(--clr-text-inverse);
     text-decoration: none;
     flex-shrink: 0;
+    font-weight: 400;
 }
 
 .goal-selection__cta--active,
@@ -140,6 +142,7 @@ body {
     border-radius: var( --rounded-corners-btn);
     color: var(--clr-text-inactive);
     text-decoration: none;
+    font-weight: 500;
 }
 
 .filter-option--active {
@@ -156,31 +159,51 @@ body {
     background-color: var(--clr-bg-inverse);
     color: var(--clr-text-inverse);
     text-decoration: none;
+    font-weight: 500;
 }
 
 .get-data-cta__icon,
-.weeks-filter__icon {
+.weeks-filter__icon,
+.dates-filter__icon {
     width: 18px;
     height: 18px;
 }
 
-.weeks-filter {
+.weeks-filter,
+.dates-filter {
     display: flex;
     padding: 15px 0;
     align-items: center;
     gap: 10px;
 }
 
-/* TODO */
-.weeks-filter__input {
+.weeks-filter__label,
+.dates-filter__label {
+    font-weight: 500;
+}
+
+.weeks-filter__input,
+.dates-filter__input {
     padding: var(--padding-btn);
     min-width: 0;
-    flex-basis: 100px;
     border: 1px solid var(--clr-border);
     border-radius: var(--rounded-corners-btn);
 }
 
-.weeks-filter__submit {
+.dates-filter__input {
+    flex-basis: 160px;
+}
+
+.weeks-filter__input {
+    flex-basis: 100px;
+}
+
+.dates-filter__input::placeholder {
+    color: var(--clr-text-inactive);
+}
+
+.weeks-filter__submit,
+.dates-filter__submit {
     display: flex;
     gap: 5px;
     align-items: center;
@@ -190,6 +213,7 @@ body {
     border: none;
     border-radius: var(--rounded-corners-btn);
     cursor: pointer;
+    font-weight: 500;
 }
 
 

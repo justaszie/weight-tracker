@@ -71,7 +71,6 @@
         </header>
         <main>
             <div class="main-content">
-
                 <div class="spaced-out">
                     <section class="filter-selection">
                         <a href="#" class="filter-option filter-option--active">Filter by Weeks</a>
@@ -96,16 +95,32 @@
                         <span class="get-data-cta__label">Get Google Fit Data</span>
                     </a>
                 </div>
+                <!-- WEEKS FILTER COMPONENT -->
                 <form action="#" method="GET" class="weeks-filter">
                     <svg class="weeks-filter__icon" fill="currentColor" stroke="none" viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
                         <path
                             d="M0 24h22V2h-4V0h-2v2H6V0H4v2H0zm16-10v-2h2v2zm2 1v2h-2v-2zm-5 2v-2h2v2zm2 1v2h-2v-2zm-2-4v-2h2v2zm-3 3v-2h2v2zm2 1v2h-2v-2zm-2-4v-2h2v2zm-3 3v-2h2v2zm2 1v2H7v-2zm-2-4v-2h2v2zm-1 1v2H4v-2zm-2 3h2v2H4zM4 4v2h2V4h10v2h2V4h2v4H2V4z" />
                     </svg>
-                    <label for="weeks_num">Weeks: </label>
-                    <input type="number" value="5" id="weeks_num" class="weeks-filter__input">
+                    <label class="weeks-filter__label" for="weeks_num">Weeks: </label>
+                    <input type="number" value="4" id="weeks_num" class="weeks-filter__input">
                     <button type="submit" class="weeks-filter__submit">
                         <svg class="weeks-filter__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" class="lucide lucide-filter w-4 h-4 mr-2">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                        </svg>
+                        <span>Apply Filter</span>
+                    </button>
+                </form>
+                <!--  DATES FILTER COMPONENT  -->
+                <form action="#" method="GET" class="dates-filter">
+                    <label class="dates-filter__label" for="date_from">From </label>
+                    <input type="date" id="date_from" class="dates-filter__input">
+                    <label class="dates-filter__label" for="date_to">To </label>
+                    <input  type="date" id="date_to" class="dates-filter__input">
+                    <button type="submit" class="dates-filter__submit">
+                        <svg class="dates-filter__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                             stroke-linejoin="round" class="lucide lucide-filter w-4 h-4 mr-2">
                             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
