@@ -28,6 +28,9 @@
     /* Rounded corners radius value */
     --rounded-corners-main: 0.75rem;
     --rounded-corners-btn: 7px;
+
+    /* Padding for buttons */
+    --padding-btn: 10px 15px;
 }
 
 
@@ -155,19 +158,40 @@ body {
     text-decoration: none;
 }
 
-.get-data-cta__icon {
+.get-data-cta__icon,
+.weeks-filter__icon {
     width: 18px;
+    height: 18px;
 }
 
-/* 12x12 for icons  */
+.weeks-filter {
+    display: flex;
+    padding: 15px 0;
+    align-items: center;
+    gap: 10px;
+}
 
-/* .header__logo {
-    background-color: #69696B;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    padding: 12px;
-} */
+/* TODO */
+.weeks-filter__input {
+    padding: var(--padding-btn);
+    min-width: 0;
+    flex-basis: 100px;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--rounded-corners-btn);
+}
+
+.weeks-filter__submit {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    padding: var(--padding-btn);
+    background-color: var(--clr-bg-inverse);
+    color: var(--clr-text-inverse);
+    border: none;
+    border-radius: var(--rounded-corners-btn);
+    cursor: pointer;
+}
+
 
 @media screen and (max-width: 770px){
     .goal-selection {
