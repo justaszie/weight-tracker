@@ -7,11 +7,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="static/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/style.css') }}">
     <title>Weight Tracker</title>
 </head>
 
 <body>
+    <h1> </h1>
     <div class="page">
         <header class="header">
             <div class="main-content spaced-out">
@@ -25,7 +26,7 @@
                     <p class="goal-selection__intro">What's your goal?</p>
                     <ul class="goal-selection__container">
                         <li>
-                            <a class="goal-selection__cta goal-selection__cta--active" href="#"">
+                            <a class="goal-selection__cta {% if goal == 'lose' %} goal-selection__cta--active {% endif %}" href="{{ url_for('tracker', filter=filter, goal='lose') }}">
                                 <svg class=" goal-selection__icon" xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                 stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flame w-4 h-4 mr-1">
@@ -36,7 +37,7 @@
                             </a>
                         </li>
                         <li>
-                            <a class="goal-selection__cta" href="#"">
+                            <a class="goal-selection__cta {% if goal == 'gain' %} goal-selection__cta--active {% endif %}" href="{{ url_for('tracker', filter=filter, goal='gain') }}">
                                 <svg class=" goal-selection__icon" xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                 stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dumbbell w-3 h-3">
@@ -53,7 +54,7 @@
                             </a>
                         </li>
                         <li>
-                            <a class="goal-selection__cta" href="#"">
+                            <a class="goal-selection__cta {% if goal == 'maintain' %} goal-selection__cta--active {% endif %}" href="{{ url_for('tracker', filter=filter, goal='maintain') }}">
                                 <svg class=" goal-selection__icon" xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                 stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scale w-3 h-3">
@@ -73,8 +74,8 @@
             <div class="main-content">
                 <div class="spaced-out">
                     <section class="filter-selection">
-                        <a href="#" class="filter-option filter-option--active">Filter by Weeks</a>
-                        <a href="#" class="filter-option">Filter by Dates</a>
+                        <a href="{{ url_for('tracker', goal=goal, filter='weeks') }}" class="filter-option {%if filter=='weeks' %} filter-option--active {% endif %}">Filter by Weeks</a>
+                        <a href="{{ url_for('tracker', goal=goal, filter='dates') }}" class="filter-option {%if filter=='dates' %} filter-option--active {% endif %}">Filter by Dates</a>
                     </section>
                     <a href="#" class="get-data-cta">
                         <svg class="get-data-cta__icon" viewBox="0 0 262 262" xmlns="http://www.w3.org/2000/svg"
@@ -95,15 +96,17 @@
                         <span class="get-data-cta__label">Get Google Fit Data</span>
                     </a>
                 </div>
+
+                {% if filter == 'weeks' %}
                 <!-- WEEKS FILTER COMPONENT -->
-                <form action="#" method="GET" class="weeks-filter">
+                <form action="{{ url_for('tracker', filter=filter) }}" method="GET" class="weeks-filter">
                     <svg class="weeks-filter__icon" fill="currentColor" stroke="none" viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
                         <path
                             d="M0 24h22V2h-4V0h-2v2H6V0H4v2H0zm16-10v-2h2v2zm2 1v2h-2v-2zm-5 2v-2h2v2zm2 1v2h-2v-2zm-2-4v-2h2v2zm-3 3v-2h2v2zm2 1v2h-2v-2zm-2-4v-2h2v2zm-3 3v-2h2v2zm2 1v2H7v-2zm-2-4v-2h2v2zm-1 1v2H4v-2zm-2 3h2v2H4zM4 4v2h2V4h10v2h2V4h2v4H2V4z" />
                     </svg>
                     <label class="weeks-filter__label" for="weeks_num">Weeks: </label>
-                    <input type="number" value="4" id="weeks_num" class="weeks-filter__input">
+                    <input name="weeks_num" type="number" value="4" id="weeks_num" class="weeks-filter__input">
                     <button type="submit" class="weeks-filter__submit">
                         <svg class="weeks-filter__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -112,13 +115,18 @@
                         </svg>
                         <span>Apply Filter</span>
                     </button>
+                    <input type="hidden" name="filter" value="{{ filter }}">
+                    <input type="hidden" name="goal" value="{{ goal }}">
                 </form>
+                {% endif %}
+
+                {% if filter == 'dates' %}
                 <!--  DATES FILTER COMPONENT  -->
                 <form action="#" method="GET" class="dates-filter">
                     <label class="dates-filter__label" for="date_from">From </label>
-                    <input type="date" id="date_from" class="dates-filter__input">
+                    <input name="date_from" type="date" id="date_from" class="dates-filter__input">
                     <label class="dates-filter__label" for="date_to">To </label>
-                    <input  type="date" id="date_to" class="dates-filter__input">
+                    <input name="date_to" type="date" id="date_to" class="dates-filter__input">
                     <button type="submit" class="dates-filter__submit">
                         <svg class="dates-filter__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -127,9 +135,11 @@
                         </svg>
                         <span>Apply Filter</span>
                     </button>
-                    <!-- <button type="submit"> Apply Filter </button> -->
+                    <input type="hidden" name="filter" value="{{ filter }}">
+                    <input type="hidden" name="goal" value="{{ goal }}">
                 </form>
             </div>
+            {% endif %}
 
             <!-- View selection to be added later  -->
             <!-- <section class="data-selection">
