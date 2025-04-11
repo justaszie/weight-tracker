@@ -27,6 +27,7 @@
                     <ul class="goal-selection__container">
                         <li>
                             <a class="goal-selection__cta {% if goal == 'lose' %} goal-selection__cta--active {% endif %}" href="{{ url_for('tracker', filter=filter, goal='lose') }}">
+                                <!-- Lose SVG -->
                                 <svg class=" goal-selection__icon" xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                 stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flame w-4 h-4 mr-1">
@@ -140,6 +141,33 @@
                 </form>
             </div>
             {% endif %}
+
+            <!-- INSIGHTS LIGHT VERSION -->
+            <section class="summary">
+                <div class="spaced-out">
+                <!-- TODO - add dynamic component based on filter -->
+                    <h2 class="summary__header">Weight Change Summary past 4 weeks</h2>
+                    <p class="summary__goal-reminder">
+                        <svg class= "summary_icon" xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flame w-4 h-4 mr-1">
+                            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+                        </svg>
+                        <!-- TODO: dynamic based on goal selection -->
+                        <span>Current Goal: Losing Fat</span>
+                    </p>
+                </div>
+                <!-- Cards -->
+                <ul>
+
+                </ul>
+                <!-- Evaluation box -->
+                <p>
+                    <!-- TODO: svg ightning -->
+                    <!-- TODO: Evaluation is dynamic based on results -->
+                    <span>Your weight loss is right in the range of optimal loss rate. You're making amazing progress, keep it up!</span>
+                </p>
+            </section>
 
             <!-- View selection to be added later  -->
             <!-- <section class="data-selection">

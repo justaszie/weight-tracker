@@ -6,7 +6,7 @@
     --clr-bg-muted: #F3F3F3;
     --clr-bg-inverse: #111827;
     --clr-surface: rgb(24, 24, 27, 0.1);
-    --clr-surface-muted:  rgb(24, 24, 27, 0.05);
+    --clr-surface-muted:  rgb(24, 24, 27, 0.02);
     --clr-text-header: #FFF;
     --clr-text-primary: #18181B;
     --clr-text-inverse: #FAFAFA;
@@ -214,6 +214,17 @@ body {
     border-radius: var(--rounded-corners-btn);
     cursor: pointer;
     font-weight: 500;
+}
+
+.summary {
+    background-color: var(--clr-surface-muted);
+    padding: 25px;
+    border-radius: var(--rounded-corners-main);
+    border: 1px solid var(--clr-border);
+}
+
+summary__header {
+
 }
 
 
