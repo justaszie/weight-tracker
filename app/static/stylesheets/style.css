@@ -12,9 +12,14 @@
     --clr-text-inverse: #FAFAFA;
     --clr-text-inverse-muted: rgba(250,250,250,0.8);
     --clr-text-inactive: rgb(113, 113, 122);
+    /* TODO: find better naming for this color used in insights */
+    --clr-text-summary: rgb(75, 85, 99);
     --clr-border: rgb(228, 228, 231);
     --clr-positive: rgb(34, 197, 94);
     --clr-negative: rgb(239, 68, 68);
+
+    /* TODO: colors inside card headers and goal reminder  */
+    /* rgb(75, 85, 99) */
 
     /* FONTS */
     --fs-primary: 14px;
@@ -23,7 +28,8 @@
     --fs-control-label: 1.15rem; /* 16px */
     --fs-insights-header: 1.5rem; /* 20px */
     --fs-insights-value: 2.15rem; /* 30px */
-    --fs-insights-eval: 1.15rem; /* 16px */;
+    --fs-insights-evaluation: 1.15rem; /* 16px */;
+    --fs-insights-subtitle: 1.15rem; /* 14px */;
 
     /* Rounded corners radius value */
     --rounded-corners-main: 0.75rem;
@@ -86,7 +92,6 @@ body {
 .header__subtitle {
     color: var(--clr-text-inverse-muted);
     font-size: var(--fs-header-subtitle);
-
 }
 
 .goal-selection {
@@ -172,7 +177,7 @@ body {
 .weeks-filter,
 .dates-filter {
     display: flex;
-    padding: 15px 0;
+    padding: 25px 0 ;
     align-items: center;
     gap: 10px;
 }
@@ -223,9 +228,80 @@ body {
     border: 1px solid var(--clr-border);
 }
 
-summary__header {
-
+.summary__header {
+    font-size: var(--fs-insights-header);
+    font-weight: 700;
+    margin-bottom: 22px;
 }
+
+.summary__goal-reminder {
+    color: var(--clr-text-summary);
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    font-size: var(--fs-primary);
+    font-weight: 500;
+}
+
+.summary_icon,
+.summary-card__icon {
+    width: 16px;
+    height: 16px;
+}
+
+.summary__cards-container {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(215px, 1fr));
+    grid-template-rows: auto;
+    gap: 15px;
+    margin-bottom: 20px;
+    justify-items: center;
+}
+
+.summary-card {
+    background-color: var(--clr-bg);
+    padding: 25px;
+    border-radius: var(--rounded-corners-main);
+    border: 1px solid var(--clr-border);
+    list-style: none;
+}
+
+.summary-card__header {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--clr-text-summary);
+    /* margin-bottom: 5px; */
+}
+
+.summary-card__value {
+    font-size: var(--fs-insights-value);
+    font-weight: 700;
+}
+
+/*  */
+.summary-card__subtitle {
+    font-size: var(--fs-insights-subtitle);
+    color: var(--clr-text-summary);
+    font-weight: 600;
+}
+
+.summary_evaluation {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    padding: 20px;
+    border-radius: var(--rounded-corners-main);
+    background-color: var(--clr-surface);
+    font-size: var(--fs-insights-evaluation);
+    font-weight: 500;
+}
+
+.summary_icon--evaluation {
+    width: 20px;
+    height: 20px;
+}
+
 
 
 @media screen and (max-width: 770px){

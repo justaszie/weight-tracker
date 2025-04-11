@@ -139,14 +139,13 @@
                     <input type="hidden" name="filter" value="{{ filter }}">
                     <input type="hidden" name="goal" value="{{ goal }}">
                 </form>
-            </div>
-            {% endif %}
+                {% endif %}
 
-            <!-- INSIGHTS LIGHT VERSION -->
+                <!-- SUMMARY SECTION -->
             <section class="summary">
-                <div class="spaced-out">
+                <div class="summary__header spaced-out">
                 <!-- TODO - add dynamic component based on filter -->
-                    <h2 class="summary__header">Weight Change Summary past 4 weeks</h2>
+                    <h2>Weight Change Summary past 4 weeks</h2>
                     <p class="summary__goal-reminder">
                         <svg class= "summary_icon" xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -158,16 +157,58 @@
                     </p>
                 </div>
                 <!-- Cards -->
-                <ul>
+                <ul class="summary__cards-container">
+                    <li class="summary-card">
+                        <p class="summary-card__header">
+                            <svg class="summary-card__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-down w-4 h-4"><path d="m21 16-4 4-4-4"></path><path d="M17 20V4"></path><path d="m3 8 4-4 4 4"></path><path d="M7 4v16"></path></svg>
+                            <span>Total Weight Change</span>
+                        </p>
+                        <h3 class="summary-card__value">1.20kg</h3>
+                    </li>
+                    <li class="summary-card">
+                        <p class="summary-card__header">
+                            <svg class="summary-card__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-down w-4 h-4"><path d="m21 16-4 4-4-4"></path><path d="M17 20V4"></path><path d="m3 8 4-4 4 4"></path><path d="M7 4v16"></path></svg>
+                            <span>Total Weight Change</span>
+                        </p>
+                        <h3 class="summary-card__value">
+                            1.20kg
+                            <span class="summary-card__subtitle">/ week</span>
+                        </h3>
+                    </li>
+                    <li class="summary-card">
+                        <p class="summary-card__header">
+                            <svg class="summary-card__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-down w-4 h-4"><path d="m21 16-4 4-4-4"></path><path d="M17 20V4"></path><path d="m3 8 4-4 4 4"></path><path d="M7 4v16"></path></svg>
+                            <span>Total Weight Change</span>
+                        </p>
+                        <h3 class="summary-card__value">
+                            1.20kg
+                            <span class="summary-card__subtitle">/ week</span>
+                        </h3>
+                    </li>
+                    <li class="summary-card">
+                        <p class="summary-card__header">
+                            <svg class="summary-card__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-down w-4 h-4"><path d="m21 16-4 4-4-4"></path><path d="M17 20V4"></path><path d="m3 8 4-4 4 4"></path><path d="M7 4v16"></path></svg>
+                            <span>Total Weight Change</span>
+                        </p>
+                        <h3 class="summary-card__value">
+                            1.20kg
+                            <span class="summary-card__subtitle">/ week</span>
+                        </h3>
 
+                    </li>
                 </ul>
                 <!-- Evaluation box -->
-                <p>
-                    <!-- TODO: svg ightning -->
+                <!-- TODO: svg ightning -->
+                <p class="summary_evaluation">
+                    <svg class="summary__icon summary_icon--evaluation" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-zap w-5 h-5"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>
                     <!-- TODO: Evaluation is dynamic based on results -->
                     <span>Your weight loss is right in the range of optimal loss rate. You're making amazing progress, keep it up!</span>
                 </p>
             </section>
+            </div>
+
+
+
 
             <!-- View selection to be added later  -->
             <!-- <section class="data-selection">
