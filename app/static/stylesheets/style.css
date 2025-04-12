@@ -226,6 +226,7 @@ body {
     padding: 25px;
     border-radius: var(--rounded-corners-main);
     border: 1px solid var(--clr-border);
+    margin-bottom: 15px;
 }
 
 .summary__header {
@@ -308,6 +309,38 @@ body {
 .summary_icon--evaluation {
     width: 20px;
     height: 20px;
+}
+
+.data-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.data-table__row {
+    border-bottom: 0.5px solid var(--clr-border);
+}
+
+.data-table__row:nth-child(2n + 1) {
+    background-color: var(--clr-surface-muted);
+}
+
+.data-table__header {
+    background-color: var(--clr-surface);
+    color: var(--clr-text-inactive);
+    font-weight: 600;
+    border: none;
+}
+
+.data-table__cell{
+    padding: 15px;
+    text-align: start;
+}
+
+.data-table__cell--positive {
+    color: var(--clr-positive);
+}
+.data-table__cell--negative {
+    color: var(--clr-negative);
 }
 
 @media screen and (max-width: 770px){
