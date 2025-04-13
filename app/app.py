@@ -10,6 +10,7 @@ from flask import (
     request,
     flash
 )
+import json
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
@@ -25,7 +26,9 @@ def tracker():
     # TODO: Validate filter params. If not within available options, use default values.
     goal = request.args.get('goal', 'lose')
     filter = request.args.get('filter', 'weeks')
-    return render_template('tracker.html', goal=goal, filter=filter)
+    with open('data/sample_entries.json') as data_file:
+        data = json.load(data_file);
+    return render_template('tracker.html', goal=goal, filter=filter, data=data);
 
 if __name__ == '__main__':
     app.run(debug=True, port=5040)

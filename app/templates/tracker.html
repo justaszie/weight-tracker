@@ -153,6 +153,7 @@
                 </form>
                 {% endif %}
 
+                {% if data %}
                 <!-- SUMMARY SECTION -->
                 <section class="summary">
                     <div class="summary__header spaced-out">
@@ -185,7 +186,8 @@
                                 <span>Total Weight Change</span>
                             </p>
                             <div class="summary-card__value-group">
-                                <h3 class="summary-card__value">1.20kg</h3>
+                                <h3 class="summary-card__value">{{ data.summary.total_change }}</h3>
+                                <span class="summary-card__subtitle">kg</span>
                             </div>
 
                         </li>
@@ -202,8 +204,8 @@
                                 <span>Avg. Weight Change</span>
                             </p>
                             <div class="summary-card__value-group">
-                                <h3 class="summary-card__value">-0.34kg</h3>
-                                <span class="summary-card__subtitle">/ week</span>
+                                <h3 class="summary-card__value">{{ data.summary.avg_change }}</h3>
+                                <span class="summary-card__subtitle">kg / week</span>
                             </div>
                         </li>
                         <li class="summary-card">
@@ -213,8 +215,8 @@
 
                             </p>
                             <div class="summary-card__value-group">
-                                <h3 class="summary-card__value">-0.75%</h3>
-                                <span class="summary-card__subtitle">/ week</span>
+                                <h3 class="summary-card__value">{{ data.summary.avg_change_prc }}</h3>
+                                <span class="summary-card__subtitle">% / week</span>
                             </div>
 
                         </li>
@@ -226,8 +228,8 @@
                                 <span>Avg. Calorie Deficit / Surplus (est.) </span>
                             </p>
                             <div class="summary-card__value-group">
-                                <h3 class="summary-card__value">-330kcal</h3>
-                                <span class="summary-card__subtitle">/ week</span>
+                                <h3 class="summary-card__value">{{ data.summary.avg_net_calories }}</h3>
+                                <span class="summary-card__subtitle">kcal / week</span>
                             </div>
                         </li>
                     </ul>
@@ -246,6 +248,7 @@
                             progress, keep it up!</span>
                     </p>
                 </section>
+                <!-- DATA TABLE SECTION -->
                 <section>
                     <table class="data-table">
                         <tr class="data-table__header">
@@ -255,22 +258,21 @@
                             <th class="data-table__cell">Change (%)</th>
                             <th class="data-table__cell">Est. Calorie Deficit / Surplus</th>
                         </tr>
+                        {% for row in data.entries %}
                         <tr class="data-table__row">
-                            <td class="data-table__cell">Feb 2, 2025</td>
-                            <td class="data-table__cell">71.5 kg</td>
-                            <td class="data-table__cell data-table__cell--positive">-0.68 kg</td>
-                            <td class="data-table__cell data-table__cell--positive">-0.55%</td>
-                            <td class="data-table__cell data-table__cell--positive">-485 kcal</td>
+                            <td class="data-table__cell">{{ row.week_start }}</td>
+                            <td class="data-table__cell">{{ row.avg_weight }} kg</td>
+                            <td class="data-table__cell {% if row.result == 'positive' %} data-table__cell--positive {% elif row.result == 'negative' %} data-table__cell--negative {% endif %}">{{ row.weight_change}} kg</td>
+                            <td class="data-table__cell {% if row.result == 'positive' %} data-table__cell--positive {% elif row.result == 'negative' %} data-table__cell--negative {% endif %}">{{ row.weight_change_prc }} %</td>
+                            <td class="data-table__cell {% if row.result == 'positive' %} data-table__cell--positive {% elif row.result == 'negative' %} data-table__cell--negative {% endif %}">{{ row.net_calories }} kcal</td>
                         </tr>
-                        <tr class="data-table__row">
-                            <td class="data-table__cell">Feb 9, 2025</td>
-                            <td class="data-table__cell">71.5 kg</td>
-                            <td class="data-table__cell data-table__cell--negative">+0.28 kg</td>
-                            <td class="data-table__cell data-table__cell--negative">+0.15%</td>
-                            <td class="data-table__cell data-table__cell--negative">-485 kcal</td>
-                        </tr>
+                        {% endfor %}
                     </table>
                 </section>
+
+                {% else %}
+                <!-- TODO: some message saying there's no data -->
+                {% endif %}
                 <!-- End of main contend that has padding  -->
             </div>
 
