@@ -186,7 +186,7 @@
                                 <span>Total Weight Change</span>
                             </p>
                             <div class="summary-card__value-group">
-                                <h3 class="summary-card__value">{{ data.summary.total_change }}</h3>
+                                <h3 class="summary-card__value">{{ data.summary.total_change | signed_amt_str }}</h3>
                                 <span class="summary-card__subtitle">kg</span>
                             </div>
 
@@ -204,7 +204,7 @@
                                 <span>Avg. Weight Change</span>
                             </p>
                             <div class="summary-card__value-group">
-                                <h3 class="summary-card__value">{{ data.summary.avg_change }}</h3>
+                                <h3 class="summary-card__value">{{ data.summary.avg_change | signed_amt_str }}</h3>
                                 <span class="summary-card__subtitle">kg / week</span>
                             </div>
                         </li>
@@ -215,7 +215,7 @@
 
                             </p>
                             <div class="summary-card__value-group">
-                                <h3 class="summary-card__value">{{ data.summary.avg_change_prc }}</h3>
+                                <h3 class="summary-card__value">{{ data.summary.avg_change_prc | signed_amt_str }}</h3>
                                 <span class="summary-card__subtitle">% / week</span>
                             </div>
 
@@ -228,7 +228,7 @@
                                 <span>Avg. Calorie Deficit / Surplus (est.) </span>
                             </p>
                             <div class="summary-card__value-group">
-                                <h3 class="summary-card__value">{{ data.summary.avg_net_calories }}</h3>
+                                <h3 class="summary-card__value">{{ data.summary.avg_net_calories | signed_amt_str(decimals=False) }}</h3>
                                 <span class="summary-card__subtitle">kcal / week</span>
                             </div>
                         </li>
@@ -244,8 +244,7 @@
                             </path>
                         </svg>
                         <!-- TODO: Evaluation is dynamic based on results -->
-                        <span>Your weight loss is right in the range of optimal loss rate. You're making amazing
-                            progress, keep it up!</span>
+                        <span>{{ data.summary.evaluation }}</span>
                     </p>
                 </section>
                 <!-- DATA TABLE SECTION -->
@@ -260,11 +259,11 @@
                         </tr>
                         {% for row in data.entries %}
                         <tr class="data-table__row">
-                            <td class="data-table__cell">{{ row.week_start }}</td>
+                            <td class="data-table__cell">{{ row.week_start.strftime('%b %-d, %Y') }}</td>
                             <td class="data-table__cell">{{ row.avg_weight }} kg</td>
-                            <td class="data-table__cell {% if row.result == 'positive' %} data-table__cell--positive {% elif row.result == 'negative' %} data-table__cell--negative {% endif %}">{{ row.weight_change}} kg</td>
-                            <td class="data-table__cell {% if row.result == 'positive' %} data-table__cell--positive {% elif row.result == 'negative' %} data-table__cell--negative {% endif %}">{{ row.weight_change_prc }} %</td>
-                            <td class="data-table__cell {% if row.result == 'positive' %} data-table__cell--positive {% elif row.result == 'negative' %} data-table__cell--negative {% endif %}">{{ row.net_calories }} kcal</td>
+                            <td class="data-table__cell {% if row.result == 'positive' %} data-table__cell--positive {% elif row.result == 'negative' %} data-table__cell--negative {% endif %}">{{ row.weight_change | signed_amt_str }} kg</td>
+                            <td class="data-table__cell {% if row.result == 'positive' %} data-table__cell--positive {% elif row.result == 'negative' %} data-table__cell--negative {% endif %}">{{ row.weight_change_prc | signed_amt_str }} %</td>
+                            <td class="data-table__cell {% if row.result == 'positive' %} data-table__cell--positive {% elif row.result == 'negative' %} data-table__cell--negative {% endif %}">{{ row.net_calories | signed_amt_str(decimals=False) }} kcal</td>
                         </tr>
                         {% endfor %}
                     </table>
