@@ -238,8 +238,8 @@ body {
 .summary__goal-reminder {
     color: var(--clr-text-summary);
     display: flex;
-    gap: 5px;
     align-items: center;
+    gap: 5px;
     font-size: var(--fs-primary);
     font-weight: 500;
 }
@@ -270,6 +270,7 @@ body {
 .summary-card__header {
     display: flex;
     align-items: center;
+    /* justify-content: space-between; */
     gap: 5px;
     color: var(--clr-text-summary);
     /* margin-bottom: 5px; */
@@ -343,6 +344,12 @@ body {
     color: var(--clr-negative);
 }
 
+@media screen and (max-width: 945px) {
+    .summary__cards-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media screen and (max-width: 770px){
     .goal-selection {
         flex-direction: column;
@@ -350,5 +357,11 @@ body {
     }
     .goal-selection__container {
         flex-direction: column;
+    }
+}
+
+@media screen and (max-width: 555px) {
+    .summary__cards-container {
+        grid-template-columns: 1fr;
     }
 }
