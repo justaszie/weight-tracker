@@ -3,4 +3,5 @@
 screenshot*
 app/__pycache*
 static_frontend*
-app/data/*
+app/data*
+app/auth*
