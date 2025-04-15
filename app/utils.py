@@ -85,8 +85,6 @@ def get_weekly_aggregates(daily_entries, goal, weeks_limit=None):
     if (weeks_limit):
         weekly_entries = weekly_entries.tail(weeks_limit + 1)
 
-    # TODO: prepend 1 more week on top of filtered weeks. But that week should have no change values,
-
     # Calculate the weight change between weeks
     weekly_entries = weekly_entries.to_frame(name='avg_weight')
     weekly_entries['weight_change'] = weekly_entries.diff().round(2).fillna(0)
@@ -111,6 +109,9 @@ def get_weekly_aggregates(daily_entries, goal, weeks_limit=None):
 
     # Change date back to date only
     weekly_entries['week_start'] = weekly_entries['week_start'].dt.strftime('%Y-%m-%d')
+
+    # Display in the order from the most recent
+    weekly_entries = weekly_entries[::-1]
 
     result =  {
         'entries': weekly_entries.to_dict(orient='records')

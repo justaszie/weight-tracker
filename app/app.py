@@ -133,13 +133,16 @@ def tracker():
     goal = request.args.get('goal', 'lose')
     filter = request.args.get('filter', 'weeks')
 
+    weeks_limit = None
+    if (filter == 'weeks'):
+        weeks_limit = int(request.args.get('weeks_num', DEFAULT_WEEKS))
+
     # Weekly filter logic:  first aggregate, then filter
     # Dates filter logic: first filter daily entries, then aggregate
 
     # Send daily_entries to utils.get_weekly_aggregates to get the weekly entries
-    weekly_data = utils.get_weekly_aggregates(daily_entries, goal, weeks_limit=DEFAULT_WEEKS)
+    weekly_data = utils.get_weekly_aggregates(daily_entries, goal, weeks_limit=weeks_limit)
     weekly_data['summary']['evaluation'] = utils.get_evaluation(weekly_data)
-    print(weekly_data)
 
     # Collate weekly entries and summary metrics to one object and send to frontend
 
