@@ -9,17 +9,16 @@ from flask import (
     request,
     flash
 )
+
 import secrets
 import json
 import utils
-from datetime import date
+import datetime as dt
 import os
 
 from google.oauth2.credentials import Credentials # Handls the authorized credentials including token
 from google_auth_oauthlib.flow import Flow # handles the sign in flow and gets token
 from google.auth.transport.requests import Request # Used in refreshing a token without login flow
-from googleapiclient.discovery import build # Build fitness service used to make requests
-
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
@@ -51,7 +50,7 @@ def google_auth():
     with open('auth/token.json', 'w') as token:
                 token.write(creds.to_json())
 
-    return redirect(url_for('get_data'))
+    return redirect(url_for('load_data'))
 
 
 @app.route('/google-signin', methods=['GET'])
@@ -92,24 +91,32 @@ def load_google_credentials():
     else:
         return None
 
-@app.route('/get-data')
-def get_data():
-     creds = load_google_credentials()
-     if (creds):
-        return 'AUTHORIZED BY GOOGLE'
-     else:
-        if not creds:
-            return redirect(url_for('google_signin'))
+@app.route('/load-data')
+def load_data():
+    creds = load_google_credentials()
+    if not creds:
+        return redirect(url_for('google_signin'))
 
-    # # Build the fitness service with the authenticated credentials
-    # fitness_service = build('fitness', 'v1', credentials=credentials)
+    # TODO - Only call google if no data in session or latest entry is older than today
 
-    # # Calculate time range - default to last 7 days
-    # end_time = int(datetime.datetime.now().timestamp() * 1000)  # Current time in milliseconds
-    # start_time = end_time - (7 * 24 * 60 * 60 * 1000)  # 7 days ago in milliseconds
+    # GETTING ACTUAL GOOGLE DATA
+    # raw_data = utils.get_gfit_data(creds)
+    # today = dt.date.today().strftime('%Y%m%d.json')
+    # with open('data/raw_weight_data_' + today, 'w') as file:
+    #     json.dump(raw_data, file)
 
-    # # Get steps data
-    # steps_data = get_steps_data(fitness_service, start_time, end_time)
+    # TODO - Replace the stub with logic to fetch the data when needed (code above )
+    # USING STORED FILED AS STUB FOR NOW
+    with open('data/raw_weight_data_20250415.json', 'r') as sample_raw:
+        raw_data = json.load(sample_raw)
+
+    daily_entries = utils.get_daily_weight_entries(raw_data)
+
+    # Store data in a file to be loaded when we need to display data in frontend
+    with open('data/daily_entries.json', 'w') as file:
+        json.dump(daily_entries, file)
+
+    return redirect(url_for('home'))
 
 @app.route('/')
 def home():
@@ -117,15 +124,31 @@ def home():
 
 @app.route('/tracker', methods=['GET','POST'])
 def tracker():
-    print(request.args)
-    # TODO: Validate filter params. If not within available options, use default values.
+    DEFAULT_WEEKS = 4
+
+    # Load daily entries
+    with open('data/daily_entries.json', 'r') as file:
+        daily_entries = json.load(file)
+
     goal = request.args.get('goal', 'lose')
     filter = request.args.get('filter', 'weeks')
-    with open('data/sample_entries.json') as data_file:
-        data = json.load(data_file)
-        for row in data['entries']:
-            row['week_start'] = date.fromisoformat(row['week_start'])
-    return render_template('tracker.html', goal=goal, filter=filter, data=data)
+
+    # Weekly filter logic:  first aggregate, then filter
+    # Dates filter logic: first filter daily entries, then aggregate
+
+    # Send daily_entries to utils.get_weekly_aggregates to get the weekly entries
+    weekly_data = utils.get_weekly_aggregates(daily_entries, goal, weeks_limit=DEFAULT_WEEKS)
+    weekly_data['summary']['evaluation'] = utils.get_evaluation(weekly_data)
+    print(weekly_data)
+
+    # Collate weekly entries and summary metrics to one object and send to frontend
+
+    # print(request.args)
+    # TODO: Validate filter params. If not within available options, use default values.
+    for row in weekly_data['entries']:
+        row['week_start'] = dt.date.fromisoformat(row['week_start'])
+    return render_template('tracker.html', goal=goal, filter=filter, data=weekly_data)
+
 
 app.jinja_env.filters['signed_amt_str'] = utils.to_signed_amt_str
 

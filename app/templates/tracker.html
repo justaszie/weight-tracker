@@ -90,7 +90,7 @@
                             class="filter-option {%if filter=='dates' %} filter-option--active {% endif %}">Filter by
                             Dates</a>
                     </section>
-                    <a href="#" class="get-data-cta">
+                    <a href="{{ url_for('load_data') }}" class="get-data-cta">
                         <svg class="get-data-cta__icon" viewBox="0 0 262 262" xmlns="http://www.w3.org/2000/svg"
                             preserveAspectRatio="xMidYMid meet">
                             <path
@@ -234,7 +234,7 @@
                         </li>
                     </ul>
                     <!-- Evaluation box -->
-                    <!-- TODO: svg ightning -->
+                    {% if data.summary.evaluation %}
                     <p class="summary_evaluation">
                         <svg class="summary__icon summary_icon--evaluation" xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -246,6 +246,7 @@
                         <!-- TODO: Evaluation is dynamic based on results -->
                         <span>{{ data.summary.evaluation }}</span>
                     </p>
+                    {% endif %}
                 </section>
                 <!-- DATA TABLE SECTION -->
                 <section>
