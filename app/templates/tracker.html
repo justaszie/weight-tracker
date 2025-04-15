@@ -158,7 +158,7 @@
                 <section class="summary">
                     <div class="summary__header spaced-out">
                         <!-- TODO - add dynamic component based on filter -->
-                        <h2>Weight Change Summary past 4 weeks</h2>
+                        <h2>Weight Change Summary past {{ data.entries | length - 1 }} weeks</h2>
                         <p class="summary__goal-reminder">
                             <svg class="summary_icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
