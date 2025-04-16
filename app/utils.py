@@ -127,6 +127,21 @@ def get_weekly_aggregates(daily_entries, goal, weeks_limit=None):
     return result
 
 
+"""
+   [A] utils.is_outdated(daily_entries)
+        - Sort the daily entries using value of date key in DESC order
+        - if the date of the first entry in sorted list  is less than today's date, return false
+            - use datetime.date object on both ends and < operator
+
+"""
+
+def is_outdated(daily_entries):
+    dates_covered = [ dt.datetime.fromisoformat(entry['date']).timestamp()
+                     for entry in daily_entries['daily_entries']
+    ]
+    last_day = dt.date.fromtimestamp(sorted(dates_covered, reverse=True)[0])
+    return last_day < dt.date.today()
+
 # TODO - Here we will implement the logic to build text that evaluates the overall results
 def get_evaluation(weekly_data):
     return None

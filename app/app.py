@@ -93,28 +93,31 @@ def load_google_credentials():
 
 @app.route('/load-data')
 def load_data():
-    creds = load_google_credentials()
-    if not creds:
-        return redirect(url_for('google_signin'))
+    # TODO - json.load doesn't work if the file exists but doesn't contain valid json
+    refresh_needed = True
+    if os.path.exists('data/daily_entries.json'):
+        with open('data/daily_entries.json', 'r') as file:
+            daily_entries = json.load(file)
+            if daily_entries['daily_entries'] and len(daily_entries['daily_entries']) > 0:
+                if not utils.is_outdated(daily_entries):
+                    refresh_needed = False
 
-    # TODO - Only call google if no data in session or latest entry is older than today
+    if refresh_needed:
+        # Getting authorization to Google Fit API
+        creds = load_google_credentials()
+        if not creds:
+            return redirect(url_for('google_signin'))
 
-    # GETTING ACTUAL GOOGLE DATA
-    # raw_data = utils.get_gfit_data(creds)
-    # today = dt.date.today().strftime('%Y%m%d.json')
-    # with open('data/raw_weight_data_' + today, 'w') as file:
-    #     json.dump(raw_data, file)
+        # Gettign Google Fit data
+        raw_data = utils.get_gfit_data(creds)
+        today = dt.date.today().strftime('%Y%m%d.json')
+        with open('data/raw_weight_data_' + today, 'w') as file:
+            json.dump(raw_data, file)
 
-    # TODO - Replace the stub with logic to fetch the data when needed (code above )
-    # USING STORED FILED AS STUB FOR NOW
-    with open('data/raw_weight_data_20250415.json', 'r') as sample_raw:
-        raw_data = json.load(sample_raw)
-
-    daily_entries = utils.get_daily_weight_entries(raw_data)
-
-    # Store data in a file to be loaded when we need to display data in frontend
-    with open('data/daily_entries.json', 'w') as file:
-        json.dump(daily_entries, file)
+        daily_entries = utils.get_daily_weight_entries(raw_data)
+          # Store data in a file to be loaded when we need to display data in frontend
+        with open('data/daily_entries.json', 'w') as file:
+            json.dump(daily_entries, file)
 
     return redirect(url_for('home'))
 
@@ -126,9 +129,13 @@ def home():
 def tracker():
     DEFAULT_WEEKS = 4
 
+
+    # TODO - handle case when there's no data - either no file or it's empty or it has no entires
     # Load daily entries
     with open('data/daily_entries.json', 'r') as file:
         daily_entries = json.load(file)
+
+
 
     goal = request.args.get('goal', 'lose')
     filter = request.args.get('filter', 'weeks')
@@ -139,6 +146,7 @@ def tracker():
 
     # Weekly filter logic:  first aggregate, then filter
     # Dates filter logic: first filter daily entries, then aggregate
+
 
     # Send daily_entries to utils.get_weekly_aggregates to get the weekly entries
     weekly_data = utils.get_weekly_aggregates(daily_entries, goal, weeks_limit=weeks_limit)
