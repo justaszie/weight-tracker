@@ -120,6 +120,7 @@ def home():
 def tracker():
     DEFAULT_WEEKS = 4
 
+    weekly_data = None
     # TODO - handle case when there's no data - either no file or it's empty or it has no entires
     # Load daily entries
     daily_entries = utils.load_daily_data_file()
@@ -127,6 +128,7 @@ def tracker():
     goal = request.args.get('goal', 'lose')
     filter = request.args.get('filter', 'weeks')
 
+    # TODO: Validate filter params. If not within available options, use default values.
     weeks_limit = None
     if (filter == 'weeks'):
         weeks_limit = int(request.args.get('weeks_num', DEFAULT_WEEKS))
@@ -134,17 +136,14 @@ def tracker():
     # Weekly filter logic:  first aggregate, then filter
     # Dates filter logic: first filter daily entries, then aggregate
 
-
     # Send daily_entries to utils.get_weekly_aggregates to get the weekly entries
-    weekly_data = utils.get_weekly_aggregates(daily_entries, goal, weeks_limit=weeks_limit)
-    weekly_data['summary']['evaluation'] = utils.get_evaluation(weekly_data)
+    if (daily_entries):
+        weekly_data = utils.get_weekly_aggregates(daily_entries, goal, weeks_limit=weeks_limit)
+        weekly_data['summary']['evaluation'] = utils.get_evaluation(weekly_data)
 
-    # Collate weekly entries and summary metrics to one object and send to frontend
+        for row in weekly_data['entries']:
+            row['week_start'] = dt.date.fromisoformat(row['week_start'])
 
-    # print(request.args)
-    # TODO: Validate filter params. If not within available options, use default values.
-    for row in weekly_data['entries']:
-        row['week_start'] = dt.date.fromisoformat(row['week_start'])
     return render_template('tracker.html', goal=goal, filter=filter, data=weekly_data)
 
 
