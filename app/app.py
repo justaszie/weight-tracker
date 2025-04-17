@@ -144,6 +144,10 @@ def tracker():
         for row in weekly_data['entries']:
             row['week_start'] = dt.date.fromisoformat(row['week_start'])
 
+        weekly_data['summary']['latest_date'] = dt.date.fromisoformat(
+            weekly_data['summary']['latest_date']
+        )
+
     return render_template('tracker.html', goal=goal, filter=filter, data=weekly_data)
 
 

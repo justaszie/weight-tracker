@@ -136,6 +136,7 @@ body {
 
 .filter-selection{
     display: flex;
+    align-self: flex-start;
     background-color: var(--clr-surface);
     border-radius: var( --rounded-corners-btn);
     padding: 5px;
@@ -155,7 +156,14 @@ body {
     color: var(--clr-text-inverse);
 }
 
-.get-data-cta {
+.get-data {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+}
+
+.get-data__cta {
     display: flex;
     align-items: center;
     padding: 10px 15px;
@@ -167,7 +175,8 @@ body {
     font-weight: 500;
 }
 
-.get-data-cta__icon,
+
+.get-data__cta-icon,
 .weeks-filter__icon,
 .dates-filter__icon {
     width: 18px;
@@ -177,7 +186,7 @@ body {
 .weeks-filter,
 .dates-filter {
     display: flex;
-    padding: 25px 0 ;
+    padding: 10px 0 20px;
     align-items: center;
     gap: 10px;
 }

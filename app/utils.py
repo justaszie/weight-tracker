@@ -123,6 +123,7 @@ def get_weekly_aggregates(daily_entries, goal, weeks_limit=None):
     }
 
     summary = {}
+    summary['latest_date'] = daily_entries['latest_date']
     summary['total_change'] = float(weekly_entries['weight_change'].iloc[:-1].sum().round(2))
     summary['avg_change'] = float(weekly_entries['weight_change'].iloc[:-1].mean().round(2))
     summary['avg_change_prc'] = float(weekly_entries['weight_change_prc'].iloc[:-1].mean().round(2))
