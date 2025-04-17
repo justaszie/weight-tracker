@@ -93,16 +93,7 @@ def load_google_credentials():
 
 @app.route('/load-data')
 def load_data():
-    # TODO - json.load doesn't work if the file exists but doesn't contain valid json
-    refresh_needed = True
-    if os.path.exists('data/daily_entries.json'):
-        with open('data/daily_entries.json', 'r') as file:
-            daily_entries = json.load(file)
-            if daily_entries['daily_entries'] and len(daily_entries['daily_entries']) > 0:
-                if not utils.is_outdated(daily_entries):
-                    refresh_needed = False
-
-    if refresh_needed:
+    if (utils.data_refresh_needed()):
         # Getting authorization to Google Fit API
         creds = load_google_credentials()
         if not creds:
@@ -129,13 +120,9 @@ def home():
 def tracker():
     DEFAULT_WEEKS = 4
 
-
     # TODO - handle case when there's no data - either no file or it's empty or it has no entires
     # Load daily entries
-    with open('data/daily_entries.json', 'r') as file:
-        daily_entries = json.load(file)
-
-
+    daily_entries = utils.load_daily_data_file()
 
     goal = request.args.get('goal', 'lose')
     filter = request.args.get('filter', 'weeks')

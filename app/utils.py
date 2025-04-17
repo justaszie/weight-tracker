@@ -1,3 +1,5 @@
+import json
+import os
 import pandas as pd
 import datetime as dt
 from googleapiclient.discovery import build # Build fitness service used to make requests
@@ -52,6 +54,7 @@ def get_daily_weight_entries(raw_data):
     df.to_csv('data/daily_history.csv')
 
     result = {
+        'latest_date': df['date'].max(),
         'daily_entries': df.to_dict(orient='records')
     }
     return result
@@ -113,36 +116,44 @@ def get_weekly_aggregates(daily_entries, goal, weeks_limit=None):
     # Display in the order from the most recent
     weekly_entries = weekly_entries[::-1]
 
+    print(weekly_entries)
+
     result =  {
         'entries': weekly_entries.to_dict(orient='records')
     }
 
     summary = {}
-    summary['total_change'] = float(weekly_entries['weight_change'].iloc[1:].sum().round(2))
-    summary['avg_change'] = float(weekly_entries['weight_change'].iloc[1:].mean().round(2))
-    summary['avg_change_prc'] = float(weekly_entries['weight_change_prc'].iloc[1:].mean().round(2))
-    summary['avg_net_calories'] = int(weekly_entries['net_calories'].iloc[1:].mean())
+    summary['total_change'] = float(weekly_entries['weight_change'].iloc[:-1].sum().round(2))
+    summary['avg_change'] = float(weekly_entries['weight_change'].iloc[:-1].mean().round(2))
+    summary['avg_change_prc'] = float(weekly_entries['weight_change_prc'].iloc[:-1].mean().round(2))
+    summary['avg_net_calories'] = int(weekly_entries['net_calories'].iloc[:-1].mean())
     result['summary'] = summary
 
     return result
-
-
-"""
-   [A] utils.is_outdated(daily_entries)
-        - Sort the daily entries using value of date key in DESC order
-        - if the date of the first entry in sorted list  is less than today's date, return false
-            - use datetime.date object on both ends and < operator
-
-"""
-
-def is_outdated(daily_entries):
-    dates_covered = [ dt.datetime.fromisoformat(entry['date']).timestamp()
-                     for entry in daily_entries['daily_entries']
-    ]
-    last_day = dt.date.fromtimestamp(sorted(dates_covered, reverse=True)[0])
-    return last_day < dt.date.today()
 
 # TODO - Here we will implement the logic to build text that evaluates the overall results
 def get_evaluation(weekly_data):
     return None
 
+def load_daily_data_file(path='data/daily_entries.json'):
+    if os.path.exists(path):
+        with open(path, 'r') as file:
+            try:
+                daily_entries = json.load(file)
+                return daily_entries
+            except json.JSONDecodeError:
+                return None
+    return None
+
+def data_refresh_needed():
+    daily_entries = load_daily_data_file()
+    if not daily_entries:
+        return True
+
+    if len(daily_entries['daily_entries']) == 0:
+        return True
+
+    try:
+        return dt.date.fromisoformat(daily_entries['latest_date']) < dt.date.today()
+    except (KeyError, ValueError):
+        return True
