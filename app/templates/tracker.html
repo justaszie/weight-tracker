@@ -27,7 +27,7 @@
                     <ul class="goal-selection__container">
                         <li>
                             <a class="goal-selection__cta {% if goal == 'lose' %} goal-selection__cta--active {% endif %}"
-                                href="{{ url_for('tracker', filter=filter, goal='lose') }}">
+                                href="{{ url_for('tracker', filter=filter, weeks_num=weeks_num, date_to=date_to, date_from=date_from, goal='lose') }}">
                                 <!-- Lose SVG -->
                                 <svg class=" goal-selection__icon" xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -42,7 +42,7 @@
                         </li>
                         <li>
                             <a class="goal-selection__cta {% if goal == 'gain' %} goal-selection__cta--active {% endif %}"
-                                href="{{ url_for('tracker', filter=filter, goal='gain') }}">
+                                href="{{ url_for('tracker', filter=filter, weeks_num=weeks_num, date_to=date_to, date_from=date_from, goal='gain') }}">
                                 <svg class=" goal-selection__icon" xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                     stroke-linecap="round" stroke-linejoin="round"
@@ -62,7 +62,7 @@
                         </li>
                         <li>
                             <a class="goal-selection__cta {% if goal == 'maintain' %} goal-selection__cta--active {% endif %}"
-                                href="{{ url_for('tracker', filter=filter, goal='maintain') }}">
+                                href="{{ url_for('tracker', filter=filter, weeks_num=weeks_num, date_to=date_to, date_from=date_from, goal='maintain') }}">
                                 <svg class=" goal-selection__icon" xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                     stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scale w-3 h-3">
@@ -109,7 +109,7 @@
                         </svg>
                         <span>Get Google Fit Data</span>
                     </a>
-                    <p>Last entry: {{data.summary.latest_date.strftime('%b %-d, %Y') }}</p>
+                    <p>Last entry: {{data.summary.latest_date.strftime('%b %-d, %Y') if data else 'No Data Yet' }}</p>
                     </div>
                 </div>
 
@@ -122,7 +122,7 @@
                             d="M0 24h22V2h-4V0h-2v2H6V0H4v2H0zm16-10v-2h2v2zm2 1v2h-2v-2zm-5 2v-2h2v2zm2 1v2h-2v-2zm-2-4v-2h2v2zm-3 3v-2h2v2zm2 1v2h-2v-2zm-2-4v-2h2v2zm-3 3v-2h2v2zm2 1v2H7v-2zm-2-4v-2h2v2zm-1 1v2H4v-2zm-2 3h2v2H4zM4 4v2h2V4h10v2h2V4h2v4H2V4z" />
                     </svg>
                     <label class="weeks-filter__label" for="weeks_num">Weeks: </label>
-                    <input name="weeks_num" type="number" value="4" id="weeks_num" class="weeks-filter__input">
+                    <input name="weeks_num" value="{{ weeks_num if weeks_num else ''}}" type="number" value="4" id="weeks_num" class="weeks-filter__input">
                     <button type="submit" class="weeks-filter__submit">
                         <svg class="weeks-filter__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -140,9 +140,9 @@
                 <!--  DATES FILTER COMPONENT  -->
                 <form action="#" method="GET" class="dates-filter">
                     <label class="dates-filter__label" for="date_from">From </label>
-                    <input name="date_from" type="date" id="date_from" class="dates-filter__input">
+                    <input name="date_from" value="{{ date_from if date_from else ''}}" type="date" id="date_from" class="dates-filter__input">
                     <label class="dates-filter__label" for="date_to">To </label>
-                    <input name="date_to" type="date" id="date_to" class="dates-filter__input">
+                    <input name="date_to" value="{{ date_to if date_to else ''}}" type="date" id="date_to" class="dates-filter__input">
                     <button type="submit" class="dates-filter__submit">
                         <svg class="dates-filter__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -161,7 +161,12 @@
                 <section class="summary">
                     <div class="summary__header spaced-out">
                         <!-- TODO - add dynamic component based on filter -->
-                        <h2>Weight Change Summary past {{ data.entries | length - 1 }} weeks</h2>
+                        <h2>{% if filter=='weeks' %}
+                            Summary for the past {{ data.entries | length - 1 }} weeks
+                            {% elif filter=='dates' %}
+                                Summary from {{ date_from if date_from else 'beginning'}} to {{ date_to if date_to else 'today'}}
+                            {% endif %}
+                        </h2>
                         <p class="summary__goal-reminder">
                             <svg class="summary_icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"

@@ -1,6 +1,7 @@
 import json
 import os
 import pandas as pd
+import numpy as np
 import datetime as dt
 from googleapiclient.discovery import build # Build fitness service used to make requests
 from googleapiclient.errors import HttpError
@@ -55,6 +56,7 @@ def get_daily_weight_entries(raw_data):
 
     result = {
         'latest_date': df['date'].max(),
+        'earliest_date': df['date'].min(),
         'daily_entries': df.to_dict(orient='records')
     }
     return result
@@ -70,11 +72,20 @@ def calculate_result(weight_change, goal):
 
 def get_weekly_aggregates(daily_entries, goal, weeks_limit=None):
     # 1. Convert daily_entries JSON to data frame
-    df = pd.DataFrame.from_dict(daily_entries['daily_entries'])
+    df = pd.DataFrame.from_records(daily_entries)
 
     # Set date index to aggregate by week
     df['week_start'] = pd.to_datetime(df['date'])
     df.set_index('week_start', inplace=True)
+
+    # # If date filter values are provided, filter the daily data
+    # if (date_from):
+    #     query_string = f"date >= '{date_from}'"
+    #     df.query(query_string, inplace=True)
+
+    # if (date_to):
+    #     query_string = f"date <= '{date_to}'"
+    #     df.query(query_string, inplace=True)
 
     # Calculate weekly averages (mean and median) using resample method
     # averages = round(df['weight'].resample('W').agg(['mean','median']).dropna(), 2)
@@ -98,9 +109,6 @@ def get_weekly_aggregates(daily_entries, goal, weeks_limit=None):
      # Calculate estimated calorie deficit based on weight change
     weekly_entries['net_calories'] = (weekly_entries["weight_change"] * 500 / 0.45).round(0).fillna(0).astype(int)
 
-    # Replace NaN values with 0 for the first dummy week
-    # weekly_entries.fillna(value=0, inplace=True)
-
     # Add positive / negative result based on goal
     weekly_entries['result'] = weekly_entries['weight_change'].apply(lambda x: calculate_result(x, goal))
 
@@ -116,18 +124,16 @@ def get_weekly_aggregates(daily_entries, goal, weeks_limit=None):
     # Display in the order from the most recent
     weekly_entries = weekly_entries[::-1]
 
-    print(weekly_entries)
-
     result =  {
         'entries': weekly_entries.to_dict(orient='records')
     }
 
     summary = {}
-    summary['latest_date'] = daily_entries['latest_date']
-    summary['total_change'] = float(weekly_entries['weight_change'].iloc[:-1].sum().round(2))
-    summary['avg_change'] = float(weekly_entries['weight_change'].iloc[:-1].mean().round(2))
-    summary['avg_change_prc'] = float(weekly_entries['weight_change_prc'].iloc[:-1].mean().round(2))
-    summary['avg_net_calories'] = int(weekly_entries['net_calories'].iloc[:-1].mean())
+
+    summary['total_change'] = float(weekly_entries['weight_change'].iloc[:-1].sum().round(2)) if len(weekly_entries.index) > 1 else 0.00
+    summary['avg_change'] = float(weekly_entries['weight_change'].iloc[:-1].mean().round(2)) if len(weekly_entries.index) > 1 else 0.00
+    summary['avg_change_prc'] = float(weekly_entries['weight_change_prc'].iloc[:-1].mean().round(2)) if len(weekly_entries.index) > 1 else 0.00
+    summary['avg_net_calories'] = int(weekly_entries['net_calories'].iloc[:-1].mean()) if len(weekly_entries.index) > 1 else 0
     result['summary'] = summary
 
     return result
@@ -136,7 +142,15 @@ def get_weekly_aggregates(daily_entries, goal, weeks_limit=None):
 def get_evaluation(weekly_data):
     return None
 
-def load_daily_data_file(path='data/daily_entries.json'):
+def filter_daily_entries(daily_entries, date_from=None, date_to=None):
+    if date_from:
+        daily_entries = [entry for entry in daily_entries if entry['date'] >= date_from]
+    if date_to:
+        daily_entries = [entry for entry in daily_entries if entry['date'] <= date_to]
+    return daily_entries
+
+
+def load_daily_data_file(path='data/daily_data.json'):
     if os.path.exists(path):
         with open(path, 'r') as file:
             try:

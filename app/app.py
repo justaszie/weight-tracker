@@ -82,12 +82,15 @@ def load_google_credentials():
             return creds
         elif creds and creds.expired and creds.refresh_token:
             # If token has expired but we have a refresh token, refresh the access token
-            creds.refresh(Request())
-             # Save the credentials for future runs
-            with open('auth/token.json', 'w') as token:
-                token.write(creds.to_json())
+            try:
+                creds.refresh(Request())
+                # Save the credentials for future runs
+                with open('auth/token.json', 'w') as token:
+                    token.write(creds.to_json())
 
-            return creds
+                return creds
+            except:
+                return None
     else:
         return None
 
@@ -107,7 +110,7 @@ def load_data():
 
         daily_entries = utils.get_daily_weight_entries(raw_data)
           # Store data in a file to be loaded when we need to display data in frontend
-        with open('data/daily_entries.json', 'w') as file:
+        with open('data/daily_data.json', 'w') as file:
             json.dump(daily_entries, file)
 
     return redirect(url_for('home'))
@@ -118,37 +121,45 @@ def home():
 
 @app.route('/tracker', methods=['GET','POST'])
 def tracker():
-    DEFAULT_WEEKS = 4
+    DEFAULT_WEEKS_LIMIT = 4
 
     weekly_data = None
     # TODO - handle case when there's no data - either no file or it's empty or it has no entires
     # Load daily entries
-    daily_entries = utils.load_daily_data_file()
 
     goal = request.args.get('goal', 'lose')
     filter = request.args.get('filter', 'weeks')
-
-    # TODO: Validate filter params. If not within available options, use default values.
+    date_from = request.args.get('date_from', None)
+    date_to = request.args.get('date_to', None)
     weeks_limit = None
-    if (filter == 'weeks'):
-        weeks_limit = int(request.args.get('weeks_num', DEFAULT_WEEKS))
 
-    # Weekly filter logic:  first aggregate, then filter
-    # Dates filter logic: first filter daily entries, then aggregate
+    daily_data = utils.load_daily_data_file()
 
-    # Send daily_entries to utils.get_weekly_aggregates to get the weekly entries
-    if (daily_entries):
-        weekly_data = utils.get_weekly_aggregates(daily_entries, goal, weeks_limit=weeks_limit)
-        weekly_data['summary']['evaluation'] = utils.get_evaluation(weekly_data)
+    if daily_data:
+        daily_entries = daily_data['daily_entries']
+        # TODO: Validate date_to / date_from inputs.
+        if (date_from is not None or date_to is not None):
+            daily_entries = utils.filter_daily_entries(daily_entries, date_from, date_to)
+            if daily_entries:
+                weekly_data = utils.get_weekly_aggregates(daily_entries, goal)
+        else:
+            weeks_limit = int(request.args.get('weeks_num', DEFAULT_WEEKS_LIMIT))
+            weekly_data = utils.get_weekly_aggregates(daily_entries, goal, weeks_limit=weeks_limit)
 
-        for row in weekly_data['entries']:
-            row['week_start'] = dt.date.fromisoformat(row['week_start'])
+        if weekly_data:
+            weekly_data['summary']['evaluation'] = utils.get_evaluation(weekly_data)
 
-        weekly_data['summary']['latest_date'] = dt.date.fromisoformat(
-            weekly_data['summary']['latest_date']
-        )
+            for row in weekly_data['entries']:
+                row['week_start'] = dt.date.fromisoformat(row['week_start'])
 
-    return render_template('tracker.html', goal=goal, filter=filter, data=weekly_data)
+            weekly_data['summary']['latest_date'] = dt.date.fromisoformat(
+                daily_data['latest_date']
+            )
+            weekly_data['summary']['earliest_date'] = dt.date.fromisoformat(
+                daily_data['earliest_date']
+            )
+
+    return render_template('tracker.html', data=weekly_data, goal=goal, filter=filter, weeks_num=weeks_limit, date_to=date_to, date_from=date_from)
 
 
 app.jinja_env.filters['signed_amt_str'] = utils.to_signed_amt_str
