@@ -3,39 +3,15 @@ import os
 import pandas as pd
 import numpy as np
 import datetime as dt
-from googleapiclient.discovery import build # Build fitness service used to make requests
-from googleapiclient.errors import HttpError
 
 MAINTAIN_ACCEPTABLE_CHANGE = 0.2
 
 def to_signed_amt_str(amount, decimals=True):
     return ('+' if amount >= 0 else '-') + (f'{abs(amount):.2f}' if decimals else str(abs(amount)))
 
-def get_gfit_data(creds):
-    dataset = None
-    fitness_service = build('fitness', 'v1', credentials=creds)
-
-    # Get all available data
-    date_from_ns_timestamp = 0
-    tomorrow = dt.datetime.now() + dt.timedelta(days=1)
-    date_to_ns_timestamp = int(tomorrow.timestamp() * 1e9)
-
-    DATA_SOURCE = "derived:com.google.weight:com.google.android.gms:merge_weight"
-    DATA_SET = f"{date_from_ns_timestamp}-{date_to_ns_timestamp}"
-
-    # print(f" Data Set ID: {DATA_SET}")
-    # # Using google api library to build the HTTP request object to call Fit API with relevant parameters
-    request = fitness_service.users().dataSources().datasets().get(userId='me', dataSourceId=DATA_SOURCE, datasetId=DATA_SET)
-
-    try:
-        dataset = request.execute()
-        fitness_service.close()
-    except HttpError as e:
-        print('Error response status code : {}, reason : {}'.format(e.resp.status, e.error_details))
-        fitness_service.close()
-    finally:
-        return dataset
-
+# TODO: decide where this data processign should live:
+# in google service or other (e.g. data processing service)
+# It has google-fit specific logic.
 def get_daily_weight_entries(raw_data):
     df = pd.json_normalize(raw_data, 'point')
 
