@@ -9,34 +9,6 @@ MAINTAIN_ACCEPTABLE_CHANGE = 0.2
 def to_signed_amt_str(amount, decimals=True):
     return ('+' if amount >= 0 else '-') + (f'{abs(amount):.2f}' if decimals else str(abs(amount)))
 
-# TODO: decide where this data processign should live:
-# in google service or other (e.g. data processing service)
-# It has google-fit specific logic.
-def get_daily_weight_entries(raw_data):
-    df = pd.json_normalize(raw_data, 'point')
-
-    # Transform timestamp to the date when weight was captured
-    df['date'] = df['endTimeNanos'].apply(lambda x: dt.datetime.fromtimestamp(int(x) / 1e9)).dt.strftime('%Y-%m-%d')
-
-    # We extract the weight value from the json field. In case there are multiple weights on the same date,
-    # we only take the last. No reason to worry about multiple values as it's rare.
-    df['last_weight'] = df['value'].apply(lambda x: round(x[-1]['fpVal'], 2))
-
-    df.drop(columns = ['startTimeNanos', 'endTimeNanos', 'dataTypeName', 'value', 'modifiedTimeMillis', 'originDataSourceId'], inplace=True)
-
-    # Remove outliers that were added by mistake
-    df = df[(df['last_weight'] > 50) & (df['last_weight'] < 100)]
-
-    # Store daily history for any other purpose
-    df.to_csv('data/daily_history.csv')
-
-    result = {
-        'latest_date': df['date'].max(),
-        'earliest_date': df['date'].min(),
-        'daily_entries': df.to_dict(orient='records')
-    }
-    return result
-
 def calculate_result(weight_change, goal):
     match goal:
         case 'lose':
@@ -126,25 +98,3 @@ def filter_daily_entries(daily_entries, date_from=None, date_to=None):
     return daily_entries
 
 
-def load_daily_data_file(path='data/daily_data.json'):
-    if os.path.exists(path):
-        with open(path, 'r') as file:
-            try:
-                daily_entries = json.load(file)
-                return daily_entries
-            except json.JSONDecodeError:
-                return None
-    return None
-
-def data_refresh_needed():
-    daily_entries = load_daily_data_file()
-    if not daily_entries:
-        return True
-
-    if len(daily_entries['daily_entries']) == 0:
-        return True
-
-    try:
-        return dt.date.fromisoformat(daily_entries['latest_date']) < dt.date.today()
-    except (KeyError, ValueError):
-        return True

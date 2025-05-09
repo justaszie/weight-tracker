@@ -15,39 +15,51 @@ import json
 import utils
 import datetime as dt
 import os
-import gfit_service
+import gfit_auth
+import data_integration
+import data_storage
 
 # from google.oauth2.credentials import Credentials # Handls the authorized credentials including token
 # from google_auth_oauthlib.flow import Flow # handles the sign in flow and gets token
 # from google.auth.transport.requests import Request # Used in refreshing a token without login flow
 
+SYNC_DATA_SOURCE = 'gfit'
+
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
 
 # Register routes used in google fit auth flow
-app.register_blueprint(gfit_service.gfit_auth_bp)
+app.register_blueprint(gfit_auth.gfit_auth_bp)
 
-@app.route('/load-data')
-def load_data():
-    if (utils.data_refresh_needed()):
+@app.route('/sync-data')
+def sync_data():
+    # TODO: add a message that data is up to date
+    if not data_storage.data_refresh_needed():
+        return redirect(url_for('home'))
+
+    raw_data = None
+
+    if SYNC_DATA_SOURCE == 'gfit':
         # Getting authorization to Google Fit API
-        creds = gfit_service.load_google_credentials()
+        creds = gfit_auth.load_google_credentials()
         if not creds:
             return redirect(url_for('gfit_auth_bp.google_signin'))
 
-        # Gettign Google Fit data
-        raw_data = gfit_service.get_gfit_data(creds)
-        # today = dt.date.today().strftime('%Y%m%d.json')
+    if SYNC_DATA_SOURCE == 'gfit':
+    # Getting Google Fit data
+        raw_data = data_integration.get_raw_gfit_data(creds)
 
-        # TODO: Use data service or something for this raw data storage dump
-        with open('data/raw_weight_data.json', 'w') as file:
-            json.dump(raw_data, file)
+    # TODO: handle the case where we couldn't get any data
+    if raw_data:
+        data_integration.store_raw_data(raw_data)
 
-        # TODO: To be extracted to a processing function, and potentially module
-        daily_entries = utils.get_daily_weight_entries(raw_data)
-          # Store data in a file to be loaded when we need to display data in frontend
-        with open('data/daily_data.json', 'w') as file:
-            json.dump(daily_entries, file)
+        daily_entries = data_integration.get_daily_weight_entries(raw_data)
+
+        # Store a copy of daily data as csv for analytics
+        data_storage.store_daily_entries_csv(daily_entries)
+
+        # Store data in clean storage
+        data_storage.store_daily_entries(daily_entries)
 
     return redirect(url_for('home'))
 
@@ -69,7 +81,7 @@ def tracker():
     date_to = request.args.get('date_to', None)
     weeks_limit = None
 
-    daily_data = utils.load_daily_data_file()
+    daily_data = data_storage.load_daily_data_file()
 
     if daily_data:
         daily_entries = daily_data['daily_entries']
