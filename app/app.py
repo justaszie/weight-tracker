@@ -45,17 +45,18 @@ def sync_data():
         if not creds:
             return redirect(url_for('gfit_auth_bp.google_signin'))
 
-    if SYNC_DATA_SOURCE == 'gfit':
     # Getting Google Fit data
+    if SYNC_DATA_SOURCE == 'gfit':
         raw_data = data_integration.get_raw_gfit_data(creds)
 
-    # TODO: handle the case where we couldn't get any data
+    # TODO: handle the cases where we couldn't get any raw data
+    # or when the raw processing, or storage fail
     if raw_data:
         data_integration.store_raw_data(raw_data)
 
         daily_entries = data_integration.get_daily_weight_entries(raw_data)
 
-        # Store a copy of daily data as csv for analytics
+        # Store a copy of daily data as csv for any analytics needs
         data_storage.store_daily_entries_csv(daily_entries)
 
         # Store data in clean storage
@@ -81,10 +82,9 @@ def tracker():
     date_to = request.args.get('date_to', None)
     weeks_limit = None
 
-    daily_data = data_storage.load_daily_data_file()
+    daily_entries = data_storage.load_daily_data_file()
 
-    if daily_data:
-        daily_entries = daily_data['daily_entries']
+    if daily_entries:
         # TODO: Validate date_to / date_from inputs.
         if (date_from is not None or date_to is not None):
             daily_entries = utils.filter_daily_entries(daily_entries, date_from, date_to)
@@ -100,12 +100,14 @@ def tracker():
             for row in weekly_data['entries']:
                 row['week_start'] = dt.date.fromisoformat(row['week_start'])
 
-            weekly_data['summary']['latest_date'] = dt.date.fromisoformat(
-                daily_data['latest_date']
-            )
-            weekly_data['summary']['earliest_date'] = dt.date.fromisoformat(
-                daily_data['earliest_date']
-            )
+            # TODO: Calculate it, don't get it from file
+            # weekly_data['summary']['latest_date'] = dt.date.fromisoformat(
+            #     daily_data['latest_date']
+            # )
+            weekly_data['summary']['latest_date'] = utils.get_latest_entry_date(daily_entries)
+            # weekly_data['summary']['earliest_date'] = dt.date.fromisoformat(
+            #     daily_data['earliest_date']
+            # )
 
     return render_template('tracker.html', data=weekly_data, goal=goal, filter=filter, weeks_num=weeks_limit, date_to=date_to, date_from=date_from)
 
