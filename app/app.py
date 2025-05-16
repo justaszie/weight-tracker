@@ -18,6 +18,7 @@ import os
 import gfit_auth
 import data_integration
 from data_storage_file import FileStorage
+import analytics
 
 SYNC_DATA_SOURCE = "gfit"
 
@@ -105,15 +106,15 @@ def tracker():
                 daily_entries, date_from, date_to
             )
             if daily_entries:
-                weekly_data = utils.get_weekly_aggregates(daily_entries, goal)
+                weekly_data = analytics.get_weekly_aggregates(daily_entries, goal)
         else:
             weeks_limit = int(request.args.get("weeks_num", DEFAULT_WEEKS_LIMIT))
-            weekly_data = utils.get_weekly_aggregates(
+            weekly_data = analytics.get_weekly_aggregates(
                 daily_entries, goal, weeks_limit=weeks_limit
             )
 
         if weekly_data:
-            weekly_data["summary"]["evaluation"] = utils.get_evaluation(weekly_data)
+            weekly_data["summary"]["evaluation"] = analytics.get_evaluation(weekly_data)
 
             for row in weekly_data["entries"]:
                 row["week_start"] = dt.date.fromisoformat(row["week_start"])
