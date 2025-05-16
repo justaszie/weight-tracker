@@ -19,10 +19,6 @@ import gfit_auth
 import data_integration
 from data_storage_file import FileStorage
 
-# from google.oauth2.credentials import Credentials # Handls the authorized credentials including token
-# from google_auth_oauthlib.flow import Flow # handles the sign in flow and gets token
-# from google.auth.transport.requests import Request # Used in refreshing a token without login flow
-
 SYNC_DATA_SOURCE = "gfit"
 
 app = Flask(__name__)
@@ -36,11 +32,6 @@ app.register_blueprint(gfit_auth.gfit_auth_bp)
 def initialize_storage():
     if not hasattr(g, "storage"):
         g.data_storage = FileStorage()
-
-
-# @app.teardown_appcontext
-# def drop_storage(exception=None):
-#     g.pop('storage', None)
 
 
 @app.route("/sync-data")
@@ -127,16 +118,9 @@ def tracker():
             for row in weekly_data["entries"]:
                 row["week_start"] = dt.date.fromisoformat(row["week_start"])
 
-            # TODO: Calculate it, don't get it from file
-            # weekly_data['summary']['latest_date'] = dt.date.fromisoformat(
-            #     daily_data['latest_date']
-            # )
             weekly_data["summary"]["latest_date"] = utils.get_latest_entry_date(
                 daily_entries
             )
-            # weekly_data['summary']['earliest_date'] = dt.date.fromisoformat(
-            #     daily_data['earliest_date']
-            # )
 
     return render_template(
         "tracker.html",
