@@ -2,7 +2,6 @@
 .vscode
 static_frontend*
 screenshot*
-app/__pycache__/app.cpython-312.pyc
 app/__pycache__/*
 app/data/*
 app/auth/*
