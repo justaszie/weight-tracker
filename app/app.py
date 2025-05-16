@@ -17,7 +17,7 @@ import datetime as dt
 import os
 import gfit_auth
 import data_integration
-import data_storage
+from data_storage_file import FileStorage
 
 # from google.oauth2.credentials import Credentials # Handls the authorized credentials including token
 # from google_auth_oauthlib.flow import Flow # handles the sign in flow and gets token
@@ -31,10 +31,19 @@ app.secret_key = secrets.token_hex(32)
 # Register routes used in google fit auth flow
 app.register_blueprint(gfit_auth.gfit_auth_bp)
 
+@app.before_request
+def initialize_storage():
+    if not hasattr(g, 'storage'):
+        g.data_storage = FileStorage()
+
+# @app.teardown_appcontext
+# def drop_storage(exception=None):
+#     g.pop('storage', None)
+
 @app.route('/sync-data')
 def sync_data():
     # TODO: add a message that data is up to date
-    if not data_storage.data_refresh_needed():
+    if not g.data_storage.data_refresh_needed():
         return redirect(url_for('home'))
 
     raw_data = None
@@ -42,11 +51,11 @@ def sync_data():
     if SYNC_DATA_SOURCE == 'gfit':
         # Getting authorization to Google Fit API
         creds = gfit_auth.load_google_credentials()
+
         if not creds:
             return redirect(url_for('gfit_auth_bp.google_signin'))
 
-    # Getting Google Fit data
-    if SYNC_DATA_SOURCE == 'gfit':
+        # Getting Google Fit data
         raw_data = data_integration.get_raw_gfit_data(creds)
 
     # TODO: handle the cases where we couldn't get any raw data
@@ -56,11 +65,16 @@ def sync_data():
 
         daily_entries = data_integration.get_daily_weight_entries(raw_data)
 
-        # Store a copy of daily data as csv for any analytics needs
-        data_storage.store_daily_entries_csv(daily_entries)
+        # Updating existing records with delta from the external data source
+        existing_dates = { entry['date'] for entry in g.data_storage.get_weight_entries() }
+        new_entries = [entry for entry in daily_entries if entry['date'] not in existing_dates]
+        for entry in new_entries:
+            print(f"Adding {entry['date']}")
+            g.data_storage.create_weight_entry(entry['date'], entry['weight'])
+            existing_dates.add(entry['date'])
 
-        # Store data in clean storage
-        data_storage.store_daily_entries(daily_entries)
+        # We're using file based storage so we need to update the file after making changes
+        g.data_storage.save(csv_copy=True)
 
     return redirect(url_for('home'))
 
@@ -82,7 +96,8 @@ def tracker():
     date_to = request.args.get('date_to', None)
     weeks_limit = None
 
-    daily_entries = data_storage.load_daily_data_file()
+
+    daily_entries = g.data_storage.get_weight_entries()
 
     if daily_entries:
         # TODO: Validate date_to / date_from inputs.
@@ -110,7 +125,6 @@ def tracker():
             # )
 
     return render_template('tracker.html', data=weekly_data, goal=goal, filter=filter, weeks_num=weeks_limit, date_to=date_to, date_from=date_from)
-
 
 app.jinja_env.filters['signed_amt_str'] = utils.to_signed_amt_str
 

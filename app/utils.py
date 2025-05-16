@@ -37,7 +37,7 @@ def get_weekly_aggregates(daily_entries, goal, weeks_limit=None):
 
     # Calculate weekly averages (mean and median) using resample method
     # averages = round(df['weight'].resample('W').agg(['mean','median']).dropna(), 2)
-    weekly_entries = df['last_weight'].resample('W').mean().dropna().round(2)
+    weekly_entries = df['weight'].resample('W').mean().dropna().round(2)
 
     # After resampling, the date of the week is end of week
     # We set the index date to beginning the week (resample results in end of week so we subtract 6 days from it)

@@ -33,9 +33,10 @@ def get_raw_gfit_data(creds):
     except HttpError as e:
         print('Error response status code : {}, reason : {}'.format(e.resp.status, e.error_details))
         fitness_service.close()
+    except Exception as e:
+        print(e)
     finally:
         return dataset
-
 
 def store_raw_data(raw_data, file_path=RAW_DATA_FILE_PATH):
     with open(file_path, 'w') as file:
@@ -48,13 +49,15 @@ def get_daily_weight_entries(raw_data):
     # Transform timestamp in nanoseconds to the date when weight was captured
     df['date'] = df['endTimeNanos'].apply(lambda x: dt.datetime.fromtimestamp(int(x) / 1e9)).dt.strftime('%Y-%m-%d')
 
-    # We extract the weight value from the json field. In case there are multiple weights on the same date,
-    # we only take the last. No reason to worry about multiple values as it's rare.
-    df['last_weight'] = df['value'].apply(lambda x: round(x[-1]['fpVal'], 2))
+    # For multiple weight entries on the same day, keep just the last entry
+    df = df.sort_values(by='endTimeNanos').drop_duplicates(subset='date', keep='last')
+
+    # Extracting weight value from nested field 'fpVal' inside 'value'
+    df['weight'] = df['value'].apply(lambda x: round(x[-1]['fpVal'], 2))
 
     df.drop(columns = ['startTimeNanos', 'endTimeNanos', 'dataTypeName', 'value', 'modifiedTimeMillis', 'originDataSourceId'], inplace=True)
 
     # Remove outliers that were added by mistake
-    df = df[(df['last_weight'] > 50) & (df['last_weight'] < 100)]
+    df = df[(df['weight'] > 50) & (df['weight'] < 100)]
 
     return df.to_dict(orient='records')

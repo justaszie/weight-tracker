@@ -80,6 +80,8 @@ def load_google_credentials(file_path=TOKEN_FILE_PATH):
                 creds.refresh(Request())
                 # Save the credentials for future runs
                 save_token_to_file(creds)
-            finally:
-                 return creds
+                return creds
+            except Exception as e:
+                print(e)
+                return None
 
