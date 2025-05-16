@@ -7,7 +7,7 @@ from flask import (
     session,
     url_for,
     request,
-    flash
+    flash,
 )
 
 import secrets
@@ -15,111 +15,83 @@ import json
 import utils
 import datetime as dt
 import os
+import gfit_auth
+import data_integration
+from data_storage_file import FileStorage
 
-from google.oauth2.credentials import Credentials # Handls the authorized credentials including token
-from google_auth_oauthlib.flow import Flow # handles the sign in flow and gets token
-from google.auth.transport.requests import Request # Used in refreshing a token without login flow
+# from google.oauth2.credentials import Credentials # Handls the authorized credentials including token
+# from google_auth_oauthlib.flow import Flow # handles the sign in flow and gets token
+# from google.auth.transport.requests import Request # Used in refreshing a token without login flow
+
+SYNC_DATA_SOURCE = "gfit"
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
 
-CLIENT_SECRETS_FILE = "auth/credentials.json"
-SCOPES = [
-    'https://www.googleapis.com/auth/fitness.body.read',
-    'https://www.googleapis.com/auth/fitness.activity.read',
-]
-REDIRECT_URI = "http://localhost:5040/google-auth"
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # FOR DEVELOPMENT: allow google to send authorization to HTTP (insecure) endpoint of this app. For testing.
-
-# This is endpoint that Google calls with the authorization.
-# From here, we need to continue process of getting the data
-@app.route('/google-auth')
-def google_auth():
-    state = session['state']
-
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
-    flow.redirect_uri = REDIRECT_URI
-
-    # Use the authorization server's response to fetch the OAuth 2.0 tokens
-    authorization_response = request.url
-    flow.fetch_token(authorization_response=authorization_response)
-
-    creds = flow.credentials
-
-    with open('auth/token.json', 'w') as token:
-                token.write(creds.to_json())
-
-    return redirect(url_for('load_data'))
+# Register routes used in google fit auth flow
+app.register_blueprint(gfit_auth.gfit_auth_bp)
 
 
-@app.route('/google-signin', methods=['GET'])
-def google_signin():
-     # Create flow instance to manage the OAuth 2.0 Authorization Grant Flow steps
-    flow = Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, scopes=SCOPES)
-    flow.redirect_uri = REDIRECT_URI
+@app.before_request
+def initialize_storage():
+    if not hasattr(g, "storage"):
+        g.data_storage = FileStorage()
 
-    authorization_url, state = flow.authorization_url(
-        access_type='offline', include_granted_scopes='true', prompt='consent')
 
-    # Store the state in the session so you can verify the callback request
-    session['state'] = state
+# @app.teardown_appcontext
+# def drop_storage(exception=None):
+#     g.pop('storage', None)
 
-    # TBD: when we call redirect from a non-route, does it work
-    return redirect(authorization_url)
 
-def load_google_credentials():
-    # Get credentials for API access
-    creds = None
+@app.route("/sync-data")
+def sync_data():
+    # TODO: add a message that data is up to date
+    if not g.data_storage.data_refresh_needed():
+        return redirect(url_for("home"))
 
-    # The file token.json stores the user's access and refresh tokens
-    # It is created automatically when the authorization flow completes for the first time
-    if os.path.exists('auth/token.json'):
-        creds = Credentials.from_authorized_user_info(json.loads(open('auth/token.json').read()))
+    raw_data = None
 
-    if creds:
-        if creds.valid:
-            return creds
-        elif creds and creds.expired and creds.refresh_token:
-            # If token has expired but we have a refresh token, refresh the access token
-            try:
-                creds.refresh(Request())
-                # Save the credentials for future runs
-                with open('auth/token.json', 'w') as token:
-                    token.write(creds.to_json())
-
-                return creds
-            except:
-                return None
-    else:
-        return None
-
-@app.route('/load-data')
-def load_data():
-    if (utils.data_refresh_needed()):
+    if SYNC_DATA_SOURCE == "gfit":
         # Getting authorization to Google Fit API
-        creds = load_google_credentials()
+        creds = gfit_auth.load_google_credentials()
+
         if not creds:
-            return redirect(url_for('google_signin'))
+            return redirect(url_for("gfit_auth_bp.google_signin"))
 
-        # Gettign Google Fit data
-        raw_data = utils.get_gfit_data(creds)
-        today = dt.date.today().strftime('%Y%m%d.json')
-        with open('data/raw_weight_data_' + today, 'w') as file:
-            json.dump(raw_data, file)
+        # Getting Google Fit data
+        raw_data = data_integration.get_raw_gfit_data(creds)
 
-        daily_entries = utils.get_daily_weight_entries(raw_data)
-          # Store data in a file to be loaded when we need to display data in frontend
-        with open('data/daily_data.json', 'w') as file:
-            json.dump(daily_entries, file)
+    # TODO: handle the cases where we couldn't get any raw data
+    # or when the raw processing, or storage fail
+    if raw_data:
+        data_integration.store_raw_data(raw_data)
 
-    return redirect(url_for('home'))
+        daily_entries = data_integration.get_daily_weight_entries(raw_data)
 
-@app.route('/')
+        # Updating existing records with delta from the external data source
+        existing_dates = {
+            entry["date"] for entry in g.data_storage.get_weight_entries()
+        }
+        new_entries = [
+            entry for entry in daily_entries if entry["date"] not in existing_dates
+        ]
+        for entry in new_entries:
+            print(f"Adding {entry['date']}")
+            g.data_storage.create_weight_entry(entry["date"], entry["weight"])
+            existing_dates.add(entry["date"])
+
+        # We're using file based storage so we need to update the file after making changes
+        g.data_storage.save(csv_copy=True)
+
+    return redirect(url_for("home"))
+
+
+@app.route("/")
 def home():
-    return redirect('/tracker')
+    return redirect("/tracker")
 
-@app.route('/tracker', methods=['GET','POST'])
+
+@app.route("/tracker", methods=["GET", "POST"])
 def tracker():
     DEFAULT_WEEKS_LIMIT = 4
 
@@ -127,42 +99,57 @@ def tracker():
     # TODO - handle case when there's no data - either no file or it's empty or it has no entires
     # Load daily entries
 
-    goal = request.args.get('goal', 'lose')
-    filter = request.args.get('filter', 'weeks')
-    date_from = request.args.get('date_from', None)
-    date_to = request.args.get('date_to', None)
+    goal = request.args.get("goal", "lose")
+    filter = request.args.get("filter", "weeks")
+    date_from = request.args.get("date_from", None)
+    date_to = request.args.get("date_to", None)
     weeks_limit = None
 
-    daily_data = utils.load_daily_data_file()
+    daily_entries = g.data_storage.get_weight_entries()
 
-    if daily_data:
-        daily_entries = daily_data['daily_entries']
+    if daily_entries:
         # TODO: Validate date_to / date_from inputs.
-        if (date_from is not None or date_to is not None):
-            daily_entries = utils.filter_daily_entries(daily_entries, date_from, date_to)
+        if date_from is not None or date_to is not None:
+            daily_entries = utils.filter_daily_entries(
+                daily_entries, date_from, date_to
+            )
             if daily_entries:
                 weekly_data = utils.get_weekly_aggregates(daily_entries, goal)
         else:
-            weeks_limit = int(request.args.get('weeks_num', DEFAULT_WEEKS_LIMIT))
-            weekly_data = utils.get_weekly_aggregates(daily_entries, goal, weeks_limit=weeks_limit)
+            weeks_limit = int(request.args.get("weeks_num", DEFAULT_WEEKS_LIMIT))
+            weekly_data = utils.get_weekly_aggregates(
+                daily_entries, goal, weeks_limit=weeks_limit
+            )
 
         if weekly_data:
-            weekly_data['summary']['evaluation'] = utils.get_evaluation(weekly_data)
+            weekly_data["summary"]["evaluation"] = utils.get_evaluation(weekly_data)
 
-            for row in weekly_data['entries']:
-                row['week_start'] = dt.date.fromisoformat(row['week_start'])
+            for row in weekly_data["entries"]:
+                row["week_start"] = dt.date.fromisoformat(row["week_start"])
 
-            weekly_data['summary']['latest_date'] = dt.date.fromisoformat(
-                daily_data['latest_date']
+            # TODO: Calculate it, don't get it from file
+            # weekly_data['summary']['latest_date'] = dt.date.fromisoformat(
+            #     daily_data['latest_date']
+            # )
+            weekly_data["summary"]["latest_date"] = utils.get_latest_entry_date(
+                daily_entries
             )
-            weekly_data['summary']['earliest_date'] = dt.date.fromisoformat(
-                daily_data['earliest_date']
-            )
+            # weekly_data['summary']['earliest_date'] = dt.date.fromisoformat(
+            #     daily_data['earliest_date']
+            # )
 
-    return render_template('tracker.html', data=weekly_data, goal=goal, filter=filter, weeks_num=weeks_limit, date_to=date_to, date_from=date_from)
+    return render_template(
+        "tracker.html",
+        data=weekly_data,
+        goal=goal,
+        filter=filter,
+        weeks_num=weeks_limit,
+        date_to=date_to,
+        date_from=date_from,
+    )
 
 
-app.jinja_env.filters['signed_amt_str'] = utils.to_signed_amt_str
+app.jinja_env.filters["signed_amt_str"] = utils.to_signed_amt_str
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True, port=5040)
