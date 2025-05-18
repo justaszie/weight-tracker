@@ -67,6 +67,7 @@ def sync_data():
         new_entries = [
             entry for entry in daily_entries if entry["date"] not in existing_dates
         ]
+
         for entry in new_entries:
             print(f"Adding {entry['date']}")
             g.data_storage.create_weight_entry(entry["date"], entry["weight"])
@@ -94,7 +95,7 @@ def tracker():
     # Filter and goal values don't depend on data.
     # They're valid even if there's no data
     goal = request.args.get("goal", "lose")
-    filter = request.args.get("filter", None)
+    filter = request.args.get("filter", "weeks")
     date_from = request.args.get("date_from", None)
     date_to = request.args.get("date_to", None)
     weeks_limit = None
@@ -142,9 +143,9 @@ def tracker():
                     weekly_data["summary"]
                 )
 
-    if filter is None:
-        filter = 'weeks'
-        weeks_limit = weeks_limit if weeks_limit is not None else DEFAULT_WEEKS_LIMIT
+    # if filter is None:
+    #     filter = 'weeks'
+    #     weeks_limit = weeks_limit if weeks_limit is not None else DEFAULT_WEEKS_LIMIT
 
     return render_template(
         "tracker.html",

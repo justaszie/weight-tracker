@@ -63,7 +63,7 @@ def get_daily_weight_entries(raw_data):
     df["date"] = (
         df["endTimeNanos"]
         .apply(lambda x: dt.datetime.fromtimestamp(int(x) / 1e9))
-        .dt.strftime("%Y-%m-%d")
+        .dt.date
     )
 
     # For multiple weight entries on the same day, keep just the last entry
