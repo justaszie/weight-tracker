@@ -109,7 +109,7 @@
                         </svg>
                         <span>Get Google Fit Data</span>
                     </a>
-                    <p>Last entry: {{data.summary.latest_date.strftime('%b %-d, %Y') if data else 'No Data Yet' }}</p>
+                    <p>Latest entry: {{latest_entry_date.strftime('%b %-d, %Y') if latest_entry_date else 'No Data Yet' }}</p>
                     </div>
                 </div>
 
@@ -242,7 +242,7 @@
                         </li>
                     </ul>
                     <!-- Evaluation box -->
-                    {% if data.summary.evaluation %}
+                    {% if data.goal_progress %}
                     <p class="summary_evaluation">
                         <svg class="summary__icon summary_icon--evaluation" xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -252,7 +252,7 @@
                             </path>
                         </svg>
                         <!-- TODO: Evaluation is dynamic based on results -->
-                        <span>{{ data.summary.evaluation }}</span>
+                        <span>{{ data.goal_progress }}</span>
                     </p>
                     {% endif %}
                 </section>

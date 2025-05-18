@@ -3,11 +3,13 @@ import os
 import datetime as dt
 import utils
 import pandas as pd
+from pathlib import Path
 
 
 class FileStorage:
-    DAILY_ENTRIES_CSV_FILE_PATH = "data/daily_history.csv"
-    DAILY_ENTRIES_MAIN_FILE_PATH = "data/daily_data.json"
+    BASE_DIR = Path(__file__).parent
+    DAILY_ENTRIES_CSV_FILE_PATH = os.path.join(BASE_DIR, "data/daily_history.csv")
+    DAILY_ENTRIES_MAIN_FILE_PATH = os.path.join(BASE_DIR, "data/daily_data.json")
 
     def __init__(self):
         self.data = self._load_weights_from_file()

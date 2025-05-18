@@ -87,17 +87,20 @@ def home():
 def tracker():
     DEFAULT_WEEKS_LIMIT = 4
 
-    weekly_data = None
-    # TODO - handle case when there's no data - either no file or it's empty or it has no entires
-    # Load daily entries
+    weekly_data = {}
 
+    # TODO - handle case when there's no data - either no file or it's empty or it has no entires
+
+    # Filter and goal values don't depend on data.
+    # They're valid even if there's no data
     goal = request.args.get("goal", "lose")
-    filter = request.args.get("filter", "weeks")
+    filter = request.args.get("filter", None)
     date_from = request.args.get("date_from", None)
     date_to = request.args.get("date_to", None)
     weeks_limit = None
 
     daily_entries = g.data_storage.get_weight_entries()
+    latest_entry_date = utils.get_latest_entry_date(daily_entries)
 
     if daily_entries:
         # TODO: Validate date_to / date_from inputs.
@@ -105,27 +108,48 @@ def tracker():
             daily_entries = utils.filter_daily_entries(
                 daily_entries, date_from, date_to
             )
-            if daily_entries:
-                weekly_data = analytics.get_weekly_aggregates(daily_entries, goal)
-        else:
-            weeks_limit = int(request.args.get("weeks_num", DEFAULT_WEEKS_LIMIT))
-            weekly_data = analytics.get_weekly_aggregates(
-                daily_entries, goal, weeks_limit=weeks_limit
-            )
 
-        if weekly_data:
-            weekly_data["summary"]["evaluation"] = analytics.get_evaluation(weekly_data)
+        """
+        # Simple list of weekly data. Format:
+         [
+            {
+             "week_start": "2025-01-10": datetime.date(2025, 04, 14),
+             "avg_weight": 70.2,
+             "weight_change": -0.52,
+             "weight_change_prc": 0.67,
+             "net_calories": -224,
+             "result": "positive",
+            }
+         ]
+        """
+        if daily_entries:
+            weekly_entries = analytics.get_weekly_aggregates(daily_entries, goal)
 
-            for row in weekly_data["entries"]:
-                row["week_start"] = dt.date.fromisoformat(row["week_start"])
+        if weekly_entries:
+            if filter == "weeks":
+                weeks_limit = int(request.args.get("weeks_num", DEFAULT_WEEKS_LIMIT))
 
-            weekly_data["summary"]["latest_date"] = utils.get_latest_entry_date(
-                daily_entries
-            )
+                # Keeping N + 1 weeks because the last week
+                # is used as reference point to compare against, as starting point
+                weekly_entries = weekly_entries[0 : weeks_limit + 1]
+
+            if weekly_entries:
+                # Last week is a reference point, not actual progress data
+                weekly_entries[-1].update(utils.REFERENCE_WEEK_DATA)
+                weekly_data["entries"] = weekly_entries
+                weekly_data["summary"] = analytics.get_summary(weekly_entries)
+                weekly_data["goal_progress"] = analytics.get_evaluation(
+                    weekly_data["summary"]
+                )
+
+    if filter is None:
+        filter = 'weeks'
+        weeks_limit = weeks_limit if weeks_limit is not None else DEFAULT_WEEKS_LIMIT
 
     return render_template(
         "tracker.html",
         data=weekly_data,
+        latest_entry_date=latest_entry_date,
         goal=goal,
         filter=filter,
         weeks_num=weeks_limit,

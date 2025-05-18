@@ -1,5 +1,12 @@
 import datetime as dt
 
+REFERENCE_WEEK_DATA = {
+    "weight_change": 0,
+    "weight_change_prc": 0,
+    "net_calories": 0,
+    "result": None,
+}
+
 
 def to_signed_amt_str(amount, decimals=True) -> str:
     return ("+" if amount >= 0 else "-") + (
@@ -16,5 +23,7 @@ def filter_daily_entries(daily_entries, date_from=None, date_to=None):
 
 
 def get_latest_entry_date(daily_entries) -> dt.date:
-    latest_date_str = sorted(daily_entries, key=lambda x: x["date"])[-1]["date"]
+    latest_date_str = sorted(daily_entries, key=lambda x: x["date"])[-1].get(
+        "date", None
+    )
     return dt.date.fromisoformat(latest_date_str)

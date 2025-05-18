@@ -3,22 +3,13 @@ import pandas as pd
 MAINTAIN_ACCEPTABLE_CHANGE = 0.2
 
 
-def get_weekly_aggregates(daily_entries, goal, weeks_limit=None):
+def get_weekly_aggregates(daily_entries, goal):
     # 1. Convert daily_entries JSON to data frame
     df = pd.DataFrame.from_records(daily_entries)
 
     # Set date index to aggregate by week
     df["week_start"] = pd.to_datetime(df["date"])
     df.set_index("week_start", inplace=True)
-
-    # # If date filter values are provided, filter the daily data
-    # if (date_from):
-    #     query_string = f"date >= '{date_from}'"
-    #     df.query(query_string, inplace=True)
-
-    # if (date_to):
-    #     query_string = f"date <= '{date_to}'"
-    #     df.query(query_string, inplace=True)
 
     # Calculate weekly averages (mean and median) using resample method
     # averages = round(df['weight'].resample('W').agg(['mean','median']).dropna(), 2)
@@ -28,10 +19,6 @@ def get_weekly_aggregates(daily_entries, goal, weeks_limit=None):
     # We set the index date to beginning the week
     # (resample results in end of week so we subtract 6 days from it)
     weekly_entries.index -= pd.DateOffset(6)
-
-    # If weeks filter given, take N most recent weeks
-    if weeks_limit:
-        weekly_entries = weekly_entries.tail(weeks_limit + 1)
 
     # Calculate the weight change between weeks
     weekly_entries = weekly_entries.to_frame(name="avg_weight")
@@ -54,45 +41,45 @@ def get_weekly_aggregates(daily_entries, goal, weeks_limit=None):
         lambda x: calculate_result(x, goal)
     )
 
-    # 1st week is for comparison, it doesn't have a result
-    weekly_entries.loc[weekly_entries.index[0], "result"] = None
-
     # Reset index to keep date as a column
+    # and convert it to simple datetime type
     weekly_entries.reset_index(inplace=True)
-
-    # Change date back to date only
-    weekly_entries["week_start"] = weekly_entries["week_start"].dt.strftime("%Y-%m-%d")
+    weekly_entries["week_start"] = weekly_entries["week_start"].dt.date
 
     # Display in the order from the most recent
     weekly_entries = weekly_entries[::-1]
 
-    result = {"entries": weekly_entries.to_dict(orient="records")}
+    result = weekly_entries.to_dict(orient="records")
 
+    return result
+
+
+def get_summary(weekly_entries):
     summary = {}
 
+    weekly_entries_df = pd.DataFrame.from_records(weekly_entries)
+
     summary["total_change"] = (
-        float(weekly_entries["weight_change"].iloc[:-1].sum().round(2))
-        if len(weekly_entries.index) > 1
+        float(weekly_entries_df["weight_change"].iloc[:-1].sum().round(2))
+        if len(weekly_entries_df.index) > 1
         else 0.00
     )
     summary["avg_change"] = (
-        float(weekly_entries["weight_change"].iloc[:-1].mean().round(2))
-        if len(weekly_entries.index) > 1
+        float(weekly_entries_df["weight_change"].iloc[:-1].mean().round(2))
+        if len(weekly_entries_df.index) > 1
         else 0.00
     )
     summary["avg_change_prc"] = (
-        float(weekly_entries["weight_change_prc"].iloc[:-1].mean().round(2))
-        if len(weekly_entries.index) > 1
+        float(weekly_entries_df["weight_change_prc"].iloc[:-1].mean().round(2))
+        if len(weekly_entries_df.index) > 1
         else 0.00
     )
     summary["avg_net_calories"] = (
-        int(weekly_entries["net_calories"].iloc[:-1].mean())
-        if len(weekly_entries.index) > 1
+        int(weekly_entries_df["net_calories"].iloc[:-1].mean())
+        if len(weekly_entries_df.index) > 1
         else 0
     )
-    result["summary"] = summary
-
-    return result
+    return summary
 
 
 def calculate_result(weight_change, goal) -> str:
