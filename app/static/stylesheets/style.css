@@ -5,12 +5,13 @@
     --clr-bg: #FFF;
     --clr-bg-muted: #F3F3F3;
     --clr-bg-inverse: #111827;
-    --clr-surface: rgb(24, 24, 27, 0.1);
-    --clr-surface-muted:  rgb(24, 24, 27, 0.02);
+    --clr-bg-inverse-muted: #263040;
+    --clr-surface: rgba(24, 24, 27, 0.1);
+    --clr-surface-muted:  rgba(24, 24, 27, 0.02);
     --clr-text-header: #FFF;
     --clr-text-primary: #18181B;
     --clr-text-inverse: #FAFAFA;
-    --clr-text-inverse-muted: rgba(250,250,250,0.8);
+    --clr-text-inverse-muted: rgba(250,250,250, 0.8);
     --clr-text-inactive: rgb(113, 113, 122);
     /* TODO: find better naming for this color used in insights */
     --clr-text-summary: rgb(75, 85, 99);
@@ -75,18 +76,17 @@ body {
     background: linear-gradient(to right, var(--clr-bg-inverse), rgb(55, 65, 81));
 }
 
-/*
-.header__content {
-    display: flex;
-    justify-content: space-between;
-} */
-
 .header__title {
     font-size: var(--fs-header-title);
     font-weight: 700;
-    color: white;
+    color: var(--clr-text-header);
     margin-bottom: 8px;
     line-height: 2.25rem;
+}
+
+.header__home-link {
+    text-decoration: none;
+    color: inherit;
 }
 
 .header__subtitle {
@@ -156,6 +156,14 @@ body {
     color: var(--clr-text-inverse);
 }
 
+.filter-option:hover {
+    background-color: var(--clr-bg-muted);
+}
+
+.filter-option--active:hover {
+    background-color: var(--clr-bg-inverse-muted);
+}
+
 .get-data {
     display: flex;
     flex-direction: column;
@@ -168,13 +176,16 @@ body {
     align-items: center;
     padding: 10px 15px;
     gap: 6px;
-    border-radius: var( --rounded-corners-btn);
+    border-radius: var(--rounded-corners-btn);
     background-color: var(--clr-bg-inverse);
     color: var(--clr-text-inverse);
     text-decoration: none;
     font-weight: 500;
 }
 
+.get-data__cta:hover {
+    background-color: var(--clr-bg-inverse-muted);
+}
 
 .get-data__cta-icon,
 .weeks-filter__icon,
@@ -228,6 +239,11 @@ body {
     border-radius: var(--rounded-corners-btn);
     cursor: pointer;
     font-weight: 500;
+}
+
+.weeks-filter__submit:hover,
+.dates-filter__submit:hover {
+    background-color: var(--clr-bg-inverse-muted);
 }
 
 .summary {
