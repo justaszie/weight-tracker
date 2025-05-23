@@ -143,10 +143,6 @@ def tracker():
                     weekly_data["summary"]
                 )
 
-    # if filter is None:
-    #     filter = 'weeks'
-    #     weeks_limit = weeks_limit if weeks_limit is not None else DEFAULT_WEEKS_LIMIT
-
     return render_template(
         "tracker.html",
         data=weekly_data,

@@ -94,24 +94,25 @@
                     </section>
                     <div class="get-data">
                         <a href="{{ url_for('sync_data') }}" class="get-data__cta">
-                        <svg class="get-data__cta-icon" viewBox="0 0 262 262" xmlns="http://www.w3.org/2000/svg"
-                            preserveAspectRatio="xMidYMid meet">
-                            <path
-                                d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023 2.685.268c24.659-22.774 38.875-56.282 38.875-96.027"
-                                fill="#4285F4" />
-                            <path
-                                d="M130.55 261.1c35.248 0 64.839-11.605 86.453-31.622l-41.196-31.913c-11.024 7.688-25.82 13.055-45.257 13.055-34.523 0-63.824-22.773-74.269-54.25l-1.531.13-40.298 31.187-.527 1.465C35.393 231.798 79.49 261.1 130.55 261.1"
-                                fill="#34A853" />
-                            <path
-                                d="M56.281 156.37c-2.756-8.123-4.351-16.827-4.351-25.82 0-8.994 1.595-17.697 4.206-25.82l-.073-1.73L15.26 71.312l-1.335.635C5.077 89.644 0 109.517 0 130.55s5.077 40.905 13.925 58.602l42.356-32.782"
-                                fill="#FBBC05" />
-                            <path
-                                d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251"
-                                fill="#EB4335" />
-                        </svg>
-                        <span>Get Google Fit Data</span>
-                    </a>
-                    <p>Latest entry: {{latest_entry_date.strftime('%b %-d, %Y') if latest_entry_date else 'No Data Yet' }}</p>
+                            <svg class="get-data__cta-icon" viewBox="0 0 262 262" xmlns="http://www.w3.org/2000/svg"
+                                preserveAspectRatio="xMidYMid meet">
+                                <path
+                                    d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023 2.685.268c24.659-22.774 38.875-56.282 38.875-96.027"
+                                    fill="#4285F4" />
+                                <path
+                                    d="M130.55 261.1c35.248 0 64.839-11.605 86.453-31.622l-41.196-31.913c-11.024 7.688-25.82 13.055-45.257 13.055-34.523 0-63.824-22.773-74.269-54.25l-1.531.13-40.298 31.187-.527 1.465C35.393 231.798 79.49 261.1 130.55 261.1"
+                                    fill="#34A853" />
+                                <path
+                                    d="M56.281 156.37c-2.756-8.123-4.351-16.827-4.351-25.82 0-8.994 1.595-17.697 4.206-25.82l-.073-1.73L15.26 71.312l-1.335.635C5.077 89.644 0 109.517 0 130.55s5.077 40.905 13.925 58.602l42.356-32.782"
+                                    fill="#FBBC05" />
+                                <path
+                                    d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251"
+                                    fill="#EB4335" />
+                            </svg>
+                            <span>Get Google Fit Data</span>
+                        </a>
+                        <p>Latest entry: {{latest_entry_date.strftime('%b %-d, %Y') if latest_entry_date else 'No Data
+                            Yet' }}</p>
                     </div>
                 </div>
 
@@ -124,7 +125,8 @@
                             d="M0 24h22V2h-4V0h-2v2H6V0H4v2H0zm16-10v-2h2v2zm2 1v2h-2v-2zm-5 2v-2h2v2zm2 1v2h-2v-2zm-2-4v-2h2v2zm-3 3v-2h2v2zm2 1v2h-2v-2zm-2-4v-2h2v2zm-3 3v-2h2v2zm2 1v2H7v-2zm-2-4v-2h2v2zm-1 1v2H4v-2zm-2 3h2v2H4zM4 4v2h2V4h10v2h2V4h2v4H2V4z" />
                     </svg>
                     <label class="weeks-filter__label" for="weeks_num">Weeks: </label>
-                    <input name="weeks_num" value="{{ weeks_num if weeks_num else ''}}" type="number" value="4" id="weeks_num" class="weeks-filter__input">
+                    <input name="weeks_num" value="{{ weeks_num if weeks_num else ''}}" type="number" value="4"
+                        id="weeks_num" class="weeks-filter__input">
                     <button type="submit" class="weeks-filter__submit">
                         <svg class="weeks-filter__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -142,9 +144,11 @@
                 <!--  DATES FILTER COMPONENT  -->
                 <form action="#" method="GET" class="dates-filter">
                     <label class="dates-filter__label" for="date_from">From </label>
-                    <input name="date_from" value="{{ date_from if date_from else ''}}" type="date" id="date_from" class="dates-filter__input">
+                    <input name="date_from" value="{{ date_from if date_from else ''}}" type="date" id="date_from"
+                        class="dates-filter__input">
                     <label class="dates-filter__label" for="date_to">To </label>
-                    <input name="date_to" value="{{ date_to if date_to else ''}}" type="date" id="date_to" class="dates-filter__input">
+                    <input name="date_to" value="{{ date_to if date_to else ''}}" type="date" id="date_to"
+                        class="dates-filter__input">
                     <button type="submit" class="dates-filter__submit">
                         <svg class="dates-filter__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -162,11 +166,11 @@
                 <!-- SUMMARY SECTION -->
                 <section class="summary">
                     <div class="summary__header spaced-out">
-                        <!-- TODO - add dynamic component based on filter -->
                         <h2>{% if filter=='weeks' %}
                             Summary for the past {{ data.entries | length - 1 }} weeks
                             {% elif filter=='dates' %}
-                                Summary from {{ date_from if date_from else 'beginning'}} to {{ date_to if date_to else 'today'}}
+                            Summary from {{ date_from if date_from else 'beginning'}} to {{ date_to if date_to else
+                            'today'}}
                             {% endif %}
                         </h2>
                         <p class="summary__goal-reminder">
@@ -177,14 +181,13 @@
                                     d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z">
                                 </path>
                             </svg>
-                            <!-- TODO: dynamic based on goal selection -->
                             <span>Current Goal:
                                 {% if goal == 'lose' %}
-                                    Losing Fat
+                                Losing Fat
                                 {% elif goal == 'gain' %}
-                                    Gaining Muscle
+                                Gaining Muscle
                                 {% else %}
-                                    Maintaining
+                                Maintaining
                                 {% endif %}
                             </span>
                         </p>
@@ -212,13 +215,13 @@
                         <li class="summary-card">
                             <p class="summary-card__header">
                                 <svg class="summary-card__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" class="lucide lucide-arrow-up-down w-4 h-4">
-                                <path d="m21 16-4 4-4-4"></path>
-                                <path d="M17 20V4"></path>
-                                <path d="m3 8 4-4 4 4"></path>
-                                <path d="M7 4v16"></path>
-                            </svg>
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="lucide lucide-arrow-up-down w-4 h-4">
+                                    <path d="m21 16-4 4-4-4"></path>
+                                    <path d="M17 20V4"></path>
+                                    <path d="m3 8 4-4 4 4"></path>
+                                    <path d="M7 4v16"></path>
+                                </svg>
                                 <span>Avg. Weight Change</span>
                             </p>
                             <div class="summary-card__value-group">
@@ -228,7 +231,13 @@
                         </li>
                         <li class="summary-card">
                             <p class="summary-card__header">
-                                <svg class="summary-card__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-percent w-4 h-4"><line x1="19" x2="5" y1="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>
+                                <svg class="summary-card__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="lucide lucide-percent w-4 h-4">
+                                    <line x1="19" x2="5" y1="5" y2="19"></line>
+                                    <circle cx="6.5" cy="6.5" r="2.5"></circle>
+                                    <circle cx="17.5" cy="17.5" r="2.5"></circle>
+                                </svg>
                                 <span>Avg. Weight Change (% of bodyweight)</span>
 
                             </p>
@@ -240,18 +249,23 @@
                         </li>
                         <li class="summary-card">
                             <p class="summary-card__header">
-                                <svg class="summary-card__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+                                <svg class="summary-card__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path
+                                        d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z">
+                                    </path>
                                 </svg>
                                 <span>Avg. Calorie Deficit / Surplus (est.) </span>
                             </p>
                             <div class="summary-card__value-group">
-                                <h3 class="summary-card__value">{{ data.summary.avg_net_calories | signed_amt_str(decimals=False) }}</h3>
+                                <h3 class="summary-card__value">{{ data.summary.avg_net_calories |
+                                    signed_amt_str(decimals=False) }}</h3>
                                 <span class="summary-card__subtitle">kcal / day</span>
                             </div>
                         </li>
                     </ul>
-                    <!-- Evaluation box -->
+                    <!-- Goal Progress evaluation box -->
                     {% if data.goal_progress %}
                     <p class="summary_evaluation">
                         <svg class="summary__icon summary_icon--evaluation" xmlns="http://www.w3.org/2000/svg"
@@ -261,7 +275,7 @@
                                 d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z">
                             </path>
                         </svg>
-                        <!-- TODO: Evaluation is dynamic based on results -->
+                        <!-- TODO: Goal Progress is dynamic based on results -->
                         <span>{{ data.goal_progress }}</span>
                     </p>
                     {% endif %}
@@ -280,26 +294,59 @@
                         <tr class="data-table__row">
                             <td class="data-table__cell">{{ row.week_start.strftime('%b %-d, %Y') }}</td>
                             <td class="data-table__cell">{{ row.avg_weight }} kg</td>
-                            <td class="data-table__cell {% if row.result == 'positive' %} data-table__cell--positive {% elif row.result == 'negative' %} data-table__cell--negative {% endif %}">{{ row.weight_change | signed_amt_str }} kg</td>
-                            <td class="data-table__cell {% if row.result == 'positive' %} data-table__cell--positive {% elif row.result == 'negative' %} data-table__cell--negative {% endif %}">{{ row.weight_change_prc | signed_amt_str }} %</td>
-                            <td class="data-table__cell {% if row.result == 'positive' %} data-table__cell--positive {% elif row.result == 'negative' %} data-table__cell--negative {% endif %}">{{ row.net_calories | signed_amt_str(decimals=False) }} kcal / day</td>
+                            <td
+                                class="data-table__cell {% if row.result == 'positive' %} data-table__cell--positive {% elif row.result == 'negative' %} data-table__cell--negative {% endif %}">
+                                {{ row.weight_change | signed_amt_str }} kg</td>
+                            <td
+                                class="data-table__cell {% if row.result == 'positive' %} data-table__cell--positive {% elif row.result == 'negative' %} data-table__cell--negative {% endif %}">
+                                {{ row.weight_change_prc | signed_amt_str }} %</td>
+                            <td
+                                class="data-table__cell {% if row.result == 'positive' %} data-table__cell--positive {% elif row.result == 'negative' %} data-table__cell--negative {% endif %}">
+                                {{ row.net_calories | signed_amt_str(decimals=False) }} kcal / day</td>
                         </tr>
                         {% endfor %}
                     </table>
                 </section>
 
                 {% else %}
+                <section class="no-data-view">
+                    <div class="no-data-view__image-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="no-data-view__image" preserveAspectRatio="xMidYMid meet">
+                            <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
+                            <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
+                            <path d="M7 21h10"></path>
+                            <path d="M12 3v18"></path>
+                            <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path>
+                        </svg>
+                    </div>
+                    <header class="no-data-view__header">No weight data found</header>
+                    <p class="no-data-view__description">Start tracking your weight journey by getting data <br/> from the source of your choice:</p>
+                    <a href="{{ url_for('sync_data') }}" class="get-data__cta">
+                        <svg class="get-data__cta-icon" viewBox="0 0 262 262" xmlns="http://www.w3.org/2000/svg"
+                            preserveAspectRatio="xMidYMid meet">
+                            <path
+                                d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023 2.685.268c24.659-22.774 38.875-56.282 38.875-96.027"
+                                fill="#4285F4" />
+                            <path
+                                d="M130.55 261.1c35.248 0 64.839-11.605 86.453-31.622l-41.196-31.913c-11.024 7.688-25.82 13.055-45.257 13.055-34.523 0-63.824-22.773-74.269-54.25l-1.531.13-40.298 31.187-.527 1.465C35.393 231.798 79.49 261.1 130.55 261.1"
+                                fill="#34A853" />
+                            <path
+                                d="M56.281 156.37c-2.756-8.123-4.351-16.827-4.351-25.82 0-8.994 1.595-17.697 4.206-25.82l-.073-1.73L15.26 71.312l-1.335.635C5.077 89.644 0 109.517 0 130.55s5.077 40.905 13.925 58.602l42.356-32.782"
+                                fill="#FBBC05" />
+                            <path
+                                d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251"
+                                fill="#EB4335" />
+                        </svg>
+                        <span>Get Google Fit Data</span>
+                    </a>
+                </section>
                 <!-- TODO: some message saying there's no data -->
+
                 {% endif %}
-                <!-- End of main contend that has padding  -->
+                <!-- End of main content that has padding  -->
             </div>
-
-
-
-            <!-- View selection to be added later  -->
-            <!-- <section class="data-selection">
-                    <p class="data-selection__view-label">View: </p>
-                </section> -->
         </main>
     </div>
 </body>
