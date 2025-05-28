@@ -12,7 +12,6 @@
 </head>
 
 <body>
-    <h1> </h1>
     <div class="page">
         <header class="header">
             <div class="main-content spaced-out">
@@ -311,9 +310,9 @@
                 {% else %}
                 <section class="no-data-view">
                     <div class="no-data-view__image-container">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="no-data-view__image" preserveAspectRatio="xMidYMid meet">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="no-data-view__image"
+                            preserveAspectRatio="xMidYMid meet">
                             <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
                             <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
                             <path d="M7 21h10"></path>
@@ -322,7 +321,8 @@
                         </svg>
                     </div>
                     <header class="no-data-view__header">No weight data found</header>
-                    <p class="no-data-view__description">Start tracking your weight journey by getting data <br/> from the source of your choice:</p>
+                    <p class="no-data-view__description">Start tracking your weight journey by getting data <br /> from
+                        the source of your choice:</p>
                     <a href="{{ url_for('sync_data') }}" class="get-data__cta">
                         <svg class="get-data__cta-icon" viewBox="0 0 262 262" xmlns="http://www.w3.org/2000/svg"
                             preserveAspectRatio="xMidYMid meet">
@@ -348,7 +348,21 @@
                 <!-- End of main content that has padding  -->
             </div>
         </main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash">
+                    {% for category, message in messages %}
+                        <p class="flash__message {{ category | message_category_to_class }}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
     </div>
+<script>
+    window.setTimeout(() => {
+        document.querySelector('.flash').hidden = true;
+    },2500);
+</script>
 </body>
 
 </html>

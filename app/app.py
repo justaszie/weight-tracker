@@ -21,6 +21,8 @@ from data_storage_file import FileStorage
 import analytics
 
 SYNC_DATA_SOURCE = "gfit"
+DEFAULT_GOAL = 'maintain'
+DEFAULT_WEEKS_LIMIT = 4
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
@@ -39,7 +41,8 @@ def initialize_storage():
 def sync_data():
     # TODO: add a message that data is up to date
     if not g.data_storage.data_refresh_needed():
-        return redirect(url_for("home"))
+        flash('No new data received', 'info')
+        return redirect(url_for('tracker'))
 
     raw_data = None
 
@@ -76,7 +79,8 @@ def sync_data():
         # We're using file based storage so we need to update the file after making changes
         g.data_storage.save(csv_copy=True)
 
-    return redirect(url_for("home"))
+    flash('Data updated successfully!', 'success')
+    return redirect(url_for('tracker'))
 
 
 @app.route("/")
@@ -86,15 +90,13 @@ def home():
 
 @app.route("/tracker", methods=["GET", "POST"])
 def tracker():
-    DEFAULT_WEEKS_LIMIT = 4
-
     weekly_data = {}
 
     # TODO - handle case when there's no data - either no file or it's empty or it has no entires
 
     # Filter and goal values don't depend on data.
     # They're valid even if there's no data
-    goal = request.args.get("goal", "lose")
+    goal = request.args.get("goal", DEFAULT_GOAL)
     filter = request.args.get("filter", "weeks")
     date_from = request.args.get("date_from", None)
     date_to = request.args.get("date_to", None)
@@ -156,6 +158,7 @@ def tracker():
 
 
 app.jinja_env.filters["signed_amt_str"] = utils.to_signed_amt_str
-
+app.jinja_env.filters["message_category_to_class"] = utils.message_category_to_class_name
+#
 if __name__ == "__main__":
     app.run(debug=True, port=5040)

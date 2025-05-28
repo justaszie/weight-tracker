@@ -25,3 +25,10 @@ def get_latest_entry_date(daily_entries) -> dt.date:
     return sorted(daily_entries, key=lambda x: x["date"])[-1].get(
         "date", None
     )
+
+def message_category_to_class_name(category):
+    return {
+        'info': 'flash__message--info',
+        'error': 'flash__message--error',
+        'success': 'flash__message--success',
+    }.get(category, 'info')
