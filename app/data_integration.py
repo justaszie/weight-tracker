@@ -11,9 +11,12 @@ from googleapiclient.errors import HttpError
 import datetime as dt
 import json
 import pandas as pd
+from pathlib import Path
 
-RAW_DATA_FILE_PATH = "data/raw_weight_data.json"
-
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = 'data'
+RAW_DATA_FILE_NAME = 'raw_weight_data.json'
+RAW_DATA_FILE_PATH = Path.joinpath(BASE_DIR, DATA_DIR, RAW_DATA_FILE_NAME)
 
 def get_raw_gfit_data(creds):
     dataset = None

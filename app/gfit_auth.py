@@ -8,16 +8,33 @@ from google.auth.transport.requests import (
 )  # Used in refreshing a token without login flow
 from google_auth_oauthlib.flow import Flow  # handles the sign in flow and gets token
 from flask import Blueprint, session, redirect, request, url_for
+from pathlib import Path
 
 gfit_auth_bp = Blueprint("gfit_auth_bp", __name__)
 
-CLIENT_SECRETS_FILE = "auth/credentials.json"
+
 SCOPES = [
     "https://www.googleapis.com/auth/fitness.body.read",
     "https://www.googleapis.com/auth/fitness.activity.read",
 ]
 REDIRECT_URI = "http://localhost:5040/google-auth"
-TOKEN_FILE_PATH = "auth/token.json"
+
+BASE_DIR = Path(__file__).resolve().parent
+AUTH_DIR = 'auth'
+
+TOKEN_FILE_NAME = 'token.json'
+TOKEN_FILE_PATH = Path.joinpath(
+    BASE_DIR,
+    AUTH_DIR,
+    TOKEN_FILE_NAME
+)
+
+CLIENT_SECRETS_FILE_NAME = 'credentials.json'
+CLIENT_SECRETS_FILE_PATH = Path.joinpath(
+    BASE_DIR,
+    AUTH_DIR,
+    CLIENT_SECRETS_FILE_NAME
+)
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = (
     "1"  # FOR DEVELOPMENT: allow google to send authorization to HTTP (insecure) endpoint of this app. For testing.

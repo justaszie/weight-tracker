@@ -7,9 +7,12 @@ from pathlib import Path
 
 
 class FileStorage:
-    BASE_DIR = Path(__file__).parent
-    DAILY_ENTRIES_CSV_FILE_PATH = os.path.join(BASE_DIR, "data/daily_history.csv")
-    DAILY_ENTRIES_MAIN_FILE_PATH = os.path.join(BASE_DIR, "data/daily_data.json")
+    BASE_DIR = Path(__file__).resolve().parent
+    DATA_DIR = 'data'
+    CSV_FILE_NAME = 'daily_history.csv'
+    MAIN_FILE_NAME = 'daily_data.json'
+    DAILY_ENTRIES_CSV_FILE_PATH = Path.joinpath(BASE_DIR, DATA_DIR, CSV_FILE_NAME)
+    DAILY_ENTRIES_MAIN_FILE_PATH = Path.joinpath(BASE_DIR, DATA_DIR, MAIN_FILE_NAME)
 
     def __init__(self):
         self.data = self._load_weights_from_file()
