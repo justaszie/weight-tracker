@@ -27,7 +27,7 @@
                     <p class="goal-selection__intro">What's your goal?</p>
                     <ul class="goal-selection__container">
                         <li>
-                            <a class="goal-selection__cta {% if goal == 'lose' %} goal-selection__cta--active {% endif %}"
+                            <a class="goal-selection__cta {% if session['goal'] == 'lose' %} goal-selection__cta--active {% endif %}"
                                 href="{{ url_for('tracker', filter=filter, weeks_num=weeks_num, date_to=date_to, date_from=date_from, goal='lose') }}">
                                 <!-- Lose SVG -->
                                 <svg class=" goal-selection__icon" xmlns="http://www.w3.org/2000/svg"
@@ -42,7 +42,7 @@
                             </a>
                         </li>
                         <li>
-                            <a class="goal-selection__cta {% if goal == 'gain' %} goal-selection__cta--active {% endif %}"
+                            <a class="goal-selection__cta {% if session['goal'] == 'gain' %} goal-selection__cta--active {% endif %}"
                                 href="{{ url_for('tracker', filter=filter, weeks_num=weeks_num, date_to=date_to, date_from=date_from, goal='gain') }}">
                                 <svg class=" goal-selection__icon" xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -62,7 +62,7 @@
                             </a>
                         </li>
                         <li>
-                            <a class="goal-selection__cta {% if goal == 'maintain' %} goal-selection__cta--active {% endif %}"
+                            <a class="goal-selection__cta {% if session['goal'] == 'maintain' %} goal-selection__cta--active {% endif %}"
                                 href="{{ url_for('tracker', filter=filter, weeks_num=weeks_num, date_to=date_to, date_from=date_from, goal='maintain') }}">
                                 <svg class=" goal-selection__icon" xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -84,10 +84,10 @@
             <div class="main-content">
                 <div class="spaced-out">
                     <section class="filter-selection">
-                        <a href="{{ url_for('tracker', goal=goal, filter='weeks') }}"
+                        <a href="{{ url_for('tracker', goal=session['goal'], filter='weeks') }}"
                             class="filter-option {%if filter=='weeks' %} filter-option--active {% endif %}">Filter by
                             Weeks</a>
-                        <a href="{{ url_for('tracker', goal=goal, filter='dates') }}"
+                        <a href="{{ url_for('tracker', goal=session['goal'], filter='dates') }}"
                             class="filter-option {%if filter=='dates' %} filter-option--active {% endif %}">Filter by
                             Dates</a>
                     </section>
@@ -135,7 +135,7 @@
                         <span>Apply Filter</span>
                     </button>
                     <input type="hidden" name="filter" value="{{ filter }}">
-                    <input type="hidden" name="goal" value="{{ goal }}">
+                    <input type="hidden" name="goal" value="{{ session['goal'] }}">
                 </form>
                 {% endif %}
 
@@ -157,7 +157,7 @@
                         <span>Apply Filter</span>
                     </button>
                     <input type="hidden" name="filter" value="{{ filter }}">
-                    <input type="hidden" name="goal" value="{{ goal }}">
+                    <input type="hidden" name="goal" value="{{ session['goal'] }}">
                 </form>
                 {% endif %}
 
@@ -181,9 +181,9 @@
                                 </path>
                             </svg>
                             <span>Current Goal:
-                                {% if goal == 'lose' %}
+                                {% if session['goal'] == 'lose' %}
                                 Losing Fat
-                                {% elif goal == 'gain' %}
+                                {% elif session['goal'] == 'gain' %}
                                 Gaining Muscle
                                 {% else %}
                                 Maintaining

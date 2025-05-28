@@ -21,7 +21,7 @@ from data_storage_file import FileStorage
 import analytics
 
 SYNC_DATA_SOURCE = "gfit"
-DEFAULT_GOAL = 'maintain'
+DEFAULT_GOAL = 'lose'
 DEFAULT_WEEKS_LIMIT = 4
 
 app = Flask(__name__)
@@ -35,6 +35,12 @@ app.register_blueprint(gfit_auth.gfit_auth_bp)
 def initialize_storage():
     if not hasattr(g, "storage"):
         g.data_storage = FileStorage()
+
+
+@app.before_request
+def initialize_goal():
+    if 'goal' not in session:
+        session['goal'] = DEFAULT_GOAL
 
 
 @app.route("/sync-data")
@@ -94,9 +100,9 @@ def tracker():
 
     # TODO - handle case when there's no data - either no file or it's empty or it has no entires
 
-    # Filter and goal values don't depend on data.
-    # They're valid even if there's no data
-    goal = request.args.get("goal", DEFAULT_GOAL)
+    session['goal'] = request.args.get("goal",session['goal'])
+    session.modified = True
+
     filter = request.args.get("filter", "weeks")
     date_from = request.args.get("date_from", None)
     date_to = request.args.get("date_to", None)
@@ -126,7 +132,7 @@ def tracker():
          ]
         """
         if daily_entries:
-            weekly_entries = analytics.get_weekly_aggregates(daily_entries, goal)
+            weekly_entries = analytics.get_weekly_aggregates(daily_entries, session['goal'])
 
         if weekly_entries:
             if filter == "weeks":
@@ -149,7 +155,6 @@ def tracker():
         "tracker.html",
         data=weekly_data,
         latest_entry_date=latest_entry_date,
-        goal=goal,
         filter=filter,
         weeks_num=weeks_limit,
         date_to=date_to,
