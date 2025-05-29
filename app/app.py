@@ -47,7 +47,7 @@ def initialize_goal():
 def sync_data():
     # TODO: add a message that data is up to date
     if not g.data_storage.data_refresh_needed():
-        flash('No new data received', 'info')
+        flash('Already up to date.', 'info')
         return redirect(url_for('tracker'))
 
     raw_data = None
@@ -85,7 +85,11 @@ def sync_data():
         # We're using file based storage so we need to update the file after making changes
         g.data_storage.save(csv_copy=True)
 
-    flash('Data updated successfully!', 'success')
+    if new_entries:
+        flash('Data updated successfully!', 'success')
+    else:
+        flash('No new data received', 'info')
+
     return redirect(url_for('tracker'))
 
 
