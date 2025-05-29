@@ -21,7 +21,7 @@ from data_storage_file import FileStorage
 import analytics
 
 SYNC_DATA_SOURCE = "gfit"
-DEFAULT_GOAL = 'lose'
+DEFAULT_GOAL = "lose"
 DEFAULT_WEEKS_LIMIT = 4
 
 app = Flask(__name__)
@@ -39,16 +39,16 @@ def initialize_storage():
 
 @app.before_request
 def initialize_goal():
-    if 'goal' not in session:
-        session['goal'] = DEFAULT_GOAL
+    if "goal" not in session:
+        session["goal"] = DEFAULT_GOAL
 
 
 @app.route("/sync-data")
 def sync_data():
     # TODO: add a message that data is up to date
     if not g.data_storage.data_refresh_needed():
-        flash('Already up to date.', 'info')
-        return redirect(url_for('tracker'))
+        flash("Already up to date.", "info")
+        return redirect(url_for("tracker"))
 
     raw_data = None
 
@@ -86,11 +86,11 @@ def sync_data():
         g.data_storage.save(csv_copy=True)
 
     if new_entries:
-        flash('Data updated successfully!', 'success')
+        flash("Data updated successfully!", "success")
     else:
-        flash('No new data received', 'info')
+        flash("No new data received", "info")
 
-    return redirect(url_for('tracker'))
+    return redirect(url_for("tracker"))
 
 
 @app.route("/")
@@ -104,7 +104,7 @@ def tracker():
 
     # TODO - handle case when there's no data - either no file or it's empty or it has no entires
 
-    session['goal'] = request.args.get("goal",session['goal'])
+    session["goal"] = request.args.get("goal", session["goal"])
     session.modified = True
 
     filter = request.args.get("filter", "weeks")
@@ -136,7 +136,9 @@ def tracker():
          ]
         """
         if daily_entries:
-            weekly_entries = analytics.get_weekly_aggregates(daily_entries, session['goal'])
+            weekly_entries = analytics.get_weekly_aggregates(
+                daily_entries, session["goal"]
+            )
 
         if weekly_entries:
             if filter == "weeks":
@@ -167,7 +169,9 @@ def tracker():
 
 
 app.jinja_env.filters["signed_amt_str"] = utils.to_signed_amt_str
-app.jinja_env.filters["message_category_to_class"] = utils.message_category_to_class_name
+app.jinja_env.filters["message_category_to_class"] = (
+    utils.message_category_to_class_name
+)
 #
 if __name__ == "__main__":
     app.run(debug=True, port=5040)
