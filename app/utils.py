@@ -1,4 +1,5 @@
 import datetime as dt
+import traceback
 
 REFERENCE_WEEK_DATA = {
     "weight_change": 0,
@@ -22,9 +23,19 @@ def filter_daily_entries(daily_entries, date_from=None, date_to=None):
 
 
 def get_latest_entry_date(daily_entries) -> dt.date:
-    return sorted(daily_entries, key=lambda x: x["date"])[-1].get(
-        "date", None
-    )
+    if not daily_entries:
+        return None
+
+    try:
+        return sorted(
+            daily_entries,
+            key=lambda x: x["date"]
+        )[-1].get("date", None)
+    except Exception:
+        traceback.print_exc()
+        return None
+
+
 
 def message_category_to_class_name(category):
     return {

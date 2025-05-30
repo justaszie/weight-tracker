@@ -4,6 +4,7 @@ import datetime as dt
 import utils
 import pandas as pd
 from pathlib import Path
+import traceback
 
 
 class FileStorage:
@@ -37,13 +38,11 @@ class FileStorage:
             )
 
         self.data.append({"date": date, "weight": weight})
-        # self.save()
 
     def delete_weight_entry(self, date):
         self.data = [
             entry for entry in self.data if entry["date"] != date.strftime("%Y-%m-%d")
         ]
-        # self.save()
 
     def update_weight_entry(self, date, weight):
         existing = [
@@ -57,7 +56,6 @@ class FileStorage:
 
         row_to_update = existing[0]
         row_to_update["weight"] = weight
-        # self.save()
 
     def save(self, csv_copy=True):
         with open(FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH, "w") as file:
@@ -79,19 +77,23 @@ class FileStorage:
         if not self.data:
             return True
 
-        try:
-            return utils.get_latest_entry_date(self.data) < dt.date.today()
-        except (KeyError, ValueError):
-            return True
+        latest_entry_date = utils.get_latest_entry_date(self.data)
+        return latest_entry_date < dt.date.today() if latest_entry_date else True
+
 
     def _load_weights_from_file(self):
-        with open(FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH, "r") as file:
-            try:
+        entries = []
+        try:
+            with open(FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH, "r") as file:
                 entries = json.load(file)
                 for entry in entries:
                     entry["date"] = dt.date.fromisoformat(entry["date"])
                 return entries
-            except (json.JSONDecodeError, FileNotFoundError):
-                return None
-            except Exception as e:
-                print(e)
+        except FileNotFoundError:
+            with open(FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH, "w") as file:
+                json.dump([], file)
+                traceback.print_exc()
+                print('Data file missing. Creating empty file')
+                return []
+        except (json.JSONDecodeError, Exception) as e:
+            raise

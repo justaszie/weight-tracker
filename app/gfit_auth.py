@@ -9,6 +9,7 @@ from google.auth.transport.requests import (
 from google_auth_oauthlib.flow import Flow  # handles the sign in flow and gets token
 from flask import Blueprint, session, redirect, request, url_for
 from pathlib import Path
+import traceback
 
 gfit_auth_bp = Blueprint("gfit_auth_bp", __name__)
 
@@ -45,7 +46,7 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = (
 @gfit_auth_bp.route("/google-signin", methods=["GET"])
 def google_signin():
     # Create flow instance to manage the OAuth 2.0 Authorization Grant Flow steps
-    flow = Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, scopes=SCOPES)
+    flow = Flow.from_client_secrets_file(CLIENT_SECRETS_FILE_PATH, scopes=SCOPES)
     flow.redirect_uri = REDIRECT_URI
 
     authorization_url, state = flow.authorization_url(
@@ -65,7 +66,7 @@ def handle_google_auth_callback():
     state = session["state"]
 
     flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE, scopes=SCOPES, state=state
+        CLIENT_SECRETS_FILE_PATH, scopes=SCOPES, state=state
     )
 
     flow.redirect_uri = REDIRECT_URI
@@ -108,5 +109,5 @@ def load_google_credentials(file_path=TOKEN_FILE_PATH):
                 save_token_to_file(creds)
                 return creds
             except Exception as e:
-                print(e)
+                traceback.print_exc()
                 return None

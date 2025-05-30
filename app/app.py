@@ -19,6 +19,7 @@ import gfit_auth
 import data_integration
 from data_storage_file import FileStorage
 import analytics
+import traceback
 
 SYNC_DATA_SOURCE = "gfit"
 DEFAULT_GOAL = "lose"
@@ -32,58 +33,56 @@ app.register_blueprint(gfit_auth.gfit_auth_bp)
 
 
 @app.before_request
-def initialize_storage():
-    if not hasattr(g, "storage"):
-        g.data_storage = FileStorage()
-
-
-@app.before_request
 def initialize_goal():
-    if "goal" not in session:
-        session["goal"] = DEFAULT_GOAL
+    session["goal"] = session.get("goal", DEFAULT_GOAL)
 
 
 @app.route("/sync-data")
 def sync_data():
-    # TODO: add a message that data is up to date
-    if not g.data_storage.data_refresh_needed():
+    try:
+        data_storage = FileStorage()
+    except Exception:
+        traceback.print_exc()
+        return redirect(url_for("tracker"))
+
+    if not data_storage.data_refresh_needed():
         flash("Already up to date.", "info")
         return redirect(url_for("tracker"))
 
     raw_data = None
 
     if SYNC_DATA_SOURCE == "gfit":
-        # Getting authorization to Google Fit API
-        creds = gfit_auth.load_google_credentials()
+        try:
+            # Getting authorization to Google Fit API
+            creds = gfit_auth.load_google_credentials()
 
-        if not creds:
-            return redirect(url_for("gfit_auth_bp.google_signin"))
+            if not creds:
+                return redirect(url_for("gfit_auth_bp.google_signin"))
 
-        # Getting Google Fit data
-        raw_data = data_integration.get_raw_gfit_data(creds)
+            # Getting Google Fit data
+            raw_data = data_integration.get_raw_gfit_data(creds)
+        except Exception:
+            traceback.print_exc()
+            flash("We have trouble getting your weight data. We're working on it", 'error')
+            return redirect(url_for("tracker"))
 
-    # TODO: handle the cases where we couldn't get any raw data
-    # or when the raw processing, or storage fail
     if raw_data:
         data_integration.store_raw_data(raw_data)
 
         daily_entries = data_integration.get_daily_weight_entries(raw_data)
 
         # Updating existing records with delta from the external data source
-        existing_dates = {
-            entry["date"] for entry in g.data_storage.get_weight_entries()
-        }
+        existing_dates = {entry["date"] for entry in data_storage.get_weight_entries()}
         new_entries = [
             entry for entry in daily_entries if entry["date"] not in existing_dates
         ]
 
         for entry in new_entries:
-            print(f"Adding {entry['date']}")
-            g.data_storage.create_weight_entry(entry["date"], entry["weight"])
+            data_storage.create_weight_entry(entry["date"], entry["weight"])
             existing_dates.add(entry["date"])
 
         # We're using file based storage so we need to update the file after making changes
-        g.data_storage.save(csv_copy=True)
+        data_storage.save(csv_copy=True)
 
     if new_entries:
         flash("Data updated successfully!", "success")
@@ -102,20 +101,28 @@ def home():
 def tracker():
     weekly_data = {}
 
-    # TODO - handle case when there's no data - either no file or it's empty or it has no entires
-
     session["goal"] = request.args.get("goal", session["goal"])
     session.modified = True
 
     filter = request.args.get("filter", "weeks")
     date_from = request.args.get("date_from", None)
     date_to = request.args.get("date_to", None)
-    weeks_limit = None
+    weeks_limit = int(request.args.get("weeks_num", DEFAULT_WEEKS_LIMIT))
 
-    daily_entries = g.data_storage.get_weight_entries()
-    latest_entry_date = utils.get_latest_entry_date(daily_entries)
+    daily_entries = []
+    latest_entry_date = None
+
+    try:
+        data_storage = FileStorage()
+        daily_entries = data_storage.get_weight_entries()
+
+    except Exception:
+        traceback.print_exc()
+        flash("We have trouble getting your weight data. We're working on it", "error")
 
     if daily_entries:
+        latest_entry_date = utils.get_latest_entry_date(daily_entries)
+
         # TODO: Validate date_to / date_from inputs.
         if date_from is not None or date_to is not None:
             daily_entries = utils.filter_daily_entries(
@@ -142,8 +149,6 @@ def tracker():
 
         if weekly_entries:
             if filter == "weeks":
-                weeks_limit = int(request.args.get("weeks_num", DEFAULT_WEEKS_LIMIT))
-
                 # Keeping N + 1 weeks because the last week
                 # is used as reference point to compare against, as starting point
                 weekly_entries = weekly_entries[0 : weeks_limit + 1]

@@ -1,9 +1,3 @@
-"""
-1. Get raw google fit data (creds) -> raw data
-2. Store raw google fit data (raw data) -> stored in file
-3. Process raw google fit data and return clean format (raw data) -> list of daily entry objects
-"""
-
 from googleapiclient.discovery import (
     build,
 )  # Build fitness service used to make requests
@@ -12,6 +6,7 @@ import datetime as dt
 import json
 import pandas as pd
 from pathlib import Path
+import traceback
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = 'data'
@@ -20,6 +15,7 @@ RAW_DATA_FILE_PATH = Path.joinpath(BASE_DIR, DATA_DIR, RAW_DATA_FILE_NAME)
 
 def get_raw_gfit_data(creds):
     dataset = None
+    # TODO: set back to 'fitness' after testing
     fitness_service = build("fitness", "v1", credentials=creds)
 
     # Get all available data
@@ -48,8 +44,8 @@ def get_raw_gfit_data(creds):
             )
         )
         fitness_service.close()
-    except Exception as e:
-        print(e)
+    except Exception:
+        traceback.print_exc()
     finally:
         return dataset
 
