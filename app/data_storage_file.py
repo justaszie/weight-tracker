@@ -9,9 +9,9 @@ import traceback
 
 class FileStorage:
     BASE_DIR = Path(__file__).resolve().parent
-    DATA_DIR = 'data'
-    CSV_FILE_NAME = 'daily_history.csv'
-    MAIN_FILE_NAME = 'daily_data.json'
+    DATA_DIR = "data"
+    CSV_FILE_NAME = "daily_history.csv"
+    MAIN_FILE_NAME = "daily_data.json"
     DAILY_ENTRIES_CSV_FILE_PATH = Path.joinpath(BASE_DIR, DATA_DIR, CSV_FILE_NAME)
     DAILY_ENTRIES_MAIN_FILE_PATH = Path.joinpath(BASE_DIR, DATA_DIR, MAIN_FILE_NAME)
 
@@ -80,7 +80,6 @@ class FileStorage:
         latest_entry_date = utils.get_latest_entry_date(self.data)
         return latest_entry_date < dt.date.today() if latest_entry_date else True
 
-
     def _load_weights_from_file(self):
         entries = []
         try:
@@ -93,7 +92,7 @@ class FileStorage:
             with open(FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH, "w") as file:
                 json.dump([], file)
                 traceback.print_exc()
-                print('Data file missing. Creating empty file')
+                print("Data file missing. Creating empty file")
                 return []
         except (json.JSONDecodeError, Exception) as e:
             raise

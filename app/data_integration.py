@@ -6,16 +6,15 @@ import datetime as dt
 import json
 import pandas as pd
 from pathlib import Path
-import traceback
 
 BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = 'data'
-RAW_DATA_FILE_NAME = 'raw_weight_data.json'
+DATA_DIR = "data"
+RAW_DATA_FILE_NAME = "raw_weight_data.json"
 RAW_DATA_FILE_PATH = Path.joinpath(BASE_DIR, DATA_DIR, RAW_DATA_FILE_NAME)
+
 
 def get_raw_gfit_data(creds):
     dataset = None
-    # TODO: set back to 'fitness' after testing
     fitness_service = build("fitness", "v1", credentials=creds)
 
     # Get all available data
@@ -44,8 +43,9 @@ def get_raw_gfit_data(creds):
             )
         )
         fitness_service.close()
+        raise
     except Exception:
-        traceback.print_exc()
+        raise
     finally:
         return dataset
 

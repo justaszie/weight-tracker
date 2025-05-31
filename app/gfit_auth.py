@@ -21,21 +21,13 @@ SCOPES = [
 REDIRECT_URI = "http://localhost:5040/google-auth"
 
 BASE_DIR = Path(__file__).resolve().parent
-AUTH_DIR = 'auth'
+AUTH_DIR = "auth"
 
-TOKEN_FILE_NAME = 'token.json'
-TOKEN_FILE_PATH = Path.joinpath(
-    BASE_DIR,
-    AUTH_DIR,
-    TOKEN_FILE_NAME
-)
+TOKEN_FILE_NAME = "token.json"
+TOKEN_FILE_PATH = Path.joinpath(BASE_DIR, AUTH_DIR, TOKEN_FILE_NAME)
 
-CLIENT_SECRETS_FILE_NAME = 'credentials.json'
-CLIENT_SECRETS_FILE_PATH = Path.joinpath(
-    BASE_DIR,
-    AUTH_DIR,
-    CLIENT_SECRETS_FILE_NAME
-)
+CLIENT_SECRETS_FILE_NAME = "credentials.json"
+CLIENT_SECRETS_FILE_PATH = Path.joinpath(BASE_DIR, AUTH_DIR, CLIENT_SECRETS_FILE_NAME)
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = (
     "1"  # FOR DEVELOPMENT: allow google to send authorization to HTTP (insecure) endpoint of this app. For testing.

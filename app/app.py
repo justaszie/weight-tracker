@@ -46,7 +46,7 @@ def sync_data():
         return redirect(url_for("tracker"))
 
     if not data_storage.data_refresh_needed():
-        flash("Already up to date.", "info")
+        flash("Your data is already up to date", "info")
         return redirect(url_for("tracker"))
 
     raw_data = None
@@ -63,12 +63,19 @@ def sync_data():
             raw_data = data_integration.get_raw_gfit_data(creds)
         except Exception:
             traceback.print_exc()
-            flash("We have trouble getting your weight data. We're working on it", 'error')
+            flash("We couldn't get your data from Google Fit. Try again later.", 'error')
             return redirect(url_for("tracker"))
 
-    if raw_data:
-        data_integration.store_raw_data(raw_data)
+    if not raw_data:
+        flash("No data received", 'info')
+        return redirect(url_for("tracker"))
 
+    try:
+        data_integration.store_raw_data(raw_data)
+    except:
+        traceback.print_exc()
+
+    try:
         daily_entries = data_integration.get_daily_weight_entries(raw_data)
 
         # Updating existing records with delta from the external data source
@@ -84,12 +91,16 @@ def sync_data():
         # We're using file based storage so we need to update the file after making changes
         data_storage.save(csv_copy=True)
 
-    if new_entries:
-        flash("Data updated successfully!", "success")
-    else:
-        flash("No new data received", "info")
+        if new_entries:
+            flash("Data updated successfully!", "success")
+        else:
+            flash("Your data is already up to date", "info")
+        return redirect(url_for("tracker"))
 
-    return redirect(url_for("tracker"))
+    except Exception:
+        traceback.print_exc()
+        flash("We're having trouble syncing your data. We're working on it.", 'error')
+        return redirect(url_for("tracker"))
 
 
 @app.route("/")
@@ -118,7 +129,7 @@ def tracker():
 
     except Exception:
         traceback.print_exc()
-        flash("We have trouble getting your weight data. We're working on it", "error")
+        flash("We have trouble loading your weight data. We're working on it", "error")
 
     if daily_entries:
         latest_entry_date = utils.get_latest_entry_date(daily_entries)
