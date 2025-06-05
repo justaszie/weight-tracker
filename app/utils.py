@@ -48,3 +48,35 @@ def message_category_to_class_name(category):
         "error": "flash__message--error",
         "success": "flash__message--success",
     }.get(category, "info")
+
+def is_valid_weeks_filter(value):
+    try:
+        return int(value) > 0
+    except:
+        return False
+
+def date_filter_error(date_from_str, date_to_str):
+    if date_from_str:
+        try:
+            date_from = dt.date.fromisoformat(date_from_str)
+        except:
+            return '"Date From" must be a valid date'
+
+    if date_to_str:
+        try:
+            date_to = dt.date.fromisoformat(date_to_str)
+        except:
+            return '"Date To" must be a valid date'
+
+    if date_from_str:
+        if date_to_str and date_to < date_from:
+            return '"Date To" must be after "Date From"'
+        elif date_from > dt.date.today():
+            return '"Date From" must be in the past'
+
+    if date_to_str and not date_from_str and date_to < dt.date.today():
+            return "Date To must be in the future"
+
+    return None
+
+

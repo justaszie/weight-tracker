@@ -118,7 +118,27 @@ def tracker():
     filter = request.args.get("filter", "weeks")
     date_from = request.args.get("date_from", None)
     date_to = request.args.get("date_to", None)
-    weeks_limit = int(request.args.get("weeks_num", DEFAULT_WEEKS_LIMIT))
+    weeks_limit = request.args.get("weeks_num", DEFAULT_WEEKS_LIMIT)
+
+    if (filter == 'weeks' and not utils.is_valid_weeks_filter(weeks_limit)):
+        flash('Weeks filter must be a positive number', 'error')
+
+        return render_template(
+            "tracker.html",
+            filter=filter,
+            weeks_num=weeks_limit,
+        )
+
+    if (filter == 'dates'):
+        date_error = utils.date_filter_error(date_from, date_to)
+        if date_error:
+            flash(date_error, 'error')
+            return render_template(
+                "tracker.html",
+                filter=filter,
+                date_from=date_from,
+                date_to=date_to,
+            )
 
     daily_entries = []
     latest_entry_date = None
@@ -134,8 +154,8 @@ def tracker():
     if daily_entries:
         latest_entry_date = utils.get_latest_entry_date(daily_entries)
 
-        # TODO: Validate date_to / date_from inputs.
         if date_from is not None or date_to is not None:
+
             daily_entries = utils.filter_daily_entries(
                 daily_entries, date_from, date_to
             )
@@ -160,6 +180,7 @@ def tracker():
 
         if weekly_entries:
             if filter == "weeks":
+                weeks_limit = int(weeks_limit)
                 # Keeping N + 1 weeks because the last week
                 # is used as reference point to compare against, as starting point
                 weekly_entries = weekly_entries[0 : weeks_limit + 1]
