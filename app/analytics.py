@@ -4,6 +4,20 @@ MAINTAIN_ACCEPTABLE_CHANGE = 0.2
 
 
 def get_weekly_aggregates(daily_entries, goal):
+    """
+    # Return value - Weekly entries format:
+     [
+        {
+         "week_start": "2025-01-10": datetime.date(2025, 04, 14),
+         "avg_weight": 70.2,
+         "weight_change": -0.52,
+         "weight_change_prc": 0.67,
+         "net_calories": -224,
+         "result": "positive",
+        }
+     ]
+    """
+
     # 1. Convert daily_entries JSON to data frame
     df = pd.DataFrame.from_records(daily_entries)
 

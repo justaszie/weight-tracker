@@ -63,11 +63,13 @@ def sync_data():
             raw_data = data_integration.get_raw_gfit_data(creds)
         except Exception:
             traceback.print_exc()
-            flash("We couldn't get your data from Google Fit. Try again later.", 'error')
+            flash(
+                "We couldn't get your data from Google Fit. Try again later.", "error"
+            )
             return redirect(url_for("tracker"))
 
     if not raw_data:
-        flash("No data received", 'info')
+        flash("No data received", "info")
         return redirect(url_for("tracker"))
 
     try:
@@ -99,7 +101,7 @@ def sync_data():
 
     except Exception:
         traceback.print_exc()
-        flash("We're having trouble syncing your data. We're working on it.", 'error')
+        flash("We're having trouble syncing your data. We're working on it.", "error")
         return redirect(url_for("tracker"))
 
 
@@ -108,7 +110,7 @@ def home():
     return redirect("/tracker")
 
 
-@app.route("/tracker", methods=["GET", "POST"])
+@app.route("/tracker", methods=["GET"])
 def tracker():
     weekly_data = {}
 
@@ -120,8 +122,8 @@ def tracker():
     date_to = request.args.get("date_to", None)
     weeks_limit = request.args.get("weeks_num", DEFAULT_WEEKS_LIMIT)
 
-    if (filter == 'weeks' and not utils.is_valid_weeks_filter(weeks_limit)):
-        flash('Weeks filter must be a positive number', 'error')
+    if filter == "weeks" and not utils.is_valid_weeks_filter(weeks_limit):
+        flash("Weeks filter must be a positive number", "error")
 
         return render_template(
             "tracker.html",
@@ -129,10 +131,10 @@ def tracker():
             weeks_num=weeks_limit,
         )
 
-    if (filter == 'dates'):
+    if filter == "dates":
         date_error = utils.date_filter_error(date_from, date_to)
         if date_error:
-            flash(date_error, 'error')
+            flash(date_error, "error")
             return render_template(
                 "tracker.html",
                 filter=filter,
@@ -150,49 +152,55 @@ def tracker():
     except Exception:
         traceback.print_exc()
         flash("We have trouble loading your weight data. We're working on it", "error")
+        return render_template(
+            "tracker.html",
+            filter=filter,
+            weeks_num=weeks_limit,
+            date_from=date_from,
+            date_to=date_to,
+        )
 
-    if daily_entries:
-        latest_entry_date = utils.get_latest_entry_date(daily_entries)
+    latest_entry_date = utils.get_latest_entry_date(daily_entries)
 
-        if date_from is not None or date_to is not None:
+    if date_from is not None or date_to is not None:
+        daily_entries = utils.filter_daily_entries(daily_entries, date_from, date_to)
 
-            daily_entries = utils.filter_daily_entries(
-                daily_entries, date_from, date_to
-            )
+    if not daily_entries:
+        return render_template(
+            "tracker.html",
+            filter=filter,
+            weeks_num=weeks_limit,
+            date_from=date_from,
+            date_to=date_to,
+        )
 
-        """
-        # Simple list of weekly data. Format:
-         [
-            {
-             "week_start": "2025-01-10": datetime.date(2025, 04, 14),
-             "avg_weight": 70.2,
-             "weight_change": -0.52,
-             "weight_change_prc": 0.67,
-             "net_calories": -224,
-             "result": "positive",
-            }
-         ]
-        """
-        if daily_entries:
-            weekly_entries = analytics.get_weekly_aggregates(
-                daily_entries, session["goal"]
-            )
+    try:
+        weekly_entries = analytics.get_weekly_aggregates(daily_entries, session["goal"])
+
+        if filter == "weeks":
+            weeks_limit = int(weeks_limit)
+            # Keeping N + 1 weeks because the last week
+            # is used as reference point to compare against, as starting point
+            weekly_entries = weekly_entries[0 : weeks_limit + 1]
 
         if weekly_entries:
-            if filter == "weeks":
-                weeks_limit = int(weeks_limit)
-                # Keeping N + 1 weeks because the last week
-                # is used as reference point to compare against, as starting point
-                weekly_entries = weekly_entries[0 : weeks_limit + 1]
-
-            if weekly_entries:
-                # Last week is a reference point, not actual progress data
-                weekly_entries[-1].update(utils.REFERENCE_WEEK_DATA)
-                weekly_data["entries"] = weekly_entries
-                weekly_data["summary"] = analytics.get_summary(weekly_entries)
-                weekly_data["goal_progress"] = analytics.get_evaluation(
-                    weekly_data["summary"]
-                )
+            # Last week is a reference point, not actual progress data
+            weekly_entries[-1].update(utils.REFERENCE_WEEK_DATA)
+            weekly_data["entries"] = weekly_entries
+            weekly_data["summary"] = analytics.get_summary(weekly_entries)
+            weekly_data["goal_progress"] = analytics.get_evaluation(
+                weekly_data["summary"]
+            )
+    except:
+        traceback.print_exc()
+        flash("We have trouble analyzing your data. We're working on it.", "error")
+        return render_template(
+            "tracker.html",
+            filter=filter,
+            weeks_num=weeks_limit,
+            date_from=date_from,
+            date_to=date_to,
+        )
 
     return render_template(
         "tracker.html",
@@ -209,6 +217,6 @@ app.jinja_env.filters["signed_amt_str"] = utils.to_signed_amt_str
 app.jinja_env.filters["message_category_to_class"] = (
     utils.message_category_to_class_name
 )
-#
+
 if __name__ == "__main__":
     app.run(debug=True, port=5040)
