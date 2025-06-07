@@ -56,6 +56,9 @@ def is_valid_weeks_filter(value):
     except:
         return False
 
+def is_valid_goal_selection(goal):
+    return goal.lower() in ['lose', 'gain', 'maintain']
+
 
 def date_filter_error(date_from_str, date_to_str):
     if date_from_str:

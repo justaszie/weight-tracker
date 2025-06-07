@@ -114,7 +114,12 @@ def home():
 def tracker():
     weekly_data = {}
 
-    session["goal"] = request.args.get("goal", session["goal"])
+    goal = request.args.get("goal", session["goal"])
+    if (not utils.is_valid_goal_selection(goal)):
+        flash('Invalid goal selection', 'error')
+        goal = DEFAULT_GOAL
+
+    session["goal"] = goal
     session.modified = True
 
     filter = request.args.get("filter", "weeks")
@@ -151,7 +156,7 @@ def tracker():
 
     except Exception:
         traceback.print_exc()
-        flash("We have trouble loading your weight data. We're working on it", "error")
+        flash("We're having trouble loading your weight data. We're working on it", "error")
         return render_template(
             "tracker.html",
             filter=filter,
@@ -193,7 +198,7 @@ def tracker():
             )
     except:
         traceback.print_exc()
-        flash("We have trouble analyzing your data. We're working on it.", "error")
+        flash("We're having trouble analyzing your data. We're working on it.", "error")
         return render_template(
             "tracker.html",
             filter=filter,
