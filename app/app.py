@@ -15,9 +15,10 @@ import json
 import utils
 import datetime as dt
 import os
-import gfit_auth
+import google_fit
 import data_integration
 from data_storage_file import FileStorage
+from google_fit import GoogleFitClient
 import analytics
 import traceback
 
@@ -29,7 +30,7 @@ app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
 
 # Register routes used in google fit auth flow
-app.register_blueprint(gfit_auth.gfit_auth_bp)
+app.register_blueprint(google_fit.gfit_auth_bp)
 
 
 @app.before_request
@@ -53,14 +54,13 @@ def sync_data():
 
     if SYNC_DATA_SOURCE == "gfit":
         try:
-            # Getting authorization to Google Fit API
-            creds = gfit_auth.load_google_credentials()
-
-            if not creds:
+            google_fit_client = GoogleFitClient()
+            # Checking if authorization is secured to fetch data
+            if not google_fit_client.ready_to_fetch():
                 return redirect(url_for("gfit_auth_bp.google_signin"))
 
             # Getting Google Fit data
-            raw_data = data_integration.get_raw_gfit_data(creds)
+            raw_data = google_fit_client.get_raw_data()
         except Exception:
             traceback.print_exc()
             flash(
@@ -73,12 +73,12 @@ def sync_data():
         return redirect(url_for("tracker"))
 
     try:
-        data_integration.store_raw_data(raw_data)
+        google_fit_client.store_raw_data(raw_data)
     except:
         traceback.print_exc()
 
     try:
-        daily_entries = data_integration.get_daily_weight_entries(raw_data)
+        daily_entries = google_fit_client.get_daily_weight_entries(raw_data)
 
         # Updating existing records with delta from the external data source
         existing_dates = {entry["date"] for entry in data_storage.get_weight_entries()}
