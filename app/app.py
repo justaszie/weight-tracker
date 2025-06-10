@@ -14,7 +14,13 @@ import secrets
 import utils
 import datetime as dt
 import google_fit
-from data_integration import DataIntegrationService
+from data_integration import (
+    DataIntegrationService,
+    SourceNotReadyError,
+    SourceFetchError,
+    SourceNoDataError,
+    DataSyncError,
+)
 from file_storage import FileStorage
 from google_fit import GoogleFitClient
 import analytics
@@ -39,7 +45,6 @@ def initialize_goal():
 @app.route("/sync-data")
 def sync_data():
 
-    # 1. CHECK IF SYNC IS NEEDED
     try:
         data_storage = FileStorage()
     except Exception:
@@ -50,75 +55,38 @@ def sync_data():
         flash("Your data is already up to date", "info")
         return redirect(url_for("tracker"))
 
-    raw_data = None
-
-    """
-        1. Initialize the data source client
-
-        2. Check if client ready
-        3. Initialize data integration service, passing the storage instance and client source and the
-        4. Call `integration.refresh_data()`
-        5. Get back new entries
-        6. Use catch to catch custom errors: error in getting raw data, no raw data received, couldn't sync (processing fail)
-    """
-
-    # 2. GETTING RAW DATA FROM SOURCE
-    if SYNC_DATA_SOURCE == "gfit":
-        try:
-            # 2A: Getting Auth if needed
-            google_fit_client = GoogleFitClient()
-            # Checking if authorization is secured to fetch data
-            if not google_fit_client.ready_to_fetch():
-                return redirect(url_for("gfit_auth_bp.google_signin"))
-
-            # 2B: Getting data from source
-            raw_data = google_fit_client.get_raw_data()
-        except Exception:
-            traceback.print_exc()
-            flash(
-                "We couldn't get your data from Google Fit. Try again later.", "error"
-            )
-            return redirect(url_for("tracker"))
-
-    if not raw_data:
+    data_source_client = GoogleFitClient()
+    data_integration = DataIntegrationService(data_storage, data_source_client)
+    try:
+        new_entries = data_integration.refresh_weight_entries(
+            store_raw_copy=True, store_csv_copy=True
+        )
+    except SourceNotReadyError:
+        return redirect(url_for("gfit_auth_bp.google_signin"))
+    except SourceFetchError:
+        traceback.print_exc()
+        flash(
+            "We couldn't get your data from Google Fit. Try again later.",
+            "error",
+        )
+        return redirect(url_for("tracker"))
+    except SourceNoDataError:
         flash("No data received", "info")
         return redirect(url_for("tracker"))
-
-    # 3: STORE A COPY OF RAW DATA
-    try:
-        google_fit_client.store_raw_data(raw_data)
-    except:
+    except DataSyncError:
         traceback.print_exc()
-
-    try:
-        # 4: CONVERTING RAW DATA TO DAILY ENTRIES
-        daily_entries = google_fit_client.get_daily_weight_entries(raw_data)
-
-        # 5: GETTING EXISTING DAILY ENTRIES
-        existing_dates = {entry["date"] for entry in data_storage.get_weight_entries()}
-
-        # 6: UPDATING EXISTING DAILY EENTRIES WITH NEW ENTRIES
-        new_entries = [
-            entry for entry in daily_entries if entry["date"] not in existing_dates
-        ]
-
-        for entry in new_entries:
-            data_storage.create_weight_entry(entry["date"], entry["weight"])
-            existing_dates.add(entry["date"])
-
-        # 7. UPDATE EXISTING STORAGE (only needed for File Storage)
-        data_storage.save(csv_copy=True)
-
-        if new_entries:
-            flash("Data updated successfully!", "success")
-        else:
-            flash("Your data is already up to date", "info")
+        flash(
+            "We're having trouble syncing your data. We're working on it.",
+            "error",
+        )
         return redirect(url_for("tracker"))
 
-    except Exception:
-        traceback.print_exc()
-        flash("We're having trouble syncing your data. We're working on it.", "error")
-        return redirect(url_for("tracker"))
+    if new_entries:
+        flash("Data updated successfully!", "success")
+    else:
+        flash("Your data is already up to date", "info")
+
+    return redirect(url_for("tracker"))
 
 
 @app.route("/")
@@ -141,27 +109,25 @@ def tracker():
     filter = request.args.get("filter", "weeks")
     date_from = request.args.get("date_from", None)
     date_to = request.args.get("date_to", None)
-    weeks_limit = request.args.get("weeks_num", DEFAULT_WEEKS_LIMIT)
+    weeks_limit = request.args.get("weeks_limit", DEFAULT_WEEKS_LIMIT)
+
+    filter_values = {
+        "filter": filter,
+        "date_from": date_from,
+        "date_to": date_to,
+        "weeks_limit": weeks_limit,
+    }
 
     if filter == "weeks" and not utils.is_valid_weeks_filter(weeks_limit):
         flash("Weeks filter must be a positive number", "error")
 
-        return render_template(
-            "tracker.html",
-            filter=filter,
-            weeks_num=weeks_limit,
-        )
+        return render_template("tracker.html", **filter_values)
 
     if filter == "dates":
         date_error = utils.date_filter_error(date_from, date_to)
         if date_error:
             flash(date_error, "error")
-            return render_template(
-                "tracker.html",
-                filter=filter,
-                date_from=date_from,
-                date_to=date_to,
-            )
+            return render_template("tracker.html", **filter_values)
 
     daily_entries = []
     latest_entry_date = None
@@ -176,13 +142,7 @@ def tracker():
             "We're having trouble loading your weight data. We're working on it",
             "error",
         )
-        return render_template(
-            "tracker.html",
-            filter=filter,
-            weeks_num=weeks_limit,
-            date_from=date_from,
-            date_to=date_to,
-        )
+        return render_template("tracker.html", **filter_values)
 
     latest_entry_date = utils.get_latest_entry_date(daily_entries)
 
@@ -190,13 +150,7 @@ def tracker():
         daily_entries = utils.filter_daily_entries(daily_entries, date_from, date_to)
 
     if not daily_entries:
-        return render_template(
-            "tracker.html",
-            filter=filter,
-            weeks_num=weeks_limit,
-            date_from=date_from,
-            date_to=date_to,
-        )
+        return render_template("tracker.html", **filter_values)
 
     try:
         weekly_entries = analytics.get_weekly_aggregates(daily_entries, session["goal"])
@@ -218,22 +172,13 @@ def tracker():
     except:
         traceback.print_exc()
         flash("We're having trouble analyzing your data. We're working on it.", "error")
-        return render_template(
-            "tracker.html",
-            filter=filter,
-            weeks_num=weeks_limit,
-            date_from=date_from,
-            date_to=date_to,
-        )
+        return render_template("tracker.html", **filter_values)
 
     return render_template(
         "tracker.html",
         data=weekly_data,
         latest_entry_date=latest_entry_date,
-        filter=filter,
-        weeks_num=weeks_limit,
-        date_to=date_to,
-        date_from=date_from,
+        **filter_values,
     )
 
 

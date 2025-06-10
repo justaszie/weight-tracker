@@ -103,9 +103,12 @@ class GoogleFitClient:
         # The file token.json stores the user's access and refresh tokens
         # It is created automatically when the authorization flow completes for the first time
         if os.path.exists(TOKEN_FILE_PATH):
-            creds = Credentials.from_authorized_user_info(
-                json.loads(open(TOKEN_FILE_PATH).read())
-            )
+            try:
+                creds = Credentials.from_authorized_user_info(
+                    json.loads(open(TOKEN_FILE_PATH).read())
+                )
+            except:
+                creds = None
 
         if creds:
             if creds.valid:
@@ -135,7 +138,8 @@ class GoogleFitClient:
 
         # # Using google api library to build the HTTP request object to call Fit API with relevant parameters
         request = (
-            fitness_service.users()
+            fitness_service
+            .users()
             .dataSources()
             .datasets()
             .get(userId="me", dataSourceId=DATA_SOURCE, datasetId=DATA_SET)

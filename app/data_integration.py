@@ -6,7 +6,7 @@ class DataIntegrationService:
         self.storage = data_storage
         self.source = data_source
 
-    def refresh_weight_entries(self, store_raw_copy, store_entries_as_csv):
+    def refresh_weight_entries(self, store_raw_copy, store_csv_copy):
         """
         Load data from source and insert only new weight entries in the storage
         Return value: list of inserted new weight entries
@@ -44,13 +44,12 @@ class DataIntegrationService:
             new_entries = [
                 entry for entry in daily_entries if entry["date"] not in existing_dates
             ]
-
             for entry in new_entries:
                 self.storage.create_weight_entry(entry["date"], entry["weight"])
                 existing_dates.add(entry["date"])
 
             # 7. UPDATE EXISTING STORAGE (only needed for file storage)
-            self.storage.save(csv_copy=store_entries_as_csv)
+            self.storage.save(csv_copy=store_csv_copy)
 
         except:
             raise DataSyncError
