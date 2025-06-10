@@ -79,7 +79,4 @@ def date_filter_error(date_from_str, date_to_str):
         elif date_from > dt.date.today():
             return '"Date From" cannot be in the future'
 
-    if date_to_str and not date_from_str and date_to < dt.date.today():
-        return "Date To cannot be in the past"
-
     return None
