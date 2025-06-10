@@ -11,13 +11,11 @@ from flask import (
 )
 
 import secrets
-import json
 import utils
 import datetime as dt
-import os
 import google_fit
-import data_integration
-from data_storage_file import FileStorage
+from data_integration import DataIntegrationService
+from file_storage import FileStorage
 from google_fit import GoogleFitClient
 import analytics
 import traceback
@@ -40,6 +38,8 @@ def initialize_goal():
 
 @app.route("/sync-data")
 def sync_data():
+
+    # 1. CHECK IF SYNC IS NEEDED
     try:
         data_storage = FileStorage()
     except Exception:
@@ -52,14 +52,26 @@ def sync_data():
 
     raw_data = None
 
+    """
+        1. Initialize the data source client
+
+        2. Check if client ready
+        3. Initialize data integration service, passing the storage instance and client source and the
+        4. Call `integration.refresh_data()`
+        5. Get back new entries
+        6. Use catch to catch custom errors: error in getting raw data, no raw data received, couldn't sync (processing fail)
+    """
+
+    # 2. GETTING RAW DATA FROM SOURCE
     if SYNC_DATA_SOURCE == "gfit":
         try:
+            # 2A: Getting Auth if needed
             google_fit_client = GoogleFitClient()
             # Checking if authorization is secured to fetch data
             if not google_fit_client.ready_to_fetch():
                 return redirect(url_for("gfit_auth_bp.google_signin"))
 
-            # Getting Google Fit data
+            # 2B: Getting data from source
             raw_data = google_fit_client.get_raw_data()
         except Exception:
             traceback.print_exc()
@@ -72,16 +84,20 @@ def sync_data():
         flash("No data received", "info")
         return redirect(url_for("tracker"))
 
+    # 3: STORE A COPY OF RAW DATA
     try:
         google_fit_client.store_raw_data(raw_data)
     except:
         traceback.print_exc()
 
     try:
+        # 4: CONVERTING RAW DATA TO DAILY ENTRIES
         daily_entries = google_fit_client.get_daily_weight_entries(raw_data)
 
-        # Updating existing records with delta from the external data source
+        # 5: GETTING EXISTING DAILY ENTRIES
         existing_dates = {entry["date"] for entry in data_storage.get_weight_entries()}
+
+        # 6: UPDATING EXISTING DAILY EENTRIES WITH NEW ENTRIES
         new_entries = [
             entry for entry in daily_entries if entry["date"] not in existing_dates
         ]
@@ -90,7 +106,7 @@ def sync_data():
             data_storage.create_weight_entry(entry["date"], entry["weight"])
             existing_dates.add(entry["date"])
 
-        # We're using file based storage so we need to update the file after making changes
+        # 7. UPDATE EXISTING STORAGE (only needed for File Storage)
         data_storage.save(csv_copy=True)
 
         if new_entries:
@@ -115,8 +131,8 @@ def tracker():
     weekly_data = {}
 
     goal = request.args.get("goal", session["goal"])
-    if (not utils.is_valid_goal_selection(goal)):
-        flash('Invalid goal selection', 'error')
+    if not utils.is_valid_goal_selection(goal):
+        flash("Invalid goal selection", "error")
         goal = DEFAULT_GOAL
 
     session["goal"] = goal
@@ -156,7 +172,10 @@ def tracker():
 
     except Exception:
         traceback.print_exc()
-        flash("We're having trouble loading your weight data. We're working on it", "error")
+        flash(
+            "We're having trouble loading your weight data. We're working on it",
+            "error",
+        )
         return render_template(
             "tracker.html",
             filter=filter,

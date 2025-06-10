@@ -91,6 +91,7 @@ def handle_google_auth_callback():
 class GoogleFitClient:
     def __init__(self):
         self.creds = self.load_auth_token()
+        self._source = 'google_fit'
 
     def ready_to_fetch(self):
         return True if self.creds else False

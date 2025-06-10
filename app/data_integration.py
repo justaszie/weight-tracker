@@ -1,86 +1,79 @@
-# ###### MOVED TO google_fit module ########
-# from googleapiclient.discovery import (
-#     build,
-# )  # Build fitness service used to make requests
-# from googleapiclient.errors import HttpError
-# import datetime as dt
-# import json
-# import pandas as pd
-# from pathlib import Path
-
-# BASE_DIR = Path(__file__).resolve().parent
-# DATA_DIR = "data"
-# RAW_DATA_FILE_NAME = "raw_weight_data.json"
-# RAW_DATA_FILE_PATH = Path.joinpath(BASE_DIR, DATA_DIR, RAW_DATA_FILE_NAME)
+import traceback
 
 
-# def get_raw_gfit_data(creds):
-#     dataset = None
-#     fitness_service = build("fitness", "v1", credentials=creds)
+class DataIntegrationService:
+    def __init__(self, data_storage, data_source):
+        self.storage = data_storage
+        self.source = data_source
 
-#     # Get all available data
-#     date_from_ns_timestamp = 0
-#     tomorrow = dt.datetime.now() + dt.timedelta(days=1)
-#     date_to_ns_timestamp = int(tomorrow.timestamp() * 1e9)
+    def refresh_weight_entries(self, store_raw_copy, store_entries_as_csv):
+        """
+        Load data from source and insert only new weight entries in the storage
+        Return value: list of inserted new weight entries
+        """
+        raw_data = None
 
-#     DATA_SOURCE = "derived:com.google.weight:com.google.android.gms:merge_weight"
-#     DATA_SET = f"{date_from_ns_timestamp}-{date_to_ns_timestamp}"
+        if not self.source.ready_to_fetch():
+            raise SourceNotReadyError
 
-#     # # Using google api library to build the HTTP request object to call Fit API with relevant parameters
-#     request = (
-#         fitness_service.users()
-#         .dataSources()
-#         .datasets()
-#         .get(userId="me", dataSourceId=DATA_SOURCE, datasetId=DATA_SET)
-#     )
+        # 2B: Getting data from source
+        try:
+            raw_data = self.get_raw_data()
+        except:
+            raise SourceFetchError
 
-#     try:
-#         dataset = request.execute()
-#         fitness_service.close()
-#     except HttpError as e:
-#         print(
-#             "Error response status code : {}, reason : {}".format(
-#                 e.resp.status, e.error_details
-#             )
-#         )
-#         fitness_service.close()
-#         raise
-#     except Exception:
-#         raise
-#     finally:
-#         return dataset
+        if not raw_data:
+            raise SourceNoDataError
+
+        if store_raw_copy:
+            try:
+                self.source.store_raw_data(raw_data)
+            except:
+                traceback.print_exc()
+
+        # 4: CONVERTING RAW DATA TO DAILY ENTRIES
+        try:
+            daily_entries = self.source.get_daily_weight_entries(raw_data)
+
+            # 5: GETTING EXISTING DAILY ENTRIES
+            existing_dates = {
+                entry["date"] for entry in self.storage.get_weight_entries()
+            }
+
+            # 6: UPDATING EXISTING DAILY EENTRIES WITH NEW ENTRIES
+            new_entries = [
+                entry for entry in daily_entries if entry["date"] not in existing_dates
+            ]
+
+            for entry in new_entries:
+                self.storage.create_weight_entry(entry["date"], entry["weight"])
+                existing_dates.add(entry["date"])
+
+            # 7. UPDATE EXISTING STORAGE (only needed for file storage)
+            self.storage.save(csv_copy=store_entries_as_csv)
+
+        except:
+            raise DataSyncError
+
+        return new_entries
+
+    # TODO: depending on data source we may need params here
+    # E.g. date range limit may be needed if it takes a long time to fetch
+    def get_raw_data(self):
+        return self.source.get_raw_data()
 
 
-# def get_daily_weight_entries(raw_data):
-#     df = pd.json_normalize(raw_data, "point")
+class SourceNotReadyError(Exception):
+    pass
 
-#     # Transform timestamp in nanoseconds to the date when weight was captured
-#     df["date"] = (
-#         df["endTimeNanos"]
-#         .apply(lambda x: dt.datetime.fromtimestamp(int(x) / 1e9))
-#         .dt.date
-#     )
 
-#     # For multiple weight entries on the same day, keep just the last entry
-#     df = df.sort_values(by="endTimeNanos").drop_duplicates(subset="date", keep="last")
+class SourceFetchError(Exception):
+    pass
 
-#     # Extracting weight value from nested field 'fpVal' inside 'value'
-#     df["weight"] = df["value"].apply(lambda x: round(x[-1]["fpVal"], 2))
 
-#     df.drop(
-#         columns=[
-#             "startTimeNanos",
-#             "endTimeNanos",
-#             "dataTypeName",
-#             "value",
-#             "modifiedTimeMillis",
-#             "originDataSourceId",
-#         ],
-#         inplace=True,
-#     )
+class SourceNoDataError(Exception):
+    pass
 
-#     # Remove outliers that were added by mistake
-#     df = df[(df["weight"] > 50) & (df["weight"] < 100)]
 
-#     return df.to_dict(orient="records")
-
+class DataSyncError(Exception):
+    pass

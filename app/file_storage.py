@@ -68,10 +68,13 @@ class FileStorage:
             ]
             json.dump(entries, file)
 
-        if csv_copy:
-            pd.DataFrame(self.data).set_index("date").to_csv(
-                FileStorage.DAILY_ENTRIES_CSV_FILE_PATH
-            )
+        try:
+            if csv_copy:
+                pd.DataFrame(self.data).set_index("date").to_csv(
+                    FileStorage.DAILY_ENTRIES_CSV_FILE_PATH
+                )
+        except:
+            traceback.print_exc()
 
     def data_refresh_needed(self):
         if not self.data:
