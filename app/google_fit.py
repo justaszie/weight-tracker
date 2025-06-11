@@ -166,7 +166,7 @@ class GoogleFitClient:
         with open(RAW_DATA_FILE_PATH, "w") as file:
             json.dump(raw_data, file)
 
-    def get_daily_weight_entries(self, raw_data):
+    def convert_to_daily_entries(self, raw_data):
         df = pd.json_normalize(raw_data, "point")
 
         # Transform timestamp in nanoseconds to the date when weight was captured

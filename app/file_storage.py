@@ -57,7 +57,7 @@ class FileStorage:
         row_to_update = existing[0]
         row_to_update["weight"] = weight
 
-    def save(self, csv_copy=True):
+    def save(self):
         with open(FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH, "w") as file:
             entries = [
                 {
@@ -68,11 +68,11 @@ class FileStorage:
             ]
             json.dump(entries, file)
 
+    def export_to_csv(self):
         try:
-            if csv_copy:
-                pd.DataFrame(self.data).set_index("date").to_csv(
-                    FileStorage.DAILY_ENTRIES_CSV_FILE_PATH
-                )
+            pd.DataFrame(self.data).set_index("date").to_csv(
+                FileStorage.DAILY_ENTRIES_CSV_FILE_PATH
+            )
         except:
             traceback.print_exc()
 

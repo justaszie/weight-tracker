@@ -1,4 +1,16 @@
 import traceback
+from functools import wraps
+
+
+def raises_sync_error(method):
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        try:
+            return method(self, *args, **kwargs)
+        except:
+            raise DataSyncError
+
+    return wrapper
 
 
 class DataIntegrationService:
@@ -16,50 +28,59 @@ class DataIntegrationService:
         if not self.source.ready_to_fetch():
             raise SourceNotReadyError
 
-        # 2B: Getting data from source
-        try:
-            raw_data = self.get_raw_data()
-        except:
-            raise SourceFetchError
-
+        raw_data = self.get_raw_data()
         if not raw_data:
             raise SourceNoDataError
 
         if store_raw_copy:
-            try:
-                self.source.store_raw_data(raw_data)
-            except:
-                traceback.print_exc()
+            self.store_raw_data(raw_data)
 
-        # 4: CONVERTING RAW DATA TO DAILY ENTRIES
-        try:
-            daily_entries = self.source.get_daily_weight_entries(raw_data)
+        daily_entries = self.convert_to_daily_entries(raw_data)
+        new_entries = self.filter_new_weight_entries(daily_entries)
 
-            # 5: GETTING EXISTING DAILY ENTRIES
-            existing_dates = {
-                entry["date"] for entry in self.storage.get_weight_entries()
-            }
+        self.store_new_weight_entries(new_entries)
 
-            # 6: UPDATING EXISTING DAILY EENTRIES WITH NEW ENTRIES
-            new_entries = [
-                entry for entry in daily_entries if entry["date"] not in existing_dates
-            ]
-            for entry in new_entries:
-                self.storage.create_weight_entry(entry["date"], entry["weight"])
-                existing_dates.add(entry["date"])
-
-            # 7. UPDATE EXISTING STORAGE (only needed for file storage)
-            self.storage.save(csv_copy=store_csv_copy)
-
-        except:
-            raise DataSyncError
+        if store_csv_copy:
+            self.storage.export_to_csv()
 
         return new_entries
 
     # TODO: depending on data source we may need params here
     # E.g. date range limit may be needed if it takes a long time to fetch
     def get_raw_data(self):
-        return self.source.get_raw_data()
+        try:
+            return self.source.get_raw_data()
+        except:
+            raise SourceFetchError
+
+    def store_raw_data(self, raw_data):
+        try:
+            self.source.store_raw_data(raw_data)
+        except:
+            traceback.print_exc()
+
+    @raises_sync_error
+    def convert_to_daily_entries(self, raw_data):
+        return self.source.convert_to_daily_entrie(raw_data)
+
+    @raises_sync_error
+    def get_existing_weight_entries(self):
+        return self.storage.get_weight_entries()
+
+    @raises_sync_error
+    def filter_new_weight_entries(self, source_entries):
+        existing_dates = {entry["date"] for entry in self.get_existing_weight_entries()}
+        return [
+            entry for entry in source_entries if entry["date"] not in existing_dates
+        ]
+
+    @raises_sync_error
+    def store_new_weight_entries(self, new_entries):
+        for entry in new_entries:
+            self.storage.create_weight_entry(entry["date"], entry["weight"])
+
+        # Only needed because we're using file storage
+        self.storage.save()
 
 
 class SourceNotReadyError(Exception):
