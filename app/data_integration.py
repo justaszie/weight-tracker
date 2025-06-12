@@ -25,9 +25,6 @@ class DataIntegrationService:
         """
         raw_data = None
 
-        if not self.source.ready_to_fetch():
-            raise SourceNotReadyError
-
         raw_data = self.get_raw_data()
         if not raw_data:
             raise SourceNoDataError
@@ -81,11 +78,6 @@ class DataIntegrationService:
 
         # Only needed because we're using file storage
         self.storage.save()
-
-
-class SourceNotReadyError(Exception):
-    pass
-
 
 class SourceFetchError(Exception):
     pass

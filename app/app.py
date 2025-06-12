@@ -16,13 +16,12 @@ import datetime as dt
 import google_fit
 from data_integration import (
     DataIntegrationService,
-    SourceNotReadyError,
     SourceFetchError,
     SourceNoDataError,
     DataSyncError,
 )
 from file_storage import FileStorage
-from google_fit import GoogleFitClient
+from google_fit import GoogleFitClient, GoogleFitAuth
 import analytics
 import traceback
 
@@ -55,14 +54,17 @@ def sync_data():
         flash("Your data is already up to date", "info")
         return redirect(url_for("tracker"))
 
-    data_source_client = GoogleFitClient()
+    oauth_credentials = GoogleFitAuth().load_auth_token()
+    if not oauth_credentials:
+        return redirect(url_for("gfit_auth_bp.google_signin"))
+
+    data_source_client = GoogleFitClient(oauth_credentials)
     data_integration = DataIntegrationService(data_storage, data_source_client)
+
     try:
         new_entries = data_integration.refresh_weight_entries(
             store_raw_copy=True, store_csv_copy=True
         )
-    except SourceNotReadyError:
-        return redirect(url_for("gfit_auth_bp.google_signin"))
     except SourceFetchError:
         traceback.print_exc()
         flash(

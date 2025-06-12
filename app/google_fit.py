@@ -41,6 +41,8 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = (
 gfit_auth_bp = Blueprint("gfit_auth_bp", __name__)
 ###############
 
+### ROUTES USED IN OAUTH FLOW ###
+
 
 # This route initiates the google auth flow
 @gfit_auth_bp.route("/google-signin", methods=["GET"])
@@ -77,25 +79,15 @@ def handle_google_auth_callback():
 
     creds = flow.credentials
     # Save access token for future API usage without auth flow
-    GoogleFitClient.save_auth_token_to_file(creds)
+    GoogleFitAuth().save_auth_token_to_file(creds)
 
     return redirect(url_for("sync_data"))
 
 
-# def store_raw_data(raw_data, file_path=RAW_DATA_FILE_PATH):
-#     # TODO create directory if it doesn't exist yet.
-#     with open(file_path, "w") as file:
-#         json.dump(raw_data, file)
+#################################
 
 
-class GoogleFitClient:
-    def __init__(self):
-        self.creds = self.load_auth_token()
-        self._source = 'google_fit'
-
-    def ready_to_fetch(self):
-        return True if self.creds else False
-
+class GoogleFitAuth:
     def load_auth_token(self):
         # Get credentials for API access
         creds = None
@@ -120,9 +112,23 @@ class GoogleFitClient:
                     # Save the credentials for future runs
                     GoogleFitClient.save_auth_token_to_file(creds)
                     return creds
-                except Exception as e:
+                except:
                     traceback.print_exc()
                     return None
+
+    def save_auth_token_to_file(cls, creds):
+        Path(TOKEN_FILE_PATH).parent.mkdir(parents=True, exist_ok=True)
+        with open(TOKEN_FILE_PATH, "w") as token:
+            token.write(creds.to_json())
+
+
+class GoogleFitClient:
+    def __init__(self, creds):
+        self.creds = creds
+        self._source = "google_fit"
+
+    def ready_to_fetch(self):
+        return True if self.creds else False
 
     def get_raw_data(self):
         dataset = None
@@ -138,8 +144,7 @@ class GoogleFitClient:
 
         # # Using google api library to build the HTTP request object to call Fit API with relevant parameters
         request = (
-            fitness_service
-            .users()
+            fitness_service.users()
             .dataSources()
             .datasets()
             .get(userId="me", dataSourceId=DATA_SOURCE, datasetId=DATA_SET)
@@ -200,10 +205,3 @@ class GoogleFitClient:
         df = df[(df["weight"] > 50) & (df["weight"] < 100)]
 
         return df.to_dict(orient="records")
-
-    # TODO: review this part of design. Not sure if this should be class method
-    @classmethod
-    def save_auth_token_to_file(cls, creds):
-        Path(TOKEN_FILE_PATH).parent.mkdir(parents=True, exist_ok=True)
-        with open(TOKEN_FILE_PATH, "w") as token:
-            token.write(creds.to_json())
