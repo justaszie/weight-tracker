@@ -61,7 +61,7 @@ class DataIntegrationService:
 
     @raises_sync_error
     def convert_to_daily_entries(self, raw_data):
-        return self.source.convert_to_daily_entrie(raw_data)
+        return self.source.convert_to_daily_entries(raw_data)
 
     @raises_sync_error
     def get_existing_weight_entries(self):
