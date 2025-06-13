@@ -110,13 +110,13 @@ class GoogleFitAuth:
                 try:
                     creds.refresh(Request())
                     # Save the credentials for future runs
-                    GoogleFitClient.save_auth_token_to_file(creds)
+                    self.save_auth_token_to_file(creds)
                     return creds
                 except:
                     traceback.print_exc()
                     return None
 
-    def save_auth_token_to_file(cls, creds):
+    def save_auth_token_to_file(self, creds):
         Path(TOKEN_FILE_PATH).parent.mkdir(parents=True, exist_ok=True)
         with open(TOKEN_FILE_PATH, "w") as token:
             token.write(creds.to_json())
@@ -130,7 +130,7 @@ class GoogleFitClient:
     def ready_to_fetch(self):
         return True if self.creds else False
 
-    def get_raw_data(self):
+    def get_raw_data(self, date_from=None, date_to=None):
         dataset = None
         fitness_service = build("fitness", "v1", credentials=self.creds)
 

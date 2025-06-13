@@ -7,3 +7,4 @@ app/data/*
 app/auth/*
 app/static/images/*
 app/testing.py
+app/testing.ipynb

@@ -1,13 +1,15 @@
 import datetime as dt
 import traceback
 
+DATA_SOURCES_SUPPORTED = ['gfit', 'mfp']
+GOALS_SUPPORTED = ['lose', 'gain', 'maintain']
+
 REFERENCE_WEEK_DATA = {
     "weight_change": 0,
     "weight_change_prc": 0,
     "net_calories": 0,
     "result": None,
 }
-
 
 def to_signed_amt_str(amount, decimals=True) -> str:
     return ("+" if amount >= 0 else "-") + (
@@ -57,8 +59,10 @@ def is_valid_weeks_filter(value):
         return False
 
 def is_valid_goal_selection(goal):
-    return goal.lower() in ['lose', 'gain', 'maintain']
+    return goal.lower() in GOALS_SUPPORTED
 
+def is_valid_data_source(source):
+    return source.lower() in DATA_SOURCES_SUPPORTED
 
 def date_filter_error(date_from_str, date_to_str):
     if date_from_str:

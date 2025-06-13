@@ -18,7 +18,7 @@ class DataIntegrationService:
         self.storage = data_storage
         self.source = data_source
 
-    def refresh_weight_entries(self, store_raw_copy, store_csv_copy):
+    def refresh_weight_entries(self, store_raw_copy=False, store_csv_copy=False):
         """
         Load data from source and insert only new weight entries in the storage
         Return value: list of inserted new weight entries

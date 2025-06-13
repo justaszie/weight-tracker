@@ -14,7 +14,11 @@ google-auth-httplib2 = "^0.2.0"
 google-api-python-client = "^2.167.0"
 pandas = "^2.2.3"
 myfitnesspal = "^2.1.2"
+ipykernel = "^6.29.5"
 
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.5"
 
 [build-system]
 requires = ["poetry-core"]

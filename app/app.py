@@ -22,12 +22,16 @@ from data_integration import (
 )
 from file_storage import FileStorage
 from google_fit import GoogleFitClient, GoogleFitAuth
+from mfp import MyFitnessPalClient
 import analytics
 import traceback
 
-SYNC_DATA_SOURCE = "gfit"
 DEFAULT_GOAL = "lose"
 DEFAULT_WEEKS_LIMIT = 4
+
+MFP_SOURCE_NAME = 'mfp'
+GFIT_SOURCE_NAME = 'gfit'
+DEFAULT_DATA_SOURCE = "gfit"
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
@@ -54,11 +58,21 @@ def sync_data():
         flash("Your data is already up to date", "info")
         return redirect(url_for("tracker"))
 
-    oauth_credentials = GoogleFitAuth().load_auth_token()
-    if not oauth_credentials:
-        return redirect(url_for("gfit_auth_bp.google_signin"))
+    data_source = request.args.get('source', DEFAULT_DATA_SOURCE)
+    if not utils.is_valid_data_source(data_source):
+        flash("Data source not supported. Choose one of the listed sources", "error")
+        return redirect(url_for("tracker"))
 
-    data_source_client = GoogleFitClient(oauth_credentials)
+    if data_source == GFIT_SOURCE_NAME:
+        oauth_credentials = GoogleFitAuth().load_auth_token()
+        if not oauth_credentials:
+            return redirect(url_for("gfit_auth_bp.google_signin"))
+
+        data_source_client = GoogleFitClient(oauth_credentials)
+
+    if data_source == MFP_SOURCE_NAME:
+        data_source_client = MyFitnessPalClient()
+
     data_integration = DataIntegrationService(data_storage, data_source_client)
 
     try:
