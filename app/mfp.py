@@ -9,7 +9,11 @@ DATA_DIR = "data"
 RAW_DATA_FILE_NAME = "raw_weight_data.json"
 RAW_DATA_FILE_PATH = Path.joinpath(BASE_DIR, DATA_DIR, "raw", "mfp", RAW_DATA_FILE_NAME)
 
-DEFAULT_DATE_FROM = (dt.datetime.now() - dt.timedelta(days=365 * 1)).date()
+# Default 1 year
+DEFAULT_LOOKBACK_YEARS = 1
+DEFAULT_DATE_FROM = (
+    dt.datetime.now() - dt.timedelta(days=365 * DEFAULT_LOOKBACK_YEARS)
+).date()
 
 
 class MyFitnessPalClient:
@@ -25,9 +29,9 @@ class MyFitnessPalClient:
 
         date_from = dt.date.fromisoformat(date_from) if date_from else DEFAULT_DATE_FROM
 
-        weight = client.get_measurements("Weight", lower_bound=date_from)
+        weight_entries = client.get_measurements("Weight", lower_bound=date_from)
 
-        return weight
+        return weight_entries
 
     def store_raw_data(self, raw_data):
         Path(RAW_DATA_FILE_PATH).parent.mkdir(parents=True, exist_ok=True)
@@ -37,4 +41,7 @@ class MyFitnessPalClient:
             )
 
     def convert_to_daily_entries(self, raw_data):
-        return [{"date": entry[0], "weight": entry[1]} for entry in reversed(raw_data.items())]
+        return [
+            {"date": entry[0], "weight": entry[1]}
+            for entry in reversed(raw_data.items())
+        ]
