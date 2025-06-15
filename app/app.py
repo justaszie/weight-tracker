@@ -81,8 +81,15 @@ def sync_data():
         )
     except SourceFetchError:
         traceback.print_exc()
+        if data_source == MFP_SOURCE_NAME:
+            error_message = "We couldn't connect to MyFitnessPal. Please check if you're logged in and try again."
+        elif data_source == GFIT_SOURCE_NAME:
+            error_message = "We couldn't get your data from Google Fit. Please try again later."
+        else:
+            error_message = "We couldn't get your data. Please try again later."
+
         flash(
-            "We couldn't get your data from Google Fit. Try again later.",
+            error_message,
             "error",
         )
         return redirect(url_for("tracker"))
