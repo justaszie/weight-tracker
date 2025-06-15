@@ -284,15 +284,15 @@ body {
 
 .summary__cards-container {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     grid-template-rows: auto;
-    gap: 15px;
+    gap: 10px;
     margin-bottom: 20px;
 }
 
 .summary-card {
     background-color: var(--clr-bg);
-    padding: 25px;
+    padding: 20px;
     border-radius: var(--rounded-corners-main);
     border: 1px solid var(--clr-border);
     list-style: none;
@@ -309,7 +309,6 @@ body {
 
 .summary-card__value-group {
     display: flex;
-    flex-wrap: nowrap;
     white-space: nowrap;
     align-items: baseline;
     gap: 5px;

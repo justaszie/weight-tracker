@@ -112,11 +112,6 @@ def sync_data():
     return redirect(url_for("tracker"))
 
 
-@app.route("/")
-def home():
-    return redirect("/tracker")
-
-
 @app.route("/tracker", methods=["GET"])
 def tracker():
     weekly_data = {}
@@ -153,7 +148,7 @@ def tracker():
             return render_template("tracker.html", **filter_values)
 
     daily_entries = []
-    latest_entry_date = None
+    latest_daily_entry = None
 
     try:
         data_storage = FileStorage()
@@ -167,7 +162,7 @@ def tracker():
         )
         return render_template("tracker.html", **filter_values)
 
-    latest_entry_date = utils.get_latest_entry_date(daily_entries)
+    latest_daily_entry = utils.get_latest_daily_entry(daily_entries)
 
     if date_from is not None or date_to is not None:
         daily_entries = utils.filter_daily_entries(daily_entries, date_from, date_to)
@@ -200,9 +195,13 @@ def tracker():
     return render_template(
         "tracker.html",
         data=weekly_data,
-        latest_entry_date=latest_entry_date,
+        latest_daily_entry=latest_daily_entry,
         **filter_values,
     )
+
+@app.route("/")
+def home():
+    return redirect("/tracker")
 
 
 app.jinja_env.filters["signed_amt_str"] = utils.to_signed_amt_str

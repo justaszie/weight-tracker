@@ -43,6 +43,16 @@ def get_latest_entry_date(daily_entries) -> dt.date:
         traceback.print_exc()
         return None
 
+def  get_latest_daily_entry(daily_entries) -> dt.date:
+    if not daily_entries:
+        return None
+
+    try:
+        return sorted(daily_entries, key=lambda x: x["date"])[-1]
+    except Exception:
+        traceback.print_exc()
+        return None
+
 
 def message_category_to_class_name(category):
     return {
