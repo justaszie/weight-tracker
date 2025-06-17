@@ -22,13 +22,13 @@ def filter_daily_entries(daily_entries, date_from=None, date_to=None):
         daily_entries = [
             entry
             for entry in daily_entries
-            if entry["date"].strftime("%Y-%m-%d") >= date_from
+            if entry["date"] >= date_from
         ]
     if date_to:
         daily_entries = [
             entry
             for entry in daily_entries
-            if entry["date"].strftime("%Y-%m-%d") <= date_to
+            if entry["date"] <= date_to
         ]
     return daily_entries
 

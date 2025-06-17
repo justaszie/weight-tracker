@@ -11,6 +11,7 @@ from flask import (
 )
 
 import secrets
+import traceback
 import utils
 import datetime as dt
 import google_fit
@@ -24,7 +25,8 @@ from file_storage import FileStorage
 from google_fit import GoogleFitClient, GoogleFitAuth
 from mfp import MyFitnessPalClient
 import analytics
-import traceback
+import api
+
 
 DEFAULT_GOAL = "lose"
 DEFAULT_WEEKS_LIMIT = 4
@@ -38,6 +40,7 @@ app.secret_key = secrets.token_hex(32)
 
 # Register routes used in google fit auth flow
 app.register_blueprint(google_fit.gfit_auth_bp)
+app.register_blueprint(api.api_bp)
 
 
 @app.before_request
@@ -146,6 +149,10 @@ def tracker():
         if date_error:
             flash(date_error, "error")
             return render_template("tracker.html", **filter_values)
+        if date_from:
+            date_from = dt.date.fromisoformat(date_from)
+        if date_to:
+            date_to = dt.date.fromisoformat(date_to)
 
     daily_entries = []
     latest_daily_entry = None

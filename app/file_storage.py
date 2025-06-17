@@ -23,13 +23,13 @@ class FileStorage:
 
     def get_weight_entry(self, date):
         filtered = [
-            entry for entry in self.data if entry["date"] == date.strftime("%Y-%m-%d")
+            entry for entry in self.data if entry["date"] == date
         ]
         return filtered[0] if filtered else None
 
     def create_weight_entry(self, date, weight):
         existing = [
-            entry for entry in self.data if entry["date"] == date.strftime("%Y-%m-%d")
+            entry for entry in self.data if entry["date"] == date
         ]
         if existing:
             raise ValueError(
@@ -41,12 +41,12 @@ class FileStorage:
 
     def delete_weight_entry(self, date):
         self.data = [
-            entry for entry in self.data if entry["date"] != date.strftime("%Y-%m-%d")
+            entry for entry in self.data if entry["date"] != date
         ]
 
     def update_weight_entry(self, date, weight):
         existing = [
-            entry for entry in self.data if entry["date"] == date.strftime("%Y-%m-%d")
+            entry for entry in self.data if entry["date"] == date
         ]
         if not existing:
             raise ValueError(
