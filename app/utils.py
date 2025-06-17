@@ -1,8 +1,9 @@
 import datetime as dt
 import traceback
+from typing import Optional, Tuple
 
-DATA_SOURCES_SUPPORTED = ['gfit', 'mfp']
-GOALS_SUPPORTED = ['lose', 'gain', 'maintain']
+DATA_SOURCES_SUPPORTED = ["gfit", "mfp"]
+GOALS_SUPPORTED = ["lose", "gain", "maintain"]
 
 REFERENCE_WEEK_DATA = {
     "weight_change": 0,
@@ -10,6 +11,15 @@ REFERENCE_WEEK_DATA = {
     "net_calories": 0,
     "result": None,
 }
+
+
+class InvalidDateError(Exception):
+    pass
+
+
+class DateRangeError(Exception):
+    pass
+
 
 def to_signed_amt_str(amount, decimals=True) -> str:
     return ("+" if amount >= 0 else "-") + (
@@ -19,17 +29,9 @@ def to_signed_amt_str(amount, decimals=True) -> str:
 
 def filter_daily_entries(daily_entries, date_from=None, date_to=None):
     if date_from:
-        daily_entries = [
-            entry
-            for entry in daily_entries
-            if entry["date"] >= date_from
-        ]
+        daily_entries = [entry for entry in daily_entries if entry["date"] >= date_from]
     if date_to:
-        daily_entries = [
-            entry
-            for entry in daily_entries
-            if entry["date"] <= date_to
-        ]
+        daily_entries = [entry for entry in daily_entries if entry["date"] <= date_to]
     return daily_entries
 
 
@@ -43,7 +45,8 @@ def get_latest_entry_date(daily_entries) -> dt.date:
         traceback.print_exc()
         return None
 
-def  get_latest_daily_entry(daily_entries) -> dt.date:
+
+def get_latest_daily_entry(daily_entries) -> dt.date:
     if not daily_entries:
         return None
 
@@ -68,29 +71,45 @@ def is_valid_weeks_filter(value):
     except:
         return False
 
+
 def is_valid_goal_selection(goal):
     return goal.lower() in GOALS_SUPPORTED
+
 
 def is_valid_data_source(source):
     return source.lower() in DATA_SOURCES_SUPPORTED
 
-def date_filter_error(date_from_str, date_to_str):
-    if date_from_str:
-        try:
-            date_from = dt.date.fromisoformat(date_from_str)
-        except:
-            return '"Date From" must be a valid date'
 
-    if date_to_str:
-        try:
-            date_to = dt.date.fromisoformat(date_to_str)
-        except:
-            return '"Date To" must be a valid date'
+def parse_iso_date(date_str):
+    if not date_str:
+        return None
 
-    if date_from_str:
-        if date_to_str and date_to < date_from:
-            return '"Date To" must be after "Date From"'
-        elif date_from > dt.date.today():
-            return '"Date From" cannot be in the future'
+    try:
+        return dt.date.fromisoformat(date_str.strip())
+    except:
+        raise ValueError("Invalid Date")
 
-    return None
+
+def validate_date_range(date_from, date_to):
+    if date_from and date_to and date_from > date_to:
+        raise DateRangeError('"Date To" must be after "Date From"')
+
+
+def parse_date_filters(
+    date_from: Optional[str], date_to: Optional[str]
+) -> Tuple[Optional[dt.date], Optional[dt.date]]:
+    try:
+        date_from_parsed = parse_iso_date(date_from)
+    except ValueError:
+        raise InvalidDateError('"Date From" must be a valid date')
+    try:
+        date_to_parsed = parse_iso_date(date_to)
+    except ValueError:
+        raise InvalidDateError('"Date To" must be a valid date')
+
+    try:
+        validate_date_range(date_from_parsed, date_to_parsed)
+    except:
+        raise
+
+    return (date_from_parsed, date_to_parsed)

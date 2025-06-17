@@ -139,21 +139,6 @@ def tracker():
         "weeks_limit": weeks_limit,
     }
 
-    if filter == "weeks" and not utils.is_valid_weeks_filter(weeks_limit):
-        flash("Weeks filter must be a positive number", "error")
-
-        return render_template("tracker.html", **filter_values)
-
-    if filter == "dates":
-        date_error = utils.date_filter_error(date_from, date_to)
-        if date_error:
-            flash(date_error, "error")
-            return render_template("tracker.html", **filter_values)
-        if date_from:
-            date_from = dt.date.fromisoformat(date_from)
-        if date_to:
-            date_to = dt.date.fromisoformat(date_to)
-
     daily_entries = []
     latest_daily_entry = None
 
@@ -171,16 +156,29 @@ def tracker():
 
     latest_daily_entry = utils.get_latest_daily_entry(daily_entries)
 
-    if date_from is not None or date_to is not None:
-        daily_entries = utils.filter_daily_entries(daily_entries, date_from, date_to)
+    if filter == "dates":
+        try:
+            (date_from, date_to) = utils.parse_date_filters(date_from, date_to)
+        except (utils.InvalidDateError, utils.DateRangeError) as e:
+            flash(str(e), "error")
+            return render_template("tracker.html", **filter_values)
+
+        if date_from is not None or date_to is not None:
+            daily_entries = utils.filter_daily_entries(daily_entries, date_from, date_to)
+
 
     if not daily_entries:
         return render_template("tracker.html", **filter_values)
+
 
     try:
         weekly_entries = analytics.get_weekly_aggregates(daily_entries, session["goal"])
 
         if filter == "weeks":
+            if not utils.is_valid_weeks_filter(weeks_limit):
+                flash("Weeks filter must be a positive number", "error")
+                return render_template("tracker.html", **filter_values)
+
             weeks_limit = int(weeks_limit)
             # Keeping N + 1 weeks because the last week
             # is used as reference point to compare against, as starting point
