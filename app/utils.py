@@ -13,6 +13,11 @@ REFERENCE_WEEK_DATA = {
 }
 
 
+DEFAULT_GOAL = "lose"
+DEFAULT_WEEKS_LIMIT = 4
+DEFAULT_DATA_SOURCE = "gfit"
+
+
 class InvalidDateError(Exception):
     pass
 

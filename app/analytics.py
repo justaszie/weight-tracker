@@ -5,7 +5,8 @@ MAINTAIN_ACCEPTABLE_CHANGE = 0.2
 
 def get_weekly_aggregates(daily_entries, goal):
     """
-    # Return value - Weekly entries format:
+    # Return value - Weekly entries in descending order (most recent to oldest)
+    # The format:
      [
         {
          "week_start": "2025-01-10": datetime.date(2025, 04, 14),

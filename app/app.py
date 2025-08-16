@@ -28,12 +28,10 @@ import analytics
 import api
 
 
-DEFAULT_GOAL = "lose"
-DEFAULT_WEEKS_LIMIT = 4
 
 MFP_SOURCE_NAME = 'mfp'
 GFIT_SOURCE_NAME = 'gfit'
-DEFAULT_DATA_SOURCE = "gfit"
+
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
@@ -45,7 +43,7 @@ app.register_blueprint(api.api_bp)
 
 @app.before_request
 def initialize_goal():
-    session["goal"] = session.get("goal", DEFAULT_GOAL)
+    session["goal"] = session.get("goal", utils.DEFAULT_GOAL)
 
 
 @app.route("/sync-data")
@@ -61,7 +59,7 @@ def sync_data():
         flash("Your data is already up to date", "info")
         return redirect(url_for("tracker"))
 
-    data_source = request.args.get('source', DEFAULT_DATA_SOURCE)
+    data_source = request.args.get('source', utils.DEFAULT_DATA_SOURCE)
     if not utils.is_valid_data_source(data_source):
         flash("Data source not supported. Choose one of the listed sources", "error")
         return redirect(url_for("tracker"))
@@ -122,7 +120,7 @@ def tracker():
     goal = request.args.get("goal", session["goal"])
     if not utils.is_valid_goal_selection(goal):
         flash("Invalid goal selection", "error")
-        goal = DEFAULT_GOAL
+        goal = utils.DEFAULT_GOAL
 
     session["goal"] = goal
     session.modified = True
@@ -130,7 +128,7 @@ def tracker():
     filter = request.args.get("filter", "weeks")
     date_from = request.args.get("date_from", None)
     date_to = request.args.get("date_to", None)
-    weeks_limit = request.args.get("weeks_limit", DEFAULT_WEEKS_LIMIT)
+    weeks_limit = request.args.get("weeks_limit", utils.DEFAULT_WEEKS_LIMIT)
 
     filter_values = {
         "filter": filter,
