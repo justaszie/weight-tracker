@@ -25,6 +25,9 @@ class InvalidDateError(Exception):
 class DateRangeError(Exception):
     pass
 
+class InvalidWeeksLimit(Exception):
+    pass
+
 
 def to_signed_amt_str(amount, decimals=True) -> str:
     return ("+" if amount >= 0 else "-") + (
