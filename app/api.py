@@ -161,7 +161,6 @@ def get_summary():
 
 @api_bp.route("/api/latest-entry", methods=["GET"])
 def get_latest_entry():
-
     try:
         data_storage = FileStorage()
         daily_entries = data_storage.get_weight_entries()

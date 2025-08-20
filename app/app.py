@@ -26,6 +26,7 @@ from google_fit import GoogleFitClient, GoogleFitAuth
 from mfp import MyFitnessPalClient
 import analytics
 import api
+from flask_cors import CORS
 
 
 
@@ -35,6 +36,7 @@ GFIT_SOURCE_NAME = 'gfit'
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
+CORS(app)
 
 # Register routes used in google fit auth flow
 app.register_blueprint(google_fit.gfit_auth_bp)
