@@ -89,6 +89,9 @@ def handle_google_auth_callback():
 
 class GoogleFitAuth:
     def load_auth_token(self):
+        # TODO TESTING - remove
+        return None
+
         # Get credentials for API access
         creds = None
 

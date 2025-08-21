@@ -1,11 +1,22 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, url_for
+from google_fit import GoogleFitAuth, GoogleFitClient
+from data_integration import (
+    DataIntegrationService,
+    DataSyncError,
+    SourceFetchError,
+    SourceNoDataError,
+)
 from file_storage import FileStorage
+from mfp import MyFitnessPalClient
 import analytics
 import datetime as dt
 import utils
 import traceback
 
 api_bp = Blueprint("api_bp", __name__)
+
+MFP_SOURCE_NAME = "mfp"
+GFIT_SOURCE_NAME = "gfit"
 
 
 def get_filtered_daily_entries(date_from, date_to):
@@ -171,3 +182,91 @@ def get_latest_entry():
     except Exception:
         traceback.print_exc()
         return jsonify({"error_message": "Error while getting weight data"}), 500
+
+
+@api_bp.route("/api/sync-data", methods=["POST"])
+def sync_data():
+    try:
+        data_storage = FileStorage()
+    except Exception:
+        traceback.print_exc()
+        return (
+            jsonify({"status": "error", "message": "Error while getting weight data"}),
+            500,
+        )
+
+    if not data_storage.data_refresh_needed():
+        return jsonify({"status": "data_up_to_date", "message":"Your data is already up to date"})
+
+    request_body = request.get_json()
+    data_source = request_body.get("source", utils.DEFAULT_DATA_SOURCE)
+
+    if not utils.is_valid_data_source(data_source):
+        return jsonify(
+            {
+                "status": "error",
+                "message": "Data source not supported. Choose one of the listed sources",
+            }
+        )
+
+    if data_source == GFIT_SOURCE_NAME:
+        oauth_credentials = GoogleFitAuth().load_auth_token()
+        if not oauth_credentials:
+            # Response that includes redirect to google auth flow
+            return jsonify(
+                {
+                    "status": "auth_needed",
+                    "message": "Google Fit authentication needed",
+                    "auth_url": url_for("gfit_auth_bp.google_signin"),
+                }
+            ), 401
+
+        data_source_client = GoogleFitClient(oauth_credentials)
+
+    elif data_source == MFP_SOURCE_NAME:
+        data_source_client = MyFitnessPalClient()
+
+    data_integration = DataIntegrationService(data_storage, data_source_client)
+
+    try:
+        new_entries = data_integration.refresh_weight_entries(
+            store_raw_copy=True, store_csv_copy=True
+        )
+    except SourceFetchError:
+        traceback.print_exc()
+        if data_source == MFP_SOURCE_NAME:
+            error_message = "We couldn't connect to MyFitnessPal. Please check if you're logged in and try again."
+        elif data_source == GFIT_SOURCE_NAME:
+            error_message = (
+                "We couldn't get your data from Google Fit. Please try again later."
+            )
+        else:
+            error_message = "We couldn't get your data. Please try again later."
+
+        return jsonify({"status": "error", "message": error_message})
+    except SourceNoDataError:
+        return jsonify({"status": "no_data_received", "message": "No data received"})
+    except DataSyncError:
+        traceback.print_exc()
+        return jsonify(
+            {
+                "status": "error",
+                "message": "We're having trouble syncing your data. We're working on it.",
+            }
+        )
+
+    if new_entries:
+        return jsonify(
+            {
+                "status": "sync_success",
+                "message": "Data updated successfully",
+                "new_entries_count": len(new_entries),
+            }
+        )
+    else:
+        return jsonify(
+            {
+                "status": "data_up_to_date",
+                "message": "Your data is already up to date",
+            }
+        )
