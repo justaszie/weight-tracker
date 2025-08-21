@@ -9,28 +9,28 @@ app/static/images/*
 app/testing.py
 app/testing.ipynb
 
-# Logs
-ui-react/logs
-ui-react/*.log
-ui-react/npm-debug.log*
-ui-react/yarn-debug.log*
-ui-react/yarn-error.log*
-ui-react/pnpm-debug.log*
-ui-react/lerna-debug.log*
-ui-react/
-ui-react/node_modules
-ui-react/dist
-ui-react/dist-ssr
-ui-react/*.local
-ui-react/
-ui-react/# Editor directories and files
-ui-react/.vscode/*
-ui-react/!.vscode/extensions.json
-ui-react/.idea
-ui-react/.DS_Store
-ui-react/*.suo
-ui-react/*.ntvs*
-ui-react/*.njsproj
-ui-react/*.sln
-ui-react/*.sw?
+# # Logs
+# ui-react/logs
+# ui-react/*.log
+# ui-react/npm-debug.log*
+# ui-react/yarn-debug.log*
+# ui-react/yarn-error.log*
+# ui-react/pnpm-debug.log*
+# ui-react/lerna-debug.log*
+# # ui-react/
+# ui-react/node_modules
+# ui-react/dist
+# ui-react/dist-ssr
+# ui-react/*.local
+# # ui-react/
+# ui-react/# Editor directories and files
+# ui-react/.vscode/*
+# ui-react/!.vscode/extensions.json
+# ui-react/.idea
+# ui-react/.DS_Store
+# ui-react/*.suo
+# ui-react/*.ntvs*
+# ui-react/*.njsproj
+# ui-react/*.sln
+# ui-react/*.sw?
 

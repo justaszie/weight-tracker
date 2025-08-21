@@ -29,7 +29,9 @@ function App() {
         goalSelected={goalSelected}
           // goalSelected="maintain"
         />
-      <Main />
+      <Main
+        goalSelected={goalSelected}
+      />
     </div>
   )
 }
