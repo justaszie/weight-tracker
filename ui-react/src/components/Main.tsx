@@ -20,7 +20,7 @@ export default function Main(props) {
     fetch("http://localhost:5040/api/latest-entry")
       .then((response) => response.json())
       .then((data) => setLatestEntry(data));
-  }, [props]);
+  }, [props.dataSyncComplete]);
 
   function handleFiltersSelectionChange(newSelection: FiltersSelection) {
     setFiltersSelection(newSelection);
@@ -82,12 +82,14 @@ export default function Main(props) {
               ctaText="Get Google Fit Data"
               srcIconElement={GoogleIcon}
               handleDataSyncComplete={props.handleDataSyncComplete}
+              showToast={props.showToast}
             />
             <GetDataCTA
               dataSource="mfp"
               ctaText="Get MyFitnessPal Data"
               srcIconElement={MFPIcon}
               handleDataSyncComplete={props.handleDataSyncComplete}
+              showToast={props.showToast}
             />
             {latestEntry !== null && (
               <p>Latest entry: {latestEntry.date ?? "No Data Yet"}</p>
@@ -99,10 +101,12 @@ export default function Main(props) {
           latestEntry={latestEntry}
           goalSelected={props.goalSelected}
           filterValues={filtersSelection}
+          dataSyncComplete={props.dataSyncComplete}
         />
         <WeeklyDataTable
           filterValues={filtersSelection}
           goalSelected={props.goalSelected}
+          dataSyncComplete={props.dataSyncComplete}
         />
       </div>
     </main>

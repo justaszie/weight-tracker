@@ -4,17 +4,19 @@ import type { WeightEntry } from "../types/weight_entry";
 import type { Goal } from "./types/goal";
 import type { Filter, FiltersSelection } from "../types/filter";
 
+type SummaryPropsType = {
+  latestEntry: WeightEntry;
+  goalSelected: Goal;
+  filterValues?: FiltersSelection;
+  dataSyncComplete: boolean;
+};
+
 type SummaryUrlParamsType = {
     weeks_limit?: string;
     date_to?: string;
     date_from?: string;
 }
 
-type SummaryPropsType = {
-  latestEntry: WeightEntry;
-  goalSelected: Goal;
-  filterValues?: FiltersSelection;
-};
 
 const GOAL_LABELS: { [key: string]: string } = {
   lose: "Losing Fat",
@@ -56,7 +58,7 @@ export default function Summary(props: SummaryPropsType) {
       .then((data) => {
         setSummaryData(data.summary);
       });
-  }, [props]);
+  }, [props.filterValues, props.dataSyncComplete]);
 
   return (
     <section className="summary">

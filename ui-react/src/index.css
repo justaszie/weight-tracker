@@ -410,7 +410,7 @@ body {
     text-align: center;
 }
 
-.flash {
+.toast {
     position: fixed;
     top: 15px;
     left: 50%;
@@ -419,26 +419,26 @@ body {
 
 }
 
-.flash__message {
+.toast__message {
     padding: 15px 20px;
     font-weight: 500;
     text-align: center;
     border-radius: 7px;
 }
 
-.flash__message--success {
+.toast__message--success {
     background-color: rgb(230, 245, 230);
     color: rgba(5, 54, 8, 0.8);
     border: 1px solid rgba(5, 54, 8, 0.3);
 }
 
-.flash__message--error {
+.toast__message--error {
     background-color: rgb(255, 230, 230);
     color: rgba(139, 0, 0, 0.8);
     border: 1px solid  rgba(139, 0, 0, 0.3); /* optional: subtle border for separation */
 }
 
-.flash__message--info {
+.toast__message--info {
     background-color: #f2f4f8;
     color: #2f3b52;
     border: 1px solid #d1d9e6;

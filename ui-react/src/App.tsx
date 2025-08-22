@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 
 import Header from "./components/Header";
 import Main from "./components/Main";
+import Toast from "./components/Toast"
 
 import type { Goal } from "./types/goal";
 
@@ -13,7 +14,13 @@ function App() {
   const [goalSelected, setGoalSelected] = useState<Goal>(
     goalStored ?? DEFAULT_GOAL
   );
+  const [toast, setToast] = useState<{category: String; message: string} | null>(null);
   const [dataSyncComplete, setDataSyncComplete] = useState<boolean>(false);
+
+  function showToast(category: string, message: string) {
+    setToast({category, message});
+    setTimeout(() => {setToast(null)}, 2000);
+  }
 
   function triggerDataSync(data_source: string) {
     const SERVER_BASE_URL = "http://localhost:5040";
@@ -32,6 +39,12 @@ function App() {
           } else if (body.status === "sync_success") {
             // 2) if sync success,  update state to trigger re-rendering
             markDataSyncComplete();
+          } else if (body.status === "data_up_to_date") {
+            showToast("info", body.message);
+          } else if (body.status === "no_data_received") {
+            showToast("info", body.message);
+          } else {
+            showToast("error", body.message);
           }
         });
   }
@@ -55,6 +68,7 @@ function App() {
   }
 
   function markDataSyncComplete() {
+    showToast('success', 'Data updated successfully');
     setDataSyncComplete(true);
   }
 
@@ -63,12 +77,20 @@ function App() {
       <Header
         handleGoalChange={handleGoalChange}
         goalSelected={goalSelected}
-        // goalSelected="maintain"
       />
       <Main
         goalSelected={goalSelected}
         handleDataSyncComplete={markDataSyncComplete}
+        showToast={showToast}
+        dataSyncComplete={dataSyncComplete}
       />
+      {
+        toast !== null &&
+        <Toast
+          message={toast.message}
+          category={toast.category}
+        />
+      }
     </div>
   );
 }

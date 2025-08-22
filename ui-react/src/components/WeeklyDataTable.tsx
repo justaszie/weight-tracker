@@ -6,6 +6,7 @@ import type { Goal } from "../types/goal";
 type WeeklyDataTablePropsType = {
     filterValues?: FiltersSelection;
     goalSelected: Goal;
+    dataSyncComplete: boolean;
 }
 
 type WeeklyDataUrlParamsType = {
@@ -62,7 +63,7 @@ export default function WeeklyDataTable(props: WeeklyDataTablePropsType) {
             .then(data => {
                 setWeeklyData(data['weekly_data'])
             })
-    }, [props]);
+    }, [props.filterValues, props.goalSelected, props.dataSyncComplete]);
 
     return (
         <section>
