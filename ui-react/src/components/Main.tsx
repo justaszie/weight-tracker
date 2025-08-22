@@ -19,6 +19,11 @@ export default function Main(props) {
     weeksLimit: DEFAULT_WEEKS_LIMIT,
   });
 
+  const dataSources = [
+    {srcName: 'gfit', ctaText: 'Get Google Fit Data', icon: GoogleIcon},
+    {srcName: 'mfit', ctaText: 'Get MyFitnessPal Data', icon: MFPIcon},
+  ]
+
   useEffect(() => {
     fetch("http://localhost:5040/api/latest-entry")
       .then((response) => response.json())
@@ -29,45 +34,33 @@ export default function Main(props) {
     setFiltersSelection(newSelection);
   }
 
-  //   const MFPIcon = (
-
-  //   );
-
   return (
     <main>
       <div className="main-content">
         <div className="spaced-out">
-          {/* Filters Selection */}
           <div className="filters-column">
             <Filters
               filtersSelection={filtersSelection}
               handleFiltersSelectionChange={handleFiltersSelectionChange}
             />
           </div>
-          {/* Get Data CTAs*/}
           <div className="get-data">
-            <GetDataCTA
-              dataSource="gfit"
-              ctaText="Get Google Fit Data"
-              srcIcon={GoogleIcon}
-              // handleDataSyncComplete={props.handleDataSyncComplete}
-              // showToast={props.showToast}
-              onDataSyncRequest={props.onDataSyncRequest}
-            />
-            <GetDataCTA
-              dataSource="mfp"
-              ctaText="Get MyFitnessPal Data"
-              srcIcon={MFPIcon}
-              // handleDataSyncComplete={props.handleDataSyncComplete}
-              // showToast={props.showToast}
-              onDataSyncRequest={props.onDataSyncRequest}
-            />
+            {
+              dataSources.map(src => (
+                <GetDataCTA
+                  dataSource={src.srcName}
+                  ctaText={src.ctaText}
+                  srcIcon={src.icon}
+                  onDataSyncRequest={props.onDataSyncRequest}
+                />
+              ))
+            }
+
             {latestEntry !== null && (
               <p>Latest entry: {latestEntry.date ?? "No Data Yet"}</p>
             )}
           </div>
         </div>
-        {/*  Summary Component */}
         <Summary
           latestEntry={latestEntry}
           goalSelected={props.goalSelected}
