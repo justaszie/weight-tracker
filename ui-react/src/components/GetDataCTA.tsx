@@ -2,7 +2,7 @@ import React from "react";
 
 type GetDataCTAPropsType = {
   ctaText: string;
-  srcIconElement: React.ReactElement;
+  srcIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   dataSource: string;
   handleDataSyncComplete: () => void;
   showToast: (category: string, message: string) => void;
@@ -36,6 +36,9 @@ export default function GetDataCTA(props: GetDataCTAPropsType) {
       props.showToast("error", body.message);
     }
   }
+
+  const Icon = props.srcIcon;
+
   return (
     <a
       data-data-source={props.dataSource}
@@ -43,7 +46,7 @@ export default function GetDataCTA(props: GetDataCTAPropsType) {
       onClick={handleCTAClick}
       className="get-data__cta"
     >
-      {props.srcIconElement}
+      <Icon className="get-data__cta-icon" />
       <span>{props.ctaText}</span>
     </a>
   );
