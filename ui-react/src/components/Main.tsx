@@ -50,15 +50,17 @@ export default function Main(props) {
               dataSource="gfit"
               ctaText="Get Google Fit Data"
               srcIcon={GoogleIcon}
-              handleDataSyncComplete={props.handleDataSyncComplete}
-              showToast={props.showToast}
+              // handleDataSyncComplete={props.handleDataSyncComplete}
+              // showToast={props.showToast}
+              onDataSyncRequest={props.onDataSyncRequest}
             />
             <GetDataCTA
               dataSource="mfp"
               ctaText="Get MyFitnessPal Data"
               srcIcon={MFPIcon}
-              handleDataSyncComplete={props.handleDataSyncComplete}
-              showToast={props.showToast}
+              // handleDataSyncComplete={props.handleDataSyncComplete}
+              // showToast={props.showToast}
+              onDataSyncRequest={props.onDataSyncRequest}
             />
             {latestEntry !== null && (
               <p>Latest entry: {latestEntry.date ?? "No Data Yet"}</p>

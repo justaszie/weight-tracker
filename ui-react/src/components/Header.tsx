@@ -17,7 +17,7 @@ export default function Header(props: HeaderPropsType) {
             <div className="main-content spaced-out">
                 <div>
                     <h1 className="header__title">
-                        <a className="header__home-link" href="{{ url_for('home') }}">Weight Tracker</a>
+                        <a className="header__home-link" href="/">Weight Tracker</a>
                     </h1>
                     <p className="header__subtitle">
                         Track your weight changes without a calculator

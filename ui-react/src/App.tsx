@@ -7,6 +7,7 @@ import Toast from "./components/Toast"
 import type { Goal } from "./types/goal";
 
 const DEFAULT_GOAL: Goal = "maintain";
+const DEFAULT_DATA_SOURCE = 'gfit';
 
 function App() {
   const goalStored: Goal | null = localStorage.getItem("goalSelected") as Goal;
@@ -22,7 +23,7 @@ function App() {
     setTimeout(() => {setToast(null)}, 2000);
   }
 
-  function triggerDataSync(data_source: string) {
+  function triggerDataSync(data_source?: string) {
     const SERVER_BASE_URL = "http://localhost:5040";
       // 1) trigger data sync (same as from get button CTA)
       fetch(`${SERVER_BASE_URL}/api/sync-data`, {
@@ -30,7 +31,7 @@ function App() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ data_source: data_source }),
+        body: JSON.stringify({ data_source: data_source || DEFAULT_DATA_SOURCE }),
       })
         .then((response) => response.json())
         .then((body) => {
@@ -83,6 +84,7 @@ function App() {
         handleDataSyncComplete={markDataSyncComplete}
         showToast={showToast}
         dataSyncComplete={dataSyncComplete}
+        onDataSyncRequest={triggerDataSync}
       />
       {
         toast !== null &&
