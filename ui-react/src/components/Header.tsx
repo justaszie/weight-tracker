@@ -33,8 +33,8 @@ export default function Header(props: HeaderPropsType) {
                             >
                                 {/* <!-- Lose SVG --> */}
                                 <svg className=" goal-selection__icon" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                                    strokeLinecap="round" strokeLinejoin="round"
                                     >
                                     <path
                                         d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z">
@@ -48,8 +48,8 @@ export default function Header(props: HeaderPropsType) {
                                 // href="{{ url_for('tracker', filter=filter, weeks_limit=weeks_limit, date_to=date_to, date_from=date_from, goal='gain') }}"
                                 href="#">
                                 <svg className=" goal-selection__icon" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                                    strokeLinecap="round" strokeLinejoin="round"
                                     >
                                     <path d="M14.4 14.4 9.6 9.6"></path>
                                     <path
@@ -69,8 +69,8 @@ export default function Header(props: HeaderPropsType) {
                                 // href="{{ url_for('tracker', filter=filter, weeks_limit=weeks_limit, date_to=date_to, date_from=date_from, goal='maintain') }}"
                                 href="#">
                                 <svg className=" goal-selection__icon" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round" >
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                                    strokeLinecap="round" strokeLinejoin="round" >
                                     <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
                                     <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
                                     <path d="M7 21h10"></path>
