@@ -56,7 +56,7 @@ export default function Summary(props: SummaryPropsType) {
       .then((data) => {
         setSummaryData(data.summary);
       });
-  }, [props.filterValues]);
+  }, [props]);
 
   return (
     <section className="summary">

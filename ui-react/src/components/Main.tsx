@@ -1,29 +1,30 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react";
 
 import Filters from "./Filters";
 import GetDataCTA from "./GetDataCTA";
-import Summary from "./Summary"
+import Summary from "./Summary";
 
-import type { WeightEntry } from '../types/weight_entry';
-import type { FiltersSelection } from '../types/filter';
-import WeeklyDataTable from './WeeklyDataTable';
+import type { WeightEntry } from "../types/weight_entry";
+import type { FiltersSelection } from "../types/filter";
+import WeeklyDataTable from "./WeeklyDataTable";
 
 const DEFAULT_WEEKS_LIMIT = 4;
 
 export default function Main(props) {
   const [latestEntry, setLatestEntry] = useState<WeightEntry | null>(null);
-  const [filtersSelection, setFiltersSelection] = useState<FiltersSelection>({weeksLimit: DEFAULT_WEEKS_LIMIT});
+  const [filtersSelection, setFiltersSelection] = useState<FiltersSelection>({
+    weeksLimit: DEFAULT_WEEKS_LIMIT,
+  });
 
   useEffect(() => {
-    fetch('http://localhost:5040/api/latest-entry')
-        .then(response => response.json())
-        .then(data => setLatestEntry(data))
-  }, []);
+    fetch("http://localhost:5040/api/latest-entry")
+      .then((response) => response.json())
+      .then((data) => setLatestEntry(data));
+  }, [props]);
 
   function handleFiltersSelectionChange(newSelection: FiltersSelection) {
     setFiltersSelection(newSelection);
   }
-
 
   const GoogleIcon = (
     <svg
@@ -67,33 +68,41 @@ export default function Main(props) {
     <main>
       <div className="main-content">
         <div className="spaced-out">
-        {/* Filters Selection */}
+          {/* Filters Selection */}
           <div className="filters-column">
             <Filters
-                filtersSelection={filtersSelection}
-                handleFiltersSelectionChange={handleFiltersSelectionChange}
+              filtersSelection={filtersSelection}
+              handleFiltersSelectionChange={handleFiltersSelectionChange}
             />
           </div>
           {/* Get Data CTAs*/}
           <div className="get-data">
-            <GetDataCTA ctaText="Get Google Fit Data" srcIconElement={GoogleIcon} />
-            <GetDataCTA ctaText="Get MyFitnessPal Data" srcIconElement={MFPIcon} />
-            {
-                latestEntry !== null &&
-                <p>Latest entry: {latestEntry.date ?? 'No Data Yet'}</p>
-            }
+            <GetDataCTA
+              dataSource="gfit"
+              ctaText="Get Google Fit Data"
+              srcIconElement={GoogleIcon}
+              handleDataSyncComplete={props.handleDataSyncComplete}
+            />
+            <GetDataCTA
+              dataSource="mfp"
+              ctaText="Get MyFitnessPal Data"
+              srcIconElement={MFPIcon}
+              handleDataSyncComplete={props.handleDataSyncComplete}
+            />
+            {latestEntry !== null && (
+              <p>Latest entry: {latestEntry.date ?? "No Data Yet"}</p>
+            )}
           </div>
-
         </div>
         {/*  Summary Component */}
         <Summary
-            latestEntry={latestEntry}
-            goalSelected={props.goalSelected}
-            filterValues={filtersSelection}
+          latestEntry={latestEntry}
+          goalSelected={props.goalSelected}
+          filterValues={filtersSelection}
         />
         <WeeklyDataTable
-            filterValues={filtersSelection}
-            goalSelected={props.goalSelected}
+          filterValues={filtersSelection}
+          goalSelected={props.goalSelected}
         />
       </div>
     </main>

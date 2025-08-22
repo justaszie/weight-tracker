@@ -4,7 +4,7 @@ from pathlib import Path
 import traceback
 import datetime as dt
 import pandas as pd
-from flask import Blueprint, session, redirect, request, url_for
+from flask import Blueprint, jsonify, session, redirect, request, url_for
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import Flow
@@ -33,6 +33,8 @@ RAW_DATA_FILE_NAME = "raw_weight_data.json"
 RAW_DATA_FILE_PATH = Path.joinpath(
     BASE_DIR, DATA_DIR, "raw", "gfit", RAW_DATA_FILE_NAME
 )
+
+FRONTEND_REDIRECT_URL = 'http://localhost:5174/'
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = (
     "1"  # FOR DEVELOPMENT: allow google to send authorization to HTTP (insecure) endpoint of this app. For testing.
@@ -81,7 +83,7 @@ def handle_google_auth_callback():
     # Save access token for future API usage without auth flow
     GoogleFitAuth().save_auth_token_to_file(creds)
 
-    return redirect(url_for("sync_data"))
+    return redirect(FRONTEND_REDIRECT_URL + '?initiator=data_source_auth_success&source=gfit')
 
 
 #################################
@@ -89,9 +91,6 @@ def handle_google_auth_callback():
 
 class GoogleFitAuth:
     def load_auth_token(self):
-        # TODO TESTING - remove
-        return None
-
         # Get credentials for API access
         creds = None
 

@@ -199,7 +199,7 @@ def sync_data():
         return jsonify({"status": "data_up_to_date", "message":"Your data is already up to date"})
 
     request_body = request.get_json()
-    data_source = request_body.get("source", utils.DEFAULT_DATA_SOURCE)
+    data_source = request_body.get("data_source", utils.DEFAULT_DATA_SOURCE)
 
     if not utils.is_valid_data_source(data_source):
         return jsonify(
