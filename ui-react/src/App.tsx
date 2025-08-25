@@ -84,6 +84,7 @@ function App() {
         handleDataSyncComplete={markDataSyncComplete}
         dataSyncComplete={dataSyncComplete}
         onDataSyncRequest={triggerDataSync}
+        showToast={showToast}
       />
       {toast && <Toast message={toast.message} category={toast.category} />}
     </div>

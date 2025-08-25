@@ -44,6 +44,7 @@ export default function Main(props: MainProps) {
             <Filters
               filtersSelection={filtersSelection}
               handleFiltersSelectionChange={handleFiltersSelectionChange}
+              showToast={props.showToast}
             />
           </div>
           <div className="get-data">

@@ -28,6 +28,7 @@ export default function Filters(props: FiltersProps) {
                     ? <WeeksFilter
                         handleSelectionChange={props.handleFiltersSelectionChange}
                         selectedValues={{weeksLimit: props.filtersSelection.weeksLimit}}
+                        showToast={props.showToast}
                         />
                     : <DatesFilter
                         handleSelectionChange={props.handleFiltersSelectionChange}
@@ -35,6 +36,7 @@ export default function Filters(props: FiltersProps) {
                             dateFrom: props.filtersSelection.dateFrom ?? '',
                             dateTo: props.filtersSelection.dateTo ?? '',
                         }}
+                        showToast={props.showToast}
                         />
                 }
             </>

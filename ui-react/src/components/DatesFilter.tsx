@@ -1,14 +1,28 @@
 import type { ChangeEvent } from "react";
 import type { DatesFilterProps } from "@/types/props";
 
+function isValidISODate(date: string) {
+  return !Number.isNaN(Date.parse(date));
+}
+
 export default function DatesFilter(props: DatesFilterProps) {
+
   function handleDateFilterChange(event: ChangeEvent<HTMLInputElement>) {
 
     let { dateFrom, dateTo } = props.selectedValues;
+
     if (event.target.name === "date_from") {
       dateFrom = event.target.value;
+      if(!isValidISODate(dateFrom)) {
+        props.showToast('error', "Invalid date from value");
+        return ;
+      }
     } else if (event.target.name === "date_to") {
       dateTo = event.target.value;
+      if(!isValidISODate(dateTo)) {
+        props.showToast('error', "Invalid date to value");
+        return ;
+      }
     }
 
     props.handleSelectionChange({

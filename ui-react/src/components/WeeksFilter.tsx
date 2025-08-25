@@ -2,9 +2,16 @@ import type { ChangeEvent } from "react";
 import type { WeeksFilterProps } from "@/types/props";
 
 export default function WeeksFilter(props: WeeksFilterProps) {
+
     function handleWeeksLimitChange(event: ChangeEvent<HTMLInputElement>) {
-        const newValue: number = Number(event.target.value);
-        props.handleSelectionChange({weeksLimit: newValue});
+        const newValue = Number(event.target.value);
+        if(newValue > 0) {
+          props.handleSelectionChange({weeksLimit: newValue});
+        }
+        else {
+          props.showToast("error", "Weeks selection must be 1 or above",);
+        }
+
     }
 
   return (
