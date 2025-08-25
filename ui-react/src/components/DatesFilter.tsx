@@ -1,12 +1,7 @@
-import { ChangeEvent } from "react";
-import type { FiltersSelection } from "../types/filter";
+import type { ChangeEvent } from "react";
+import type { DatesFilterProps } from "@/types/props";
 
-type DatesFilterPropsType = {
-  selectedValues: { dateTo?: string; dateFrom?: string };
-  handleSelectionChange: (newSelection: FiltersSelection) => void;
-};
-
-export default function DatesFilter(props: DatesFilterPropsType) {
+export default function DatesFilter(props: DatesFilterProps) {
   function handleDateFilterChange(event: ChangeEvent<HTMLInputElement>) {
     // console.log(props.selectedValues);
 

@@ -1,18 +1,13 @@
 import { useState } from 'react';
+import type { FiltersProps } from "@/types/props";
+import type { Filter, FiltersSelection } from "@/types/filter";
+
 import WeeksFilter from './WeeksFilter'
 import DatesFilter from './DatesFilter'
 
-import type { Filter, FiltersSelection } from '../types/filter'
-
-type FiltersPropsType = {
-    filtersSelection: FiltersSelection;
-    handleFiltersSelectionChange: (newSelection: FiltersSelection) => void;
-}
-
-
 const DEFAULT_FILTER_SELECTION = 'weeks'
 
-export default function Filters(props: FiltersPropsType) {
+export default function Filters(props: FiltersProps) {
     const [filterSelected, setFilterSelected] = useState(DEFAULT_FILTER_SELECTION);
 
     function handleFilterSelectionChange(event: React.MouseEvent<HTMLAnchorElement>) {

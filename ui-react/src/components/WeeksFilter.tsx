@@ -1,14 +1,7 @@
 import type { ChangeEvent } from "react";
-import type { FiltersSelection } from "../types/filter";
+import type { WeeksFilterProps } from "@/types/props";
 
-type WeeksFilterPropsType = {
-    selectedValues:  { weeksLimit?: number };
-    handleSelectionChange: (newSelection: FiltersSelection) => void
-};
-
-
-
-export default function WeeksFilter(props: WeeksFilterPropsType) {
+export default function WeeksFilter(props: WeeksFilterProps) {
     function handleWeeksLimitChange(event: ChangeEvent<HTMLInputElement>) {
         const newValue: number = Number(event.target.value);
         props.handleSelectionChange({weeksLimit: newValue});

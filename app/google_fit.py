@@ -34,7 +34,7 @@ RAW_DATA_FILE_PATH = Path.joinpath(
     BASE_DIR, DATA_DIR, "raw", "gfit", RAW_DATA_FILE_NAME
 )
 
-FRONTEND_REDIRECT_URL = 'http://localhost:5174/'
+FRONTEND_REDIRECT_URL = 'http://localhost:5173/'
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = (
     "1"  # FOR DEVELOPMENT: allow google to send authorization to HTTP (insecure) endpoint of this app. For testing.

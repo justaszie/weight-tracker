@@ -1,25 +1,13 @@
 import { useEffect, useState } from "react";
 
-import type { FiltersSelection } from "../types/filter";
-import type { Goal } from "../types/goal";
+import type { WeeklyDataTableProps } from "@/types/props";
+import type { WeeklyDataUrlParams, WeeklyDataEntry } from "@/types/weekly_table";
 
-type WeeklyDataTablePropsType = {
-    filterValues?: FiltersSelection;
-    goalSelected: Goal;
-    dataSyncComplete: boolean;
-}
 
-type WeeklyDataUrlParamsType = {
-    weeks_limit?: string;
-    date_to?: string;
-    date_from?: string;
-    goal: Goal;
-}
-
-export default function WeeklyDataTable(props: WeeklyDataTablePropsType) {
+export default function WeeklyDataTable(props: WeeklyDataTableProps) {
     const [weeklyData, setWeeklyData] = useState([])
     // TODO - fetch weekly aggregate data and map entries to <tr> elements
-    function weekToRow(weekEntry) {
+    function weekToRow(weekEntry: WeeklyDataEntry) {
         const { result } = weekEntry;
         return (
             <tr key={weekEntry['week_start']} className="data-table__row">
@@ -35,7 +23,7 @@ export default function WeeklyDataTable(props: WeeklyDataTablePropsType) {
                                 ${result === 'negative' ? "data-table__cell--negative" : ""}`}>
                                 { weekEntry['weight_change_prc'] } %</td>
                             <td
-                                className={`data-table__cell = ${result === 'positive' ? "data-table__cell--positive": ""}
+                                className={`data-table__cell ${result === 'positive' ? "data-table__cell--positive": ""}
                                 ${result === 'negative' ? " data-table__cell--negative" : ""}`}>
                                 { weekEntry['net_calories'] } kcal / day</td>
                         </tr>
@@ -45,7 +33,7 @@ export default function WeeklyDataTable(props: WeeklyDataTablePropsType) {
     // Fetching data when filter values change
     useEffect(() => {
         const { weeksLimit, dateTo, dateFrom } = props.filterValues;
-        const urlParams: WeeklyDataUrlParamsType = { goal: props.goalSelected }
+        const urlParams: WeeklyDataUrlParams = { goal: props.goalSelected }
         if (weeksLimit) {
             urlParams['weeks_limit'] = String(weeksLimit);
         }

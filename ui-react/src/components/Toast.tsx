@@ -1,11 +1,6 @@
-type ToastPropsType = {
-    category: MessageCategory;
-    message: string;
-}
+import type { ToastProps } from "@/types/props";
 
-type MessageCategory = 'info' | 'error' | 'success'
-
-export default function Toast(props: ToastPropsType) {
+export default function Toast(props: ToastProps) {
     const categoryToCSSClass = {
         info: "toast__message--info",
         error: "toast__message--error",

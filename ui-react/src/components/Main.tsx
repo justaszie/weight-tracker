@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
+import type { MainProps } from "@/types/props";
+import type { WeightEntry } from "@/types/weight_entry";
+import type { FiltersSelection } from "@/types/filter";
 
 import Filters from "./Filters";
 import GetDataCTA from "./GetDataCTA";
 import Summary from "./Summary";
-
-import { ReactComponent as GoogleIcon } from "../assets/GoogleIcon.svg";
-import { ReactComponent as MFPIcon } from "../assets/MFPIcon.svg";
-
-import type { WeightEntry } from "../types/weight_entry";
-import type { FiltersSelection } from "../types/filter";
 import WeeklyDataTable from "./WeeklyDataTable";
+
+import { ReactComponent as GoogleIcon } from "@/assets/GoogleIcon.svg";
+import { ReactComponent as MFPIcon } from "@/assets/MFPIcon.svg";
 
 const DEFAULT_WEEKS_LIMIT = 4;
 
-export default function Main(props) {
+export default function Main(props: MainProps) {
   const [latestEntry, setLatestEntry] = useState<WeightEntry | null>(null);
   const [filtersSelection, setFiltersSelection] = useState<FiltersSelection>({
     weeksLimit: DEFAULT_WEEKS_LIMIT,

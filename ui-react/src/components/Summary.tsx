@@ -1,22 +1,6 @@
 import { useState, useEffect } from "react";
-
-import type { WeightEntry } from "../types/weight_entry";
-import type { Goal } from "./types/goal";
-import type { Filter, FiltersSelection } from "../types/filter";
-
-type SummaryPropsType = {
-  latestEntry: WeightEntry;
-  goalSelected: Goal;
-  filterValues?: FiltersSelection;
-  dataSyncComplete: boolean;
-};
-
-type SummaryUrlParamsType = {
-    weeks_limit?: string;
-    date_to?: string;
-    date_from?: string;
-}
-
+import type { SummaryProps } from "@/types/props";
+import type { SummaryData, SummaryUrlParams } from "@/types/summary";
 
 const GOAL_LABELS: { [key: string]: string } = {
   lose: "Losing Fat",
@@ -24,34 +8,30 @@ const GOAL_LABELS: { [key: string]: string } = {
   gain: "Gaining Muscle",
 };
 
-
-
-export default function Summary(props: SummaryPropsType) {
-  const [summaryData, setSummaryData] = useState(null);
+export default function Summary(props: SummaryProps) {
+  const [summaryData, setSummaryData] = useState<SummaryData>({});
 
   const { weeksLimit, dateTo, dateFrom } = props.filterValues;
 
-  const summaryHeader =
-    weeksLimit
-      ? `Summary for the past ${weeksLimit} weeks`
-      : `Summary from ${dateFrom ? dateFrom : 'beginning'} to
-      ${dateTo ? dateTo: 'today'}`;
+  const summaryHeader = weeksLimit
+    ? `Summary for the past ${weeksLimit} weeks`
+    : `Summary from ${dateFrom ? dateFrom : "beginning"} to
+      ${dateTo ? dateTo : "today"}`;
 
-//   Fetch summary data
+  //   Fetch summary data
   useEffect(() => {
-    // TBD - use filter selection to build request
-    const urlParams: SummaryUrlParamsType = { }
+    const urlParams: SummaryUrlParams = {};
     if (weeksLimit) {
-        urlParams['weeks_limit'] = String(weeksLimit);
+      urlParams["weeks_limit"] = String(weeksLimit);
     }
     if (dateFrom) {
-        urlParams['date_from'] = dateFrom;
+      urlParams["date_from"] = dateFrom;
     }
     if (dateTo) {
-        urlParams['date_to'] = dateTo;
+      urlParams["date_to"] = dateTo;
     }
 
-    const summaryURL = new URL('http://localhost:5040/api/summary');
+    const summaryURL = new URL("http://localhost:5040/api/summary");
     summaryURL.search = new URLSearchParams(urlParams).toString();
     fetch(summaryURL)
       .then((response) => response.json())
@@ -82,37 +62,38 @@ export default function Summary(props: SummaryPropsType) {
       </div>
       {/* <!-- Cards --> */}
       <ul className="summary__cards-container">
-        <li className="summary-card">
-          <p className="summary-card__header">
-            <svg
-              className=" goal-selection__icon"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
-              <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
-              <path d="M7 21h10"></path>
-              <path d="M12 3v18"></path>
-              <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path>
-            </svg>
-            <span>Latest Weight</span>
-          </p>
-          <div className="summary-card__value-group">
-            <h3 className="summary-card__value">
-              {props.latestEntry && props.latestEntry.weight}
-            </h3>
-            <span className="summary-card__subtitle">kg</span>
-          </div>
-          <p className="summary-card__header">
-            on <span>{props.latestEntry && props.latestEntry.date}</span>
-          </p>
-        </li>
-
+        {props.latestEntry && (
+          <li className="summary-card">
+            <p className="summary-card__header">
+              <svg
+                className=" goal-selection__icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
+                <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
+                <path d="M7 21h10"></path>
+                <path d="M12 3v18"></path>
+                <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path>
+              </svg>
+              <span>Latest Weight</span>
+            </p>
+            <div className="summary-card__value-group">
+              <h3 className="summary-card__value">
+                {props.latestEntry.weight}
+              </h3>
+              <span className="summary-card__subtitle">kg</span>
+            </div>
+            <p className="summary-card__header">
+              on <span>{props.latestEntry.date}</span>
+            </p>
+          </li>
+        )}
         <li className="summary-card">
           <p className="summary-card__header">
             <svg
@@ -211,9 +192,9 @@ export default function Summary(props: SummaryPropsType) {
           </div>
         </li>
       </ul>
-      {/* <!-- Goal Progress evaluation box --> */}
 
-      {props.goal_progress && (
+      {/* <!-- Goal Progress evaluation box --> */}
+      {/* {props.goal_progress && (
         <p className="summary_evaluation">
           <svg
             className="summary__icon summary_icon--evaluation"
@@ -227,10 +208,9 @@ export default function Summary(props: SummaryPropsType) {
           >
             <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>
           </svg>
-          {/* <!-- TODO: Goal Progress is dynamic based on results --> */}
           <span>{props.goal_progress}</span>
         </p>
-      )}
+      )} */}
     </section>
   );
 }
