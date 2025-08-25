@@ -4,6 +4,8 @@ import type { SummaryProps } from "@/types/props";
 import type { SummaryData, SummaryUrlParams } from "@/types/summary";
 import type { Goal } from "@/types/goal";
 
+import { toSignedString } from "@/utils";
+
 const GOAL_LABELS: { [key in Goal]: string } = {
   lose: "Losing Fat",
   maintain: "Maintaining",
@@ -62,6 +64,7 @@ export default function Summary(props: SummaryProps) {
           <span>Current Goal: {GOAL_LABELS[props.goalSelected]}</span>
         </p>
       </div>
+
       {/* <!-- Cards --> */}
       <ul className="summary__cards-container">
         {props.latestEntry && (
@@ -87,7 +90,7 @@ export default function Summary(props: SummaryProps) {
             </p>
             <div className="summary-card__value-group">
               <h3 className="summary-card__value">
-                {props.latestEntry.weight}
+                {props.latestEntry.weight.toFixed(2)}
               </h3>
               <span className="summary-card__subtitle">kg</span>
             </div>
@@ -116,7 +119,10 @@ export default function Summary(props: SummaryProps) {
             <span>Total Weight Change</span>
           </p>
           <div className="summary-card__value-group">
-            <h3 className="summary-card__value">{summaryData?.total_change}</h3>
+            <h3 className="summary-card__value">
+              {summaryData.total_change &&
+                toSignedString(summaryData.total_change, 2)}
+            </h3>
             <span className="summary-card__subtitle">kg</span>
           </div>
         </li>
@@ -140,7 +146,10 @@ export default function Summary(props: SummaryProps) {
             <span>Avg. Weight Change</span>
           </p>
           <div className="summary-card__value-group">
-            <h3 className="summary-card__value">{summaryData?.avg_change}</h3>
+            <h3 className="summary-card__value">
+               {summaryData.avg_change &&
+                toSignedString(summaryData.avg_change, 2)}
+            </h3>
             <span className="summary-card__subtitle">kg / week</span>
           </div>
         </li>
@@ -164,7 +173,10 @@ export default function Summary(props: SummaryProps) {
           </p>
           <div className="summary-card__value-group">
             <h3 className="summary-card__value">
-              {summaryData?.avg_change_prc}
+              {
+                summaryData.avg_change_prc &&
+                toSignedString(summaryData.avg_change_prc, 2)
+              }
             </h3>
             <span className="summary-card__subtitle">% / week</span>
           </div>
@@ -188,7 +200,10 @@ export default function Summary(props: SummaryProps) {
           <div className="summary-card__value-group">
             {/* Convert to signed amount format  */}
             <h3 className="summary-card__value">
-              {summaryData?.avg_net_calories}
+              {
+                summaryData.avg_net_calories &&
+                toSignedString(summaryData.avg_net_calories)
+              }
             </h3>
             <span className="summary-card__subtitle">kcal / day</span>
           </div>

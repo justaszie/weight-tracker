@@ -15,4 +15,3 @@ export type WeeklyDataEntry = {
   net_calories: number;
   result: "positive" | "negative";
 }
-

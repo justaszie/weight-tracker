@@ -1,6 +1,6 @@
 import React from "react";
 import type { GetDataCTAProps } from "@/types/props";
-import  {type DataSourceName, isDataSourceName } from "@/types/utils";
+import { isDataSourceName } from "@/types/utils";
 
 export default function GetDataCTA(props: GetDataCTAProps) {
   function handleCTAClick(event: React.MouseEvent<HTMLAnchorElement>) {

@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 
-import Header from "./components/Header";
-import Main from "./components/Main";
-import Toast from "./components/Toast";
+import Header from "@/components/Header";
+import Main from "@/components/Main";
+import Toast from "@/components/Toast";
 
 import type { Goal } from "@/types/goal";
 import type { ToastMessageCategory, ToastMessage } from "@/types/toast";
-import type { DataSourceName } from "./types/utils";
+import { isDataSourceName, type DataSourceName } from "@/types/utils";
 
 const DEFAULT_GOAL = "maintain";
 const DEFAULT_DATA_SOURCE = "gfit";
@@ -29,7 +29,6 @@ function App() {
   }
 
   function triggerDataSync(data_source?: DataSourceName) {
-    // 1) trigger data sync (same as from get button CTA)
     fetch(`${SERVER_BASE_URL}/api/sync-data`, {
       method: "POST",
       headers: {
@@ -57,11 +56,11 @@ function App() {
     // 1) persist the goal value from the state to local storage
     localStorage.setItem("goalSelected", goalSelected);
 
-    // 2) if we come from specific location, trigger some actions
+    // 2) if we come from successful data source authentication, trigger data sync
     const queryParams = new URLSearchParams(window.location.search);
     if (queryParams.get("initiator") === "data_source_auth_success") {
       const dataSource = queryParams.get("source");
-      if (dataSource === 'gfit' || dataSource === 'mfp') {
+      if (dataSource && isDataSourceName(dataSource)) {
         triggerDataSync(dataSource);
       }
     }
