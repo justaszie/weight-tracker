@@ -1,11 +1,14 @@
 import React from "react";
 import type { GetDataCTAProps } from "@/types/props";
+import  {type DataSourceName, isDataSourceName } from "@/types/utils";
 
 export default function GetDataCTA(props: GetDataCTAProps) {
   function handleCTAClick(event: React.MouseEvent<HTMLAnchorElement>) {
     const source = event.currentTarget.dataset.dataSource;
     event.preventDefault();
-    props.onDataSyncRequest(source);
+    if (isDataSourceName(source)) {
+      props.onDataSyncRequest(source);
+    }
   }
 
   const Icon = props.srcIcon;

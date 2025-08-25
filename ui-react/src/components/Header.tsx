@@ -4,6 +4,7 @@ import type { Goal } from "@/types/goal";
 export default function Header(props: HeaderProps) {
   function handleGoalClick(event: React.MouseEvent<HTMLAnchorElement>): void {
     event.preventDefault();
+
     const optionClicked = event.currentTarget;
     const goalSelection = optionClicked.dataset.goal as Goal;
     props.handleGoalChange(goalSelection);

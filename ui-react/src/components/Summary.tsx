@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+
 import type { SummaryProps } from "@/types/props";
 import type { SummaryData, SummaryUrlParams } from "@/types/summary";
+import type { Goal } from "@/types/goal";
 
-const GOAL_LABELS: { [key: string]: string } = {
+const GOAL_LABELS: { [key in Goal]: string } = {
   lose: "Losing Fat",
   maintain: "Maintaining",
   gain: "Gaining Muscle",

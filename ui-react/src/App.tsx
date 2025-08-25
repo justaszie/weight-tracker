@@ -5,9 +5,10 @@ import Main from "./components/Main";
 import Toast from "./components/Toast";
 
 import type { Goal } from "@/types/goal";
-import type { MessageCategory, ToastMessage } from "@/types/toast";
+import type { ToastMessageCategory, ToastMessage } from "@/types/toast";
+import type { DataSourceName } from "./types/utils";
 
-const DEFAULT_GOAL: Goal = "maintain";
+const DEFAULT_GOAL = "maintain";
 const DEFAULT_DATA_SOURCE = "gfit";
 const SERVER_BASE_URL = "http://localhost:5040";
 
@@ -20,14 +21,14 @@ function App() {
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [dataSyncComplete, setDataSyncComplete] = useState<boolean>(false);
 
-  function showToast(category: MessageCategory, message: string) {
+  function showToast(category: ToastMessageCategory, message: string) {
     setToast({ category, message });
     setTimeout(() => {
       setToast(null);
     }, 2000);
   }
 
-  function triggerDataSync(data_source?: string) {
+  function triggerDataSync(data_source?: DataSourceName) {
     // 1) trigger data sync (same as from get button CTA)
     fetch(`${SERVER_BASE_URL}/api/sync-data`, {
       method: "POST",
@@ -60,7 +61,7 @@ function App() {
     const queryParams = new URLSearchParams(window.location.search);
     if (queryParams.get("initiator") === "data_source_auth_success") {
       const dataSource = queryParams.get("source");
-      if (dataSource != null) {
+      if (dataSource === 'gfit' || dataSource === 'mfp') {
         triggerDataSync(dataSource);
       }
     }

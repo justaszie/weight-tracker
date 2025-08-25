@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 
 import type { WeeklyDataTableProps } from "@/types/props";
-import type { WeeklyDataUrlParams, WeeklyDataEntry } from "@/types/weekly_table";
-
+import type { WeeklyDataUrlParams, WeeklyDataEntry } from "@/types/weekly-table";
 
 export default function WeeklyDataTable(props: WeeklyDataTableProps) {
     const [weeklyData, setWeeklyData] = useState([])

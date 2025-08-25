@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+
 import type { MainProps } from "@/types/props";
-import type { WeightEntry } from "@/types/weight_entry";
+import type { WeightEntry } from "@/types/weight-entry";
 import type { FiltersSelection } from "@/types/filter";
+import type { DataSourceCTA } from "@/types/utils";
 
 import Filters from "./Filters";
 import GetDataCTA from "./GetDataCTA";
@@ -19,9 +21,9 @@ export default function Main(props: MainProps) {
     weeksLimit: DEFAULT_WEEKS_LIMIT,
   });
 
-  const dataSources = [
+  const dataSources: DataSourceCTA[] = [
     {srcName: 'gfit', ctaText: 'Get Google Fit Data', icon: GoogleIcon},
-    {srcName: 'mfit', ctaText: 'Get MyFitnessPal Data', icon: MFPIcon},
+    {srcName: 'mfp', ctaText: 'Get MyFitnessPal Data', icon: MFPIcon},
   ]
 
   useEffect(() => {
@@ -48,6 +50,7 @@ export default function Main(props: MainProps) {
             {
               dataSources.map(src => (
                 <GetDataCTA
+                  key={src.srcName}
                   dataSource={src.srcName}
                   ctaText={src.ctaText}
                   srcIcon={src.icon}

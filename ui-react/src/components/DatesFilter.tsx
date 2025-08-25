@@ -3,7 +3,6 @@ import type { DatesFilterProps } from "@/types/props";
 
 export default function DatesFilter(props: DatesFilterProps) {
   function handleDateFilterChange(event: ChangeEvent<HTMLInputElement>) {
-    // console.log(props.selectedValues);
 
     let { dateFrom, dateTo } = props.selectedValues;
     if (event.target.name === "date_from") {
@@ -42,21 +41,6 @@ export default function DatesFilter(props: DatesFilterProps) {
         className="dates-filter__input"
         onChange={handleDateFilterChange}
       />
-      {/* <button className="dates-filter__submit">
-        <svg
-          className="dates-filter__icon"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-        </svg>
-        <span>Apply Filter</span>
-      </button> */}
     </div>
   );
 }

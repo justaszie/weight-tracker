@@ -1,35 +1,14 @@
 import type { Goal } from "@/types/goal";
 import type { FiltersSelection } from "@/types/filter";
-import type { WeightEntry } from "@/types/weight_entry";
-import type { MessageCategory } from "@/types/toast";
+import type { WeightEntry } from "@/types/weight-entry";
+import type { ToastMessageCategory } from "@/types/toast";
+import type { DataSourceName } from "./utils";
 
 export type MainProps = {
   goalSelected: Goal;
   handleDataSyncComplete: () => void;
   dataSyncComplete: boolean;
-  onDataSyncRequest: (data_source?: string) => void;
-};
-
-export type DatesFilterProps = {
-  selectedValues: { dateTo?: string; dateFrom?: string };
-  handleSelectionChange: (newSelection: FiltersSelection) => void;
-};
-
-export type FiltersProps = {
-  filtersSelection: FiltersSelection;
-  handleFiltersSelectionChange: (newSelection: FiltersSelection) => void;
-};
-
-export type GetDataCTAProps = {
-  ctaText: string;
-  srcIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  dataSource: string;
-  onDataSyncRequest: (data_source?: string) => void;
-};
-
-export type HeaderProps = {
-  handleGoalChange: (goal: Goal) => void;
-  goalSelected: Goal;
+  onDataSyncRequest: (data_source?: DataSourceName) => void;
 };
 
 export type SummaryProps = {
@@ -39,9 +18,11 @@ export type SummaryProps = {
   dataSyncComplete: boolean;
 };
 
-export type ToastProps = {
-  category: MessageCategory;
-  message: string;
+export type GetDataCTAProps = {
+  ctaText: string;
+  srcIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  dataSource: DataSourceName;
+  onDataSyncRequest: (data_source?: DataSourceName) => void;
 };
 
 export type WeeklyDataTableProps = {
@@ -50,7 +31,27 @@ export type WeeklyDataTableProps = {
   dataSyncComplete: boolean;
 };
 
+export type FiltersProps = {
+  filtersSelection: FiltersSelection;
+  handleFiltersSelectionChange: (newSelection: FiltersSelection) => void;
+};
+
 export type WeeksFilterProps = {
   selectedValues: { weeksLimit?: number };
   handleSelectionChange: (newSelection: FiltersSelection) => void;
+};
+
+export type DatesFilterProps = {
+  selectedValues: { dateTo?: string; dateFrom?: string };
+  handleSelectionChange: (newSelection: FiltersSelection) => void;
+};
+
+export type ToastProps = {
+  category: ToastMessageCategory;
+  message: string;
+};
+
+export type HeaderProps = {
+  handleGoalChange: (goal: Goal) => void;
+  goalSelected: Goal;
 };
