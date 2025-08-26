@@ -196,7 +196,7 @@ def sync_data():
         )
 
     if not data_storage.data_refresh_needed():
-        return jsonify({"status": "data_up_to_date", "message":"Your data is already up to date"})
+        return jsonify({"status": "data_up_to_date", "message":"Your data is already up to date"}), 200
 
     request_body = request.get_json()
     data_source = request_body.get("data_source", utils.DEFAULT_DATA_SOURCE)
@@ -207,7 +207,7 @@ def sync_data():
                 "status": "error",
                 "message": "Data source not supported. Choose one of the listed sources",
             }
-        )
+        ), 422
 
     if data_source == GFIT_SOURCE_NAME:
         oauth_credentials = GoogleFitAuth().load_auth_token()
@@ -243,9 +243,9 @@ def sync_data():
         else:
             error_message = "We couldn't get your data. Please try again later."
 
-        return jsonify({"status": "error", "message": error_message})
+        return jsonify({"status": "error", "message": error_message}), 500
     except SourceNoDataError:
-        return jsonify({"status": "no_data_received", "message": "No data received"})
+        return jsonify({"status": "no_data_received", "message": "No data received"}), 204
     except DataSyncError:
         traceback.print_exc()
         return jsonify(
@@ -253,7 +253,7 @@ def sync_data():
                 "status": "error",
                 "message": "We're having trouble syncing your data. We're working on it.",
             }
-        )
+        ), 500
 
     if new_entries:
         return jsonify(
@@ -262,11 +262,11 @@ def sync_data():
                 "message": "Data updated successfully",
                 "new_entries_count": len(new_entries),
             }
-        )
+        ), 200
     else:
         return jsonify(
             {
                 "status": "data_up_to_date",
                 "message": "Your data is already up to date",
             }
-        )
+        ), 204
