@@ -17,20 +17,42 @@ const DEFAULT_WEEKS_LIMIT = 4;
 
 export default function Main(props: MainProps) {
   const [latestEntry, setLatestEntry] = useState<WeightEntry | null>(null);
-  const [weeksFilterValues, setWeeksFilterValues] = useState<WeeksFilterValues>({
-    weeksLimit: DEFAULT_WEEKS_LIMIT,
-  });
-  const [datesFilterValues, setDatesFilterValues] = useState<DatesFilterValues>({});
+  const [weeksFilterValues, setWeeksFilterValues] = useState<WeeksFilterValues>(
+    {
+      weeksLimit: DEFAULT_WEEKS_LIMIT,
+    }
+  );
+  const [datesFilterValues, setDatesFilterValues] = useState<DatesFilterValues>(
+    {}
+  );
 
   const dataSources: DataSourceCTA[] = [
-    {srcName: 'gfit', ctaText: 'Get Google Fit Data', icon: GoogleIcon},
-    {srcName: 'mfp', ctaText: 'Get MyFitnessPal Data', icon: MFPIcon},
-  ]
+    { srcName: "gfit", ctaText: "Get Google Fit Data", icon: GoogleIcon },
+    { srcName: "mfp", ctaText: "Get MyFitnessPal Data", icon: MFPIcon },
+  ];
 
   useEffect(() => {
-    fetch("http://localhost:5040/api/latest-entry")
-      .then((response) => response.json())
-      .then((data) => setLatestEntry(data));
+    const fetchLatestEntry = async () => {
+      try {
+        const response = await fetch("http://localhost:5040/api/latest-entry");
+        if (!response.ok) {
+          const body = await response.json();
+          const errorMessage =
+            "error_message" in body
+              ? body["error_message"]
+              : "Error getting latest entry";
+          throw new Error(errorMessage);
+        }
+        const data: WeightEntry = await response.json();
+        setLatestEntry(data);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          props.showToast("error", err.message);
+        }
+      }
+    };
+
+    fetchLatestEntry();
   }, [props.dataSyncComplete]);
 
   function handleWeeksFilterChange(newValues: WeeksFilterValues) {
@@ -61,17 +83,15 @@ export default function Main(props: MainProps) {
             />
           </div>
           <div className="get-data">
-            {
-              dataSources.map(src => (
-                <GetDataCTA
-                  key={src.srcName}
-                  dataSource={src.srcName}
-                  ctaText={src.ctaText}
-                  srcIcon={src.icon}
-                  onDataSyncRequest={props.onDataSyncRequest}
-                />
-              ))
-            }
+            {dataSources.map((src) => (
+              <GetDataCTA
+                key={src.srcName}
+                dataSource={src.srcName}
+                ctaText={src.ctaText}
+                srcIcon={src.icon}
+                onDataSyncRequest={props.onDataSyncRequest}
+              />
+            ))}
 
             {latestEntry !== null && (
               <p>Latest entry: {latestEntry.date ?? "No Data Yet"}</p>
