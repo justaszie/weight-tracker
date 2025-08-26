@@ -13,13 +13,13 @@ export default function DatesFilter(props: DatesFilterProps) {
 
     if (event.target.name === "date_from") {
       dateFrom = event.target.value;
-      if(!isValidISODate(dateFrom)) {
+      if(dateFrom !== "" && !isValidISODate(dateFrom)) {
         props.showToast('error', "Invalid date from value");
         return ;
       }
     } else if (event.target.name === "date_to") {
       dateTo = event.target.value;
-      if(!isValidISODate(dateTo)) {
+      if(dateTo != "" && !isValidISODate(dateTo)) {
         props.showToast('error', "Invalid date to value");
         return ;
       }

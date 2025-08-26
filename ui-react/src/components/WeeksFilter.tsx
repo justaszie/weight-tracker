@@ -2,17 +2,19 @@ import type { ChangeEvent } from "react";
 import type { WeeksFilterProps } from "@/types/props";
 
 export default function WeeksFilter(props: WeeksFilterProps) {
-
-    function handleWeeksLimitChange(event: ChangeEvent<HTMLInputElement>) {
-        const newValue = Number(event.target.value);
-        if(newValue > 0) {
-          props.handleValueChange({weeksLimit: newValue});
-        }
-        else {
-          props.showToast("error", "Weeks selection must be 1 or above",);
-        }
-
+  function handleWeeksLimitChange(event: ChangeEvent<HTMLInputElement>) {
+    const valueEntered = event.target.value;
+    if (valueEntered === "") {
+      props.handleValueChange({});
+    } else {
+      const numericValue = Number(valueEntered);
+      if (numericValue < 1 || Number.isNaN(numericValue)) {
+        props.showToast("error", "Weeks selection must be 1 or above");
+        return ;
+      }
+      props.handleValueChange({weeksLimit: numericValue})
     }
+  }
 
   return (
     <div className="weeks-filter">

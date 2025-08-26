@@ -84,7 +84,7 @@ export default function Summary(props: SummaryProps) {
 
       {/* <!-- Cards --> */}
       <ul className="summary__cards-container">
-        {props.latestEntry && (
+        {props.latestEntry && props.latestEntry.weight && (
           <li className="summary-card">
             <p className="summary-card__header">
               <svg
