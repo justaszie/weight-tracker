@@ -1,5 +1,5 @@
 import type { Goal } from "@/types/goal";
-import type { FiltersSelection } from "@/types/filter";
+import type { DatesFilterValues, WeeksFilterValues } from "@/types/filter";
 import type { WeightEntry } from "@/types/weight-entry";
 import type { ToastMessageCategory, ShowToastFn } from "@/types/toast";
 import type { DataSourceName } from "./utils";
@@ -15,7 +15,8 @@ export type MainProps = {
 export type SummaryProps = {
   latestEntry?: WeightEntry | null;
   goalSelected: Goal;
-  filterValues: FiltersSelection;
+  weeksFilterValues?: WeeksFilterValues;
+  datesFilterValues?: DatesFilterValues;
   dataSyncComplete: boolean;
   showToast: ShowToastFn;
 };
@@ -28,27 +29,31 @@ export type GetDataCTAProps = {
 };
 
 export type WeeklyDataTableProps = {
-  filterValues: FiltersSelection;
   goalSelected: Goal;
+  weeksFilterValues?: WeeksFilterValues;
+  datesFilterValues?: DatesFilterValues;
   dataSyncComplete: boolean;
   showToast: ShowToastFn;
 };
 
 export type FiltersProps = {
-  filtersSelection: FiltersSelection;
-  handleFiltersSelectionChange: (newSelection: FiltersSelection) => void;
+  weeksFilterValues?: WeeksFilterValues;
+  datesFilterValues?: DatesFilterValues;
+  handleDatesFilterChange: (newValues: DatesFilterValues) => void;
+  handleWeeksFilterChange: (newValues: WeeksFilterValues) => void;
   showToast: ShowToastFn;
+  resetFilterValues: () => void;
 };
 
 export type WeeksFilterProps = {
-  selectedValues: { weeksLimit?: number };
-  handleSelectionChange: (newSelection: FiltersSelection) => void;
+  selectedValues?: WeeksFilterValues;
+  handleValueChange: (newValues: WeeksFilterValues) => void;
   showToast: ShowToastFn;
 };
 
 export type DatesFilterProps = {
-  selectedValues: { dateTo?: string; dateFrom?: string };
-  handleSelectionChange: (newSelection: FiltersSelection) => void;
+  selectedValues?: DatesFilterValues;
+  handleValueChange: (newValues: DatesFilterValues) => void;
   showToast: ShowToastFn;
 };
 

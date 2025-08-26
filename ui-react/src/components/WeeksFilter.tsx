@@ -6,7 +6,7 @@ export default function WeeksFilter(props: WeeksFilterProps) {
     function handleWeeksLimitChange(event: ChangeEvent<HTMLInputElement>) {
         const newValue = Number(event.target.value);
         if(newValue > 0) {
-          props.handleSelectionChange({weeksLimit: newValue});
+          props.handleValueChange({weeksLimit: newValue});
         }
         else {
           props.showToast("error", "Weeks selection must be 1 or above",);
@@ -32,7 +32,7 @@ export default function WeeksFilter(props: WeeksFilterProps) {
       <input
         name="weeks_limit"
         type="number"
-        value={props.selectedValues.weeksLimit}
+        value={props.selectedValues?.weeksLimit ?? ""}
         id="weeks_limit"
         className="weeks-filter__input"
         onChange={handleWeeksLimitChange}

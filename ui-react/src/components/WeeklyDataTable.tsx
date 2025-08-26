@@ -11,7 +11,6 @@ const SERVER_BASE_URL = "http://localhost:5040";
 
 export default function WeeklyDataTable(props: WeeklyDataTableProps) {
   const [weeklyData, setWeeklyData] = useState([]);
-  // TODO - fetch weekly aggregate data and map entries to <tr> elements
   function weekToRow(weekEntry: WeeklyDataEntry) {
     const { result } = weekEntry;
     return (
@@ -21,13 +20,12 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
           {weekEntry["avg_weight"].toFixed(2)} kg
         </td>
         <td
-          // TODO - Add conditional positive / negative / neutral classes
           className={`data-table__cell  ${
             result === "positive" ? "data-table__cell--positive" : ""
           }
-                    ${
-                      result === "negative" ? "data-table__cell--negative" : ""
-                    }`}
+            ${
+              result === "negative" ? "data-table__cell--negative" : ""
+            }`}
         >
           {toSignedString(weekEntry["weight_change"], 2)} kg
         </td>
@@ -35,9 +33,9 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
           className={`data-table__cell  ${
             result === "positive" ? "data-table__cell--positive" : ""
           }
-                    ${
-                      result === "negative" ? "data-table__cell--negative" : ""
-                    }`}
+            ${
+              result === "negative" ? "data-table__cell--negative" : ""
+            }`}
         >
           {toSignedString(weekEntry["weight_change_prc"], 2)} %
         </td>
@@ -45,9 +43,9 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
           className={`data-table__cell ${
             result === "positive" ? "data-table__cell--positive" : ""
           }
-                    ${
-                      result === "negative" ? " data-table__cell--negative" : ""
-                    }`}
+            ${
+              result === "negative" ? " data-table__cell--negative" : ""
+            }`}
         >
           {toSignedString(weekEntry["net_calories"])} kcal / day
         </td>
@@ -58,7 +56,9 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
   // Fetching data when filter values change
   useEffect(() => {
     const fetchDataWithFilters = async () => {
-      const { weeksLimit, dateTo, dateFrom } = props.filterValues;
+      const { weeksLimit } = props.weeksFilterValues ?? {};
+      const { dateTo, dateFrom } = props.datesFilterValues ?? {};
+
       const urlParams: WeeklyDataUrlParams = { goal: props.goalSelected };
       if (weeksLimit) {
         urlParams["weeks_limit"] = String(weeksLimit);
@@ -69,29 +69,30 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
       if (dateTo) {
         urlParams["date_to"] = dateTo;
       }
-      const weeklyDataURL = new URL(
-        `${SERVER_BASE_URL}/api/weekly-aggregates`
-      );
+      const weeklyDataURL = new URL(`${SERVER_BASE_URL}/api/weekly-aggregates`);
       weeklyDataURL.search = new URLSearchParams(urlParams).toString();
       try {
         const response = await fetch(weeklyDataURL);
         if (!response.ok) {
-            const body = await response.json();
-            const errorMessage = ('error_message' in body) ? body['error_message'] : 'Error while fetching data';
-            throw new Error(errorMessage);
+          const body = await response.json();
+          const errorMessage =
+            "error_message" in body
+              ? body["error_message"]
+              : "Error while fetching data";
+          throw new Error(errorMessage);
         }
         const body = await response.json();
         setWeeklyData(body["weekly_data"]);
       } catch (err: unknown) {
         setWeeklyData([]);
         if (err instanceof Error) {
-            props.showToast('error', err.message);
+          props.showToast("error", err.message);
         }
       }
     };
 
     fetchDataWithFilters();
-  }, [props.filterValues, props.goalSelected, props.dataSyncComplete]);
+  }, [props.datesFilterValues, props.weeksFilterValues, props.goalSelected, props.dataSyncComplete]);
 
   return (
     <section>

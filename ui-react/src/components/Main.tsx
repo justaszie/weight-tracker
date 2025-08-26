@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import type { MainProps } from "@/types/props";
 import type { WeightEntry } from "@/types/weight-entry";
-import type { FiltersSelection } from "@/types/filter";
+import type { DatesFilterValues, WeeksFilterValues } from "@/types/filter";
 import type { DataSourceCTA } from "@/types/utils";
 
 import Filters from "./Filters";
@@ -17,9 +17,10 @@ const DEFAULT_WEEKS_LIMIT = 4;
 
 export default function Main(props: MainProps) {
   const [latestEntry, setLatestEntry] = useState<WeightEntry | null>(null);
-  const [filtersSelection, setFiltersSelection] = useState<FiltersSelection>({
+  const [weeksFilterValues, setWeeksFilterValues] = useState<WeeksFilterValues>({
     weeksLimit: DEFAULT_WEEKS_LIMIT,
   });
+  const [datesFilterValues, setDatesFilterValues] = useState<DatesFilterValues>({});
 
   const dataSources: DataSourceCTA[] = [
     {srcName: 'gfit', ctaText: 'Get Google Fit Data', icon: GoogleIcon},
@@ -32,8 +33,17 @@ export default function Main(props: MainProps) {
       .then((data) => setLatestEntry(data));
   }, [props.dataSyncComplete]);
 
-  function handleFiltersSelectionChange(newSelection: FiltersSelection) {
-    setFiltersSelection(newSelection);
+  function handleWeeksFilterChange(newValues: WeeksFilterValues) {
+    setWeeksFilterValues(newValues);
+  }
+
+  function handleDatesFilterChange(newValues: DatesFilterValues) {
+    setDatesFilterValues(newValues);
+  }
+
+  function resetFilterValues() {
+    setWeeksFilterValues({});
+    setDatesFilterValues({});
   }
 
   return (
@@ -42,9 +52,12 @@ export default function Main(props: MainProps) {
         <div className="spaced-out">
           <div className="filters-column">
             <Filters
-              filtersSelection={filtersSelection}
-              handleFiltersSelectionChange={handleFiltersSelectionChange}
+              weeksFilterValues={weeksFilterValues}
+              datesFilterValues={datesFilterValues}
+              handleWeeksFilterChange={handleWeeksFilterChange}
+              handleDatesFilterChange={handleDatesFilterChange}
               showToast={props.showToast}
+              resetFilterValues={resetFilterValues}
             />
           </div>
           <div className="get-data">
@@ -68,13 +81,15 @@ export default function Main(props: MainProps) {
         <Summary
           latestEntry={latestEntry}
           goalSelected={props.goalSelected}
-          filterValues={filtersSelection}
+          weeksFilterValues={weeksFilterValues}
+          datesFilterValues={datesFilterValues}
           dataSyncComplete={props.dataSyncComplete}
           showToast={props.showToast}
         />
         <WeeklyDataTable
-          filterValues={filtersSelection}
           goalSelected={props.goalSelected}
+          weeksFilterValues={weeksFilterValues}
+          datesFilterValues={datesFilterValues}
           dataSyncComplete={props.dataSyncComplete}
           showToast={props.showToast}
         />

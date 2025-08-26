@@ -1,45 +1,44 @@
 import { useState } from 'react';
 import type { FiltersProps } from "@/types/props";
-import type { Filter, FiltersSelection } from "@/types/filter";
+import type { Filter, DatesFilterValues, WeeksFilterValues } from "@/types/filter";
 
 import WeeksFilter from './WeeksFilter'
 import DatesFilter from './DatesFilter'
 
-const DEFAULT_FILTER_SELECTION = 'weeks'
+const DEFAULT_FILTER_CHOICE = 'weeks';
 
 export default function Filters(props: FiltersProps) {
-    const [filterSelected, setFilterSelected] = useState(DEFAULT_FILTER_SELECTION);
+    const [filterChoice, setFilterChoice] = useState(DEFAULT_FILTER_CHOICE);
 
-    function handleFilterSelectionChange(event: React.MouseEvent<HTMLAnchorElement>) {
+    function handleFilterChoiceChange(event: React.MouseEvent<HTMLAnchorElement>) {
         event.preventDefault();
-        const filterSelection: Filter = event.currentTarget.dataset.filter as Filter;
-        setFilterSelected(filterSelection);
+        const filterChoice: Filter = event.currentTarget.dataset.filter as Filter;
+        props.resetFilterValues();
+        setFilterChoice(filterChoice);
     }
 
     return (
         <div className="filters-column">
-            <>
-                <section className="filter-selection">
-                    <a href="#" onClick={handleFilterSelectionChange} data-filter='weeks' className={`filter-option ${filterSelected === 'weeks' ? 'filter-option--active' : ''}`}> Filter by Weeks</a>
-                    <a href="#" onClick={handleFilterSelectionChange} data-filter='dates' className={`filter-option ${filterSelected === 'dates' ? 'filter-option--active' : ''}`}> Filter by Days</a>
-                </section>
-                {
-                    filterSelected === 'weeks'
-                    ? <WeeksFilter
-                        handleSelectionChange={props.handleFiltersSelectionChange}
-                        selectedValues={{weeksLimit: props.filtersSelection.weeksLimit}}
-                        showToast={props.showToast}
-                        />
-                    : <DatesFilter
-                        handleSelectionChange={props.handleFiltersSelectionChange}
-                        selectedValues={{
-                            dateFrom: props.filtersSelection.dateFrom ?? '',
-                            dateTo: props.filtersSelection.dateTo ?? '',
-                        }}
-                        showToast={props.showToast}
-                        />
-                }
-            </>
+            <section className="filter-selection">
+                <a href="#" onClick={handleFilterChoiceChange} data-filter='weeks' className={`filter-option ${filterChoice === 'weeks' ? 'filter-option--active' : ''}`}> Filter by Weeks</a>
+                <a href="#" onClick={handleFilterChoiceChange} data-filter='dates' className={`filter-option ${filterChoice === 'dates' ? 'filter-option--active' : ''}`}> Filter by Days</a>
+            </section>
+            {
+                filterChoice === 'weeks'
+                ? <WeeksFilter
+                    handleValueChange={props.handleWeeksFilterChange}
+                    selectedValues={props.weeksFilterValues}
+                    showToast={props.showToast}
+                    />
+                : <DatesFilter
+                    handleValueChange={props.handleDatesFilterChange}
+                    selectedValues={{
+                        dateFrom: props.datesFilterValues?.dateFrom ?? '',
+                        dateTo: props.datesFilterValues?.dateTo ?? '',
+                    }}
+                    showToast={props.showToast}
+                    />
+            }
         </div>
     );
 }

@@ -16,7 +16,8 @@ const SERVER_BASE_URL = "http://localhost:5040";
 export default function Summary(props: SummaryProps) {
   const [summaryData, setSummaryData] = useState<SummaryData>({});
 
-  const { weeksLimit, dateTo, dateFrom } = props.filterValues;
+  const { dateTo, dateFrom } = props.datesFilterValues ?? {};
+  const { weeksLimit } = props.weeksFilterValues ?? {};
 
   const summaryHeader = weeksLimit
     ? `Summary for the past ${weeksLimit} weeks`
@@ -58,7 +59,7 @@ export default function Summary(props: SummaryProps) {
     };
 
     fetchSummaryDataWithFilters();
-  }, [props.filterValues, props.dataSyncComplete]);
+  }, [props.datesFilterValues, props.weeksFilterValues, props.dataSyncComplete]);
 
   return (
     <section className="summary">

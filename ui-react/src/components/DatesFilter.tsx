@@ -9,7 +9,7 @@ export default function DatesFilter(props: DatesFilterProps) {
 
   function handleDateFilterChange(event: ChangeEvent<HTMLInputElement>) {
 
-    let { dateFrom, dateTo } = props.selectedValues;
+    let { dateFrom, dateTo } = props.selectedValues ?? {};
 
     if (event.target.name === "date_from") {
       dateFrom = event.target.value;
@@ -25,9 +25,9 @@ export default function DatesFilter(props: DatesFilterProps) {
       }
     }
 
-    props.handleSelectionChange({
-      dateFrom,
-      dateTo,
+    props.handleValueChange({
+      dateFrom: dateFrom ?? "",
+      dateTo: dateTo ?? "",
     });
   }
 
@@ -38,7 +38,7 @@ export default function DatesFilter(props: DatesFilterProps) {
       </label>
       <input
         name="date_from"
-        value={props.selectedValues.dateFrom}
+        value={props.selectedValues?.dateFrom ?? ""}
         type="date"
         id="date_from"
         className="dates-filter__input"
@@ -49,7 +49,7 @@ export default function DatesFilter(props: DatesFilterProps) {
       </label>
       <input
         name="date_to"
-        value={props.selectedValues.dateTo}
+        value={props.selectedValues?.dateTo ?? ""}
         type="date"
         id="date_to"
         className="dates-filter__input"
