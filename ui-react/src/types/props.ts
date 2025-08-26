@@ -17,6 +17,7 @@ export type SummaryProps = {
   goalSelected: Goal;
   filterValues: FiltersSelection;
   dataSyncComplete: boolean;
+  showToast: ShowToastFn;
 };
 
 export type GetDataCTAProps = {
@@ -30,6 +31,7 @@ export type WeeklyDataTableProps = {
   filterValues: FiltersSelection;
   goalSelected: Goal;
   dataSyncComplete: boolean;
+  showToast: ShowToastFn;
 };
 
 export type FiltersProps = {

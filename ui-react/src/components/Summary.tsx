@@ -11,6 +11,7 @@ const GOAL_LABELS: { [key in Goal]: string } = {
   maintain: "Maintaining",
   gain: "Gaining Muscle",
 };
+const SERVER_BASE_URL = "http://localhost:5040";
 
 export default function Summary(props: SummaryProps) {
   const [summaryData, setSummaryData] = useState<SummaryData>({});
@@ -24,24 +25,39 @@ export default function Summary(props: SummaryProps) {
 
   //   Fetch summary data
   useEffect(() => {
-    const urlParams: SummaryUrlParams = {};
-    if (weeksLimit) {
-      urlParams["weeks_limit"] = String(weeksLimit);
-    }
-    if (dateFrom) {
-      urlParams["date_from"] = dateFrom;
-    }
-    if (dateTo) {
-      urlParams["date_to"] = dateTo;
-    }
+    const fetchSummaryDataWithFilters = async () => {
+      const urlParams: SummaryUrlParams = {};
+      if (weeksLimit) {
+        urlParams["weeks_limit"] = String(weeksLimit);
+      }
+      if (dateFrom) {
+        urlParams["date_from"] = dateFrom;
+      }
+      if (dateTo) {
+        urlParams["date_to"] = dateTo;
+      }
 
-    const summaryURL = new URL("http://localhost:5040/api/summary");
-    summaryURL.search = new URLSearchParams(urlParams).toString();
-    fetch(summaryURL)
-      .then((response) => response.json())
-      .then((data) => {
-        setSummaryData(data.summary);
-      });
+      const summaryURL = new URL(`${SERVER_BASE_URL}/api/summary`);
+      summaryURL.search = new URLSearchParams(urlParams).toString();
+      try {
+        const response = await fetch(summaryURL);
+        if(!response.ok) {
+          const body = await response.json();
+          const errorMessage = ('error_message' in body) ? body['error_message'] : 'Error while getting summary data';
+          throw new Error(errorMessage);
+        }
+        const body = await response.json();
+        setSummaryData(body.summary);
+
+      } catch (err: unknown) {
+        setSummaryData({});
+        if(err instanceof Error) {
+          props.showToast('error', err.message);
+        }
+      }
+    };
+
+    fetchSummaryDataWithFilters();
   }, [props.filterValues, props.dataSyncComplete]);
 
   return (
@@ -147,7 +163,7 @@ export default function Summary(props: SummaryProps) {
           </p>
           <div className="summary-card__value-group">
             <h3 className="summary-card__value">
-               {summaryData.avg_change &&
+              {summaryData.avg_change &&
                 toSignedString(summaryData.avg_change, 2)}
             </h3>
             <span className="summary-card__subtitle">kg / week</span>
@@ -173,10 +189,8 @@ export default function Summary(props: SummaryProps) {
           </p>
           <div className="summary-card__value-group">
             <h3 className="summary-card__value">
-              {
-                summaryData.avg_change_prc &&
-                toSignedString(summaryData.avg_change_prc, 2)
-              }
+              {summaryData.avg_change_prc &&
+                toSignedString(summaryData.avg_change_prc, 2)}
             </h3>
             <span className="summary-card__subtitle">% / week</span>
           </div>
@@ -200,10 +214,8 @@ export default function Summary(props: SummaryProps) {
           <div className="summary-card__value-group">
             {/* Convert to signed amount format  */}
             <h3 className="summary-card__value">
-              {
-                summaryData.avg_net_calories &&
-                toSignedString(summaryData.avg_net_calories)
-              }
+              {summaryData.avg_net_calories &&
+                toSignedString(summaryData.avg_net_calories)}
             </h3>
             <span className="summary-card__subtitle">kcal / day</span>
           </div>

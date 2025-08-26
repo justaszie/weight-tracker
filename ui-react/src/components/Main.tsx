@@ -70,11 +70,13 @@ export default function Main(props: MainProps) {
           goalSelected={props.goalSelected}
           filterValues={filtersSelection}
           dataSyncComplete={props.dataSyncComplete}
+          showToast={props.showToast}
         />
         <WeeklyDataTable
           filterValues={filtersSelection}
           goalSelected={props.goalSelected}
           dataSyncComplete={props.dataSyncComplete}
+          showToast={props.showToast}
         />
       </div>
     </main>

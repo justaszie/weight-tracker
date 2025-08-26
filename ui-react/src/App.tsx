@@ -28,30 +28,43 @@ function App() {
     }, 2000);
   }
 
-  function triggerDataSync(data_source?: DataSourceName) {
-    fetch(`${SERVER_BASE_URL}/api/sync-data`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ data_source: data_source || DEFAULT_DATA_SOURCE }),
-    })
-      .then((response) => response.json())
-      .then((body) => {
-        if (body.status === "auth_needed") {
-          window.location.replace(`${SERVER_BASE_URL}${body.auth_url}`);
-        } else if (body.status === "sync_success") {
-          // 2) if sync success,  update state to trigger re-rendering
-          markDataSyncComplete();
-        } else if (body.status === "data_up_to_date") {
-          showToast("info", body.message);
-        } else if (body.status === "no_data_received") {
-          showToast("info", body.message);
-        } else {
-          showToast("error", body.message);
-        }
+  async function triggerDataSync(data_source?: DataSourceName) {
+    try {
+      const response = await fetch(`${SERVER_BASE_URL}/api/sync-data`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          data_source: data_source || DEFAULT_DATA_SOURCE,
+        }),
       });
+      if (!response.ok) {
+        const body = await response.json();
+        const errorMessage =
+          "message" in body
+            ? body["error_message"]
+            : "Error while syncing data";
+        throw new Error(errorMessage);
+      }
+      const body = await response.json();
+      if (body.status === "auth_needed") {
+        window.location.replace(`${SERVER_BASE_URL}${body.auth_url}`);
+      } else if (body.status === "sync_success") {
+        // 2) if sync success,  update state to trigger re-rendering
+        markDataSyncComplete();
+      } else if (["data_up_to_date", "no_data_received"].includes(body.status)) {
+        showToast("info", body.message);
+      } else {
+        showToast("error", body.message);
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        showToast("error", err.message);
+      }
+    }
   }
+
   useEffect(() => {
     // 1) persist the goal value from the state to local storage
     localStorage.setItem("goalSelected", goalSelected);
