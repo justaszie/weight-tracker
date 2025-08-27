@@ -1,6 +1,6 @@
 import datetime as dt
 import traceback
-from typing import Optional, Tuple
+from typing import Tuple
 from collections.abc import Iterable
 from project_types import (
     DailyWeightEntry,
@@ -46,8 +46,8 @@ def to_signed_amt_str(amount: float | int, decimals: bool = True) -> str:
 
 def filter_daily_entries(
     daily_entries: Iterable[DailyWeightEntry],
-    date_from: Optional[dt.date] = None,
-    date_to: Optional[dt.date] = None,
+    date_from: dt.date | None = None,
+    date_to: dt.date | None = None,
 ) -> list[DailyWeightEntry]:
     if date_from:
         daily_entries = [entry for entry in daily_entries if entry["date"] >= date_from]
@@ -58,7 +58,7 @@ def filter_daily_entries(
 
 def get_latest_entry_date(
     daily_entries: Iterable[DailyWeightEntry],
-) -> Optional[dt.date]:
+) -> dt.date | None:
     if not daily_entries:
         return None
 
@@ -71,7 +71,7 @@ def get_latest_entry_date(
 
 def get_latest_daily_entry(
     daily_entries: Iterable[DailyWeightEntry],
-) -> Optional[DailyWeightEntry]:
+) -> DailyWeightEntry | None:
     if not daily_entries:
         return None
 
@@ -105,7 +105,7 @@ def is_valid_data_source(source: str) -> bool:
     return source.lower() in DATA_SOURCES_SUPPORTED
 
 
-def parse_iso_date(date_str: Optional[str]) -> None | dt.date:
+def parse_iso_date(date_str: str | None) -> None | dt.date:
     if not date_str:
         return None
 
@@ -115,14 +115,12 @@ def parse_iso_date(date_str: Optional[str]) -> None | dt.date:
         raise ValueError("Invalid Date")
 
 
-def validate_date_range(date_from: Optional[dt.date], date_to: Optional[dt.date]) -> None:
+def validate_date_range(date_from: dt.date | None, date_to: dt.date | None) -> None:
     if date_from and date_to and date_from > date_to:
         raise DateRangeError('"Date To" must be after "Date From"')
 
 
-def parse_date_filters(
-    date_from: Optional[str], date_to: Optional[str]
-) -> Tuple[Optional[dt.date], Optional[dt.date]]:
+def parse_date_filters(date_from: str | None, date_to: str | None) -> Tuple[dt.date | None, dt.date | None]:
     try:
         date_from_parsed: dt.date | None = parse_iso_date(date_from)
     except ValueError:
@@ -130,11 +128,10 @@ def parse_date_filters(
     try:
         date_to_parsed: dt.date | None = parse_iso_date(date_to)
     except ValueError:
-        raise InvalidDateError('"Date To" must be a valid date')
+        raise InvalidDateError('"Date To" must be a valid date"')
 
     try:
         validate_date_range(date_from_parsed, date_to_parsed)
+        return (date_from_parsed, date_to_parsed)
     except:
         raise
-
-    return (date_from_parsed, date_to_parsed)

@@ -1,6 +1,5 @@
 import pandas as pd
 from collections.abc import Sequence, Callable
-from typing import Optional
 from project_types import (
     FitnessGoal,
     Result,
@@ -118,5 +117,5 @@ def calculate_result(weight_change: float, goal: FitnessGoal) -> Result:
 
 
 # TODO - Here we will implement the logic to build text that evaluates the overall results
-def get_evaluation(weekly_data: Sequence[WeeklyAggregateEntry]) -> Optional[str]:
+def get_evaluation(weekly_data: Sequence[WeeklyAggregateEntry]) -> str | None:
     return None
