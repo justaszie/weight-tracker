@@ -66,7 +66,7 @@ def get_weekly_aggregates(
     # Display in the order from the most recent
     weekly_entries = weekly_entries[::-1]
 
-    result: list[WeeklyAggregateEntry] = weekly_entries.to_dict(orient="records")  # type: ignore
+    result: list[WeeklyAggregateEntry] = weekly_entries.to_dict(orient="records")  # pyright: ignore
 
     return result
 

@@ -65,7 +65,7 @@ class FileStorage:
 
     def save(self) -> None:
         with open(FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH, "w") as file:
-            entries: list[dict[str, str | float | int]] = [
+            entries: list[JSONPersistedWeightEntry] = [
                 {
                     "date": entry["date"].isoformat(),
                     "weight": entry["weight"],
@@ -76,7 +76,7 @@ class FileStorage:
 
     def export_to_csv(self) -> None:
         try:
-            pd.DataFrame(self.data).set_index("date").to_csv(  # type: ignore
+            pd.DataFrame(self.data).set_index("date").to_csv( # pyright: ignore[reportUnknownMemberType]
                 FileStorage.DAILY_ENTRIES_CSV_FILE_PATH
             )
         except:
