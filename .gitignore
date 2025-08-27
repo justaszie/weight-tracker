@@ -8,6 +8,8 @@ app/auth/*
 app/static/images/*
 app/testing.py
 app/testing.ipynb
+app/throwaway
+app/throwaway/*
 
 # # Logs
 # ui-react/logs

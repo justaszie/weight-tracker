@@ -16,10 +16,12 @@ pandas = "^2.2.3"
 myfitnesspal = "^2.1.2"
 ipykernel = "^6.29.5"
 flask-cors = "^6.0.1"
+mypy = "^1.17.1"
 
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.5"
+pandas-stubs = "^2.3.0.250703"
 
 [build-system]
 requires = ["poetry-core"]

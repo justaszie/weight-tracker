@@ -1,9 +1,7 @@
 from flask import (
     Flask,
-    g,
     render_template,
     redirect,
-    abort,
     session,
     url_for,
     request,
@@ -13,7 +11,6 @@ from flask import (
 import secrets
 import traceback
 import utils
-import datetime as dt
 import google_fit
 from data_integration import (
     DataIntegrationService,

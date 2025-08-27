@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request, url_for
+from project_types import WeeklyAggregateEntry
 from google_fit import GoogleFitAuth, GoogleFitClient
 from data_integration import (
     DataIntegrationService,
@@ -45,7 +46,7 @@ def get_filtered_weekly_entries(daily_entries, goal, weeks_limit):
     Raises:
         utils.InvalidWeeksLimit: if the weeks limit filter parameter is invalid
     """
-    weekly_entries = analytics.get_weekly_aggregates(daily_entries, goal)
+    weekly_entries: list[WeeklyAggregateEntry] = analytics.get_weekly_aggregates(daily_entries, goal)
 
     if weeks_limit:
         if not utils.is_valid_weeks_filter(weeks_limit):

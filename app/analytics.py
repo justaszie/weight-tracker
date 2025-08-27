@@ -1,59 +1,62 @@
 import pandas as pd
+from collections.abc import Sequence, Callable
+from typing import Optional
+from project_types import (
+    FitnessGoal,
+    ResultEval,
+    DailyWeightEntry,
+    WeeklyAggregateEntry,
+    ProgressSummary,
+)
 
 MAINTAIN_ACCEPTABLE_CHANGE = 0.2
 
 
-def get_weekly_aggregates(daily_entries, goal):
-    """
-    # Return value - Weekly entries in descending order (most recent to oldest)
-    # The format:
-     [
-        {
-         "week_start": "2025-01-10": datetime.date(2025, 04, 14),
-         "avg_weight": 70.2,
-         "weight_change": -0.52,
-         "weight_change_prc": 0.67,
-         "net_calories": -224,
-         "result": "positive",
-        }
-     ]
-    """
+def get_weekly_aggregates(
+    daily_entries: Sequence[DailyWeightEntry], goal: FitnessGoal
+) -> list[WeeklyAggregateEntry]:
+    # Return value - Weekly entries in descending order (most recent to oldest
 
     # 1. Convert daily_entries JSON to data frame
-    df = pd.DataFrame.from_records(daily_entries)
+    df: pd.DataFrame = pd.DataFrame.from_records(daily_entries)  # type: ignore
 
     # Set date index to aggregate by week
     df["week_start"] = pd.to_datetime(df["date"])
-    df.set_index("week_start", inplace=True)
+    df.set_index("week_start", inplace=True)  # type: ignore
 
     # Calculate weekly averages (mean and median) using resample method
     # averages = round(df['weight'].resample('W').agg(['mean','median']).dropna(), 2)
-    weekly_entries = df["weight"].resample("W").mean().dropna().round(2)
+    weekly_averages: pd.Series[float] = (
+        df["weight"].resample("W").mean().dropna().round(2)
+    )
 
     # After resampling, the date of the week is end of week
     # We set the index date to beginning the week
     # (resample results in end of week so we subtract 6 days from it)
-    weekly_entries.index -= pd.DateOffset(6)
+    weekly_averages.index -= pd.DateOffset(n=6)
 
     # Calculate the weight change between weeks
-    weekly_entries = weekly_entries.to_frame(name="avg_weight")
-    weekly_entries["weight_change"] = weekly_entries.diff().round(2).fillna(0)
+    weekly_entries: pd.DataFrame = weekly_averages.to_frame(name="avg_weight")
+    weekly_entries["weight_change"] = weekly_entries.diff().round(2).fillna(0)  # type: ignore
 
     # Calculate % of weight change compared to previous week
     weekly_entries["weight_change_prc"] = (
         (weekly_entries["weight_change"] / weekly_entries["avg_weight"] * 100)
         .round(2)
-        .fillna(0)
+        .fillna(0)  # type: ignore
     )
 
     # Calculate estimated calorie deficit based on weight change
     weekly_entries["net_calories"] = (
-        (weekly_entries["weight_change"] * 500 / 0.45).round(0).fillna(0).astype(int)
+        (weekly_entries["weight_change"] * 500 / 0.45).round(0).fillna(0).astype(int)  # type: ignore
     )
 
+    weight_change_to_result: Callable[[float], ResultEval] = lambda x: calculate_result(
+        x, goal
+    )
     # Add positive / negative result based on goal
-    weekly_entries["result"] = weekly_entries["weight_change"].apply(
-        lambda x: calculate_result(x, goal)
+    weekly_entries["result"] = weekly_entries["weight_change"].apply(  # type: ignore
+        weight_change_to_result
     )
 
     # Reset index to keep date as a column
@@ -64,40 +67,43 @@ def get_weekly_aggregates(daily_entries, goal):
     # Display in the order from the most recent
     weekly_entries = weekly_entries[::-1]
 
-    result = weekly_entries.to_dict(orient="records")
+    result: list[WeeklyAggregateEntry] = weekly_entries.to_dict(orient="records")  # type: ignore
 
     return result
 
 
-def get_summary(weekly_entries):
-    summary = {}
+def get_summary(weekly_entries: Sequence[WeeklyAggregateEntry]) -> ProgressSummary:
+    weekly_entries_df: pd.DataFrame = pd.DataFrame.from_records(weekly_entries)  # type: ignore
 
-    weekly_entries_df = pd.DataFrame.from_records(weekly_entries)
+    multiple_entries: bool = len(weekly_entries_df.index) > 1
 
-    summary["total_change"] = (
-        float(weekly_entries_df["weight_change"].iloc[:-1].sum().round(2))
-        if len(weekly_entries_df.index) > 1
-        else 0.00
-    )
-    summary["avg_change"] = (
-        float(weekly_entries_df["weight_change"].iloc[:-1].mean().round(2))
-        if len(weekly_entries_df.index) > 1
-        else 0.00
-    )
-    summary["avg_change_prc"] = (
-        float(weekly_entries_df["weight_change_prc"].iloc[:-1].mean().round(2))
-        if len(weekly_entries_df.index) > 1
-        else 0.00
-    )
-    summary["avg_net_calories"] = (
-        int(weekly_entries_df["net_calories"].iloc[:-1].mean())
-        if len(weekly_entries_df.index) > 1
-        else 0
-    )
+    summary: ProgressSummary = {
+        "total_change": (
+            round(float(weekly_entries_df["weight_change"].iloc[:-1].sum()), 2)
+            if multiple_entries
+            else 0.0
+        ),
+        "avg_change": (
+            round(float(weekly_entries_df["weight_change"].iloc[:-1].mean()), 2)
+            if multiple_entries
+            else 0.0
+        ),
+        "avg_change_prc": (
+            round(float(weekly_entries_df["weight_change_prc"].iloc[:-1].mean()), 2)
+            if multiple_entries
+            else 0.0
+        ),
+        "avg_net_calories": (
+            int(weekly_entries_df["net_calories"].iloc[:-1].mean())
+            if multiple_entries
+            else 0
+        ),
+    }
+
     return summary
 
 
-def calculate_result(weight_change, goal) -> str:
+def calculate_result(weight_change: float, goal: FitnessGoal) -> ResultEval:
     match goal:
         case "lose":
             return "positive" if weight_change < 0 else "negative"
@@ -112,5 +118,5 @@ def calculate_result(weight_change, goal) -> str:
 
 
 # TODO - Here we will implement the logic to build text that evaluates the overall results
-def get_evaluation(weekly_data) -> str:
+def get_evaluation(weekly_data: Sequence[WeeklyAggregateEntry]) -> Optional[str]:
     return None
