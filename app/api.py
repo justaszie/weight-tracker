@@ -7,6 +7,12 @@ from data_integration import (
     SourceFetchError,
     SourceNoDataError,
 )
+from project_types import (
+    DataSource,
+    DailyWeightEntry,
+)
+# from collections.abc import Optional
+from typing import Optional
 from file_storage import FileStorage
 from mfp import MyFitnessPalClient
 import analytics
@@ -20,9 +26,8 @@ MFP_SOURCE_NAME = "mfp"
 GFIT_SOURCE_NAME = "gfit"
 
 
-def get_filtered_daily_entries(date_from, date_to):
+def get_filtered_daily_entries(date_from: Optional[str], date_to: Optional[str]) -> list[DailyWeightEntry]:
     """
-
     Raises:
         utils.InvalidDateError: If the selected date filters are invalid dates
         utils.DateRangeError: If the selected date filters represent an invalid range
@@ -30,14 +35,14 @@ def get_filtered_daily_entries(date_from, date_to):
     (parsed_date_from, parsed_date_to) = utils.parse_date_filters(date_from, date_to)
 
     data_storage = FileStorage()
-    daily_entries = data_storage.get_weight_entries()
+    filtered_daily_entries = daily_entries = data_storage.get_weight_entries()
 
     if date_from is not None or date_to is not None:
-        daily_entries = utils.filter_daily_entries(
+        filtered_daily_entries = utils.filter_daily_entries(
             daily_entries, parsed_date_from, parsed_date_to
         )
 
-    return daily_entries
+    return filtered_daily_entries
 
 
 def get_filtered_weekly_entries(daily_entries, goal, weeks_limit):
@@ -46,7 +51,9 @@ def get_filtered_weekly_entries(daily_entries, goal, weeks_limit):
     Raises:
         utils.InvalidWeeksLimit: if the weeks limit filter parameter is invalid
     """
-    weekly_entries: list[WeeklyAggregateEntry] = analytics.get_weekly_aggregates(daily_entries, goal)
+    weekly_entries: list[WeeklyAggregateEntry] = analytics.get_weekly_aggregates(
+        daily_entries, goal
+    )
 
     if weeks_limit:
         if not utils.is_valid_weeks_filter(weeks_limit):
@@ -197,30 +204,44 @@ def sync_data():
         )
 
     if not data_storage.data_refresh_needed():
-        return jsonify({"status": "data_up_to_date", "message":"Your data is already up to date"}), 200
+        return (
+            jsonify(
+                {
+                    "status": "data_up_to_date",
+                    "message": "Your data is already up to date",
+                }
+            ),
+            200,
+        )
 
     request_body = request.get_json()
     data_source = request_body.get("data_source", utils.DEFAULT_DATA_SOURCE)
 
     if not utils.is_valid_data_source(data_source):
-        return jsonify(
-            {
-                "status": "error",
-                "message": "Data source not supported. Choose one of the listed sources",
-            }
-        ), 422
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "message": "Data source not supported. Choose one of the listed sources",
+                }
+            ),
+            422,
+        )
 
     if data_source == GFIT_SOURCE_NAME:
         oauth_credentials = GoogleFitAuth().load_auth_token()
         if not oauth_credentials:
             # Response that includes redirect to google auth flow
-            return jsonify(
-                {
-                    "status": "auth_needed",
-                    "message": "Google Fit authentication needed",
-                    "auth_url": url_for("gfit_auth_bp.google_signin"),
-                }
-            ), 401
+            return (
+                jsonify(
+                    {
+                        "status": "auth_needed",
+                        "message": "Google Fit authentication needed",
+                        "auth_url": url_for("gfit_auth_bp.google_signin"),
+                    }
+                ),
+                401,
+            )
 
         data_source_client = GoogleFitClient(oauth_credentials)
 
@@ -246,28 +267,40 @@ def sync_data():
 
         return jsonify({"status": "error", "message": error_message}), 500
     except SourceNoDataError:
-        return jsonify({"status": "no_data_received", "message": "No data received"}), 204
+        return (
+            jsonify({"status": "no_data_received", "message": "No data received"}),
+            204,
+        )
     except DataSyncError:
         traceback.print_exc()
-        return jsonify(
-            {
-                "status": "error",
-                "message": "We're having trouble syncing your data. We're working on it.",
-            }
-        ), 500
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "message": "We're having trouble syncing your data. We're working on it.",
+                }
+            ),
+            500,
+        )
 
     if new_entries:
-        return jsonify(
-            {
-                "status": "sync_success",
-                "message": "Data updated successfully",
-                "new_entries_count": len(new_entries),
-            }
-        ), 200
+        return (
+            jsonify(
+                {
+                    "status": "sync_success",
+                    "message": "Data updated successfully",
+                    "new_entries_count": len(new_entries),
+                }
+            ),
+            200,
+        )
     else:
-        return jsonify(
-            {
-                "status": "data_up_to_date",
-                "message": "Your data is already up to date",
-            }
-        ), 204
+        return (
+            jsonify(
+                {
+                    "status": "data_up_to_date",
+                    "message": "Your data is already up to date",
+                }
+            ),
+            204,
+        )

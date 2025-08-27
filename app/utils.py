@@ -20,9 +20,9 @@ REFERENCE_WEEK_DATA: WeeklyAggregateEntry = {
     "result": None,
 }
 
-DEFAULT_GOAL: FitnessGoal = "lose"
-DEFAULT_WEEKS_LIMIT: int = 4  # used in app.py
-DEFAULT_DATA_SOURCE: DataSource = "gfit"
+DEFAULT_GOAL = "lose"
+DEFAULT_WEEKS_LIMIT = 4  # used in app.py
+DEFAULT_DATA_SOURCE = "gfit"
 
 
 class InvalidDateError(Exception):

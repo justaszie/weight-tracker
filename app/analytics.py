@@ -3,7 +3,7 @@ from collections.abc import Sequence, Callable
 from typing import Optional
 from project_types import (
     FitnessGoal,
-    ResultEval,
+    Result,
     DailyWeightEntry,
     WeeklyAggregateEntry,
     ProgressSummary,
@@ -51,7 +51,7 @@ def get_weekly_aggregates(
         (weekly_entries["weight_change"] * 500 / 0.45).round(0).fillna(0).astype(int)  # type: ignore
     )
 
-    weight_change_to_result: Callable[[float], ResultEval] = lambda x: calculate_result(
+    weight_change_to_result: Callable[[float], Result] = lambda x: calculate_result(
         x, goal
     )
     # Add positive / negative result based on goal
@@ -103,7 +103,7 @@ def get_summary(weekly_entries: Sequence[WeeklyAggregateEntry]) -> ProgressSumma
     return summary
 
 
-def calculate_result(weight_change: float, goal: FitnessGoal) -> ResultEval:
+def calculate_result(weight_change: float, goal: FitnessGoal) -> Result:
     match goal:
         case "lose":
             return "positive" if weight_change < 0 else "negative"
