@@ -297,9 +297,9 @@ def sync_data():
         return (
             jsonify(
                 {
-                    "status": "data_up_to_date",
-                    "message": "Your data is already up to date",
+                    "status": "no_new_data",
+                    "message": "No new data available",
                 }
             ),
-            204,
+            200,
         )

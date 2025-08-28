@@ -53,7 +53,7 @@ function App() {
       } else if (body.status === "sync_success") {
         // 2) if sync success,  update state to trigger re-rendering
         markDataSyncComplete();
-      } else if (["data_up_to_date", "no_data_received"].includes(body.status)) {
+      } else if (["data_up_to_date", "no_data_received", "no_new_data"].includes(body.status)) {
         showToast("info", body.message);
       } else {
         showToast("error", body.message);
