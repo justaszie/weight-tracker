@@ -4,16 +4,15 @@ from typing import Literal, TypedDict
 
 type FitnessGoal = Literal["gain", "lose", "maintain"]
 type Result = Literal["positive", "negative", None]
-type DataSource = Literal['gfit', 'mfp']
+type DataSourceName = Literal['gfit', 'mfp']
 type ToastMessageCategory = Literal['info', 'success', 'error']
-
 
 class DailyWeightEntry(TypedDict):
     date: date
     weight: float
 
 
-class WeeklyAggregateEntry(TypedDict, total=False):
+class WeeklyAggregateEntry(TypedDict):
     week_start: date
     avg_weight: float
     weight_change: float

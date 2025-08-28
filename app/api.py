@@ -8,7 +8,6 @@ from data_integration import (
     SourceNoDataError,
 )
 from project_types import (
-    DataSource,
     DailyWeightEntry,
 )
 # from collections.abc import Optional

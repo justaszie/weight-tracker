@@ -4,16 +4,15 @@ from typing import Tuple
 from collections.abc import Iterable
 from project_types import (
     DailyWeightEntry,
-    WeeklyAggregateEntry,
-    DataSource,
+    DataSourceName,
     FitnessGoal,
     ToastMessageCategory,
 )
 
-DATA_SOURCES_SUPPORTED: list[DataSource] = ["gfit", "mfp"]
+DATA_SOURCES_SUPPORTED: list[DataSourceName] = ["gfit", "mfp"]
 GOALS_SUPPORTED: list[FitnessGoal] = ["lose", "gain", "maintain"]
 
-REFERENCE_WEEK_DATA: WeeklyAggregateEntry = {
+REFERENCE_WEEK_DATA: dict[str, float | int | None]  = {
     "weight_change": 0.0,
     "weight_change_prc": 0.0,
     "net_calories": 0,

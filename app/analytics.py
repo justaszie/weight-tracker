@@ -1,11 +1,12 @@
 import pandas as pd
-from collections.abc import Sequence, Callable
+from collections.abc import Sequence, Callable, Hashable
+from typing import Any
 from project_types import (
-    FitnessGoal,
     Result,
     DailyWeightEntry,
     WeeklyAggregateEntry,
     ProgressSummary,
+    FitnessGoal,
 )
 
 MAINTAIN_ACCEPTABLE_CHANGE = 0.2
@@ -17,11 +18,11 @@ def get_weekly_aggregates(
     # Return value - Weekly entries in descending order (most recent to oldest
 
     # 1. Convert daily_entries JSON to data frame
-    df: pd.DataFrame = pd.DataFrame.from_records(daily_entries)  # type: ignore
+    df: pd.DataFrame = pd.DataFrame.from_records(daily_entries)  # pyright: ignore
 
     # Set date index to aggregate by week
     df["week_start"] = pd.to_datetime(df["date"])
-    df.set_index("week_start", inplace=True)  # type: ignore
+    df.set_index("week_start", inplace=True)  # pyright: ignore
 
     # Calculate weekly averages (mean and median) using resample method
     # averages = round(df['weight'].resample('W').agg(['mean','median']).dropna(), 2)
@@ -36,25 +37,25 @@ def get_weekly_aggregates(
 
     # Calculate the weight change between weeks
     weekly_entries: pd.DataFrame = weekly_averages.to_frame(name="avg_weight")
-    weekly_entries["weight_change"] = weekly_entries.diff().round(2).fillna(0)  # type: ignore
+    weekly_entries["weight_change"] = weekly_entries.diff().round(2).fillna(0)  # pyright: ignore
 
     # Calculate % of weight change compared to previous week
     weekly_entries["weight_change_prc"] = (
         (weekly_entries["weight_change"] / weekly_entries["avg_weight"] * 100)
         .round(2)
-        .fillna(0)  # type: ignore
+        .fillna(0)  # pyright: ignore
     )
 
     # Calculate estimated calorie deficit based on weight change
     weekly_entries["net_calories"] = (
-        (weekly_entries["weight_change"] * 500 / 0.45).round(0).fillna(0).astype(int)  # type: ignore
+        (weekly_entries["weight_change"] * 500 / 0.45).round(0).fillna(0).astype(int)  # pyright: ignore
     )
 
     weight_change_to_result: Callable[[float], Result] = lambda x: calculate_result(
         x, goal
     )
     # Add positive / negative result based on goal
-    weekly_entries["result"] = weekly_entries["weight_change"].apply(  # type: ignore
+    weekly_entries["result"] = weekly_entries["weight_change"].apply(  # pyright: ignore
         weight_change_to_result
     )
 
@@ -66,13 +67,24 @@ def get_weekly_aggregates(
     # Display in the order from the most recent
     weekly_entries = weekly_entries[::-1]
 
-    result: list[WeeklyAggregateEntry] = weekly_entries.to_dict(orient="records")  # pyright: ignore
+    records: list[dict[Hashable, Any]] = weekly_entries.to_dict( # pyright: ignore[reportUnknownMemberType]
+        orient="records"
+    )
 
-    return result
-
+    return [
+        {
+            "week_start": record["week_start"],
+            "avg_weight": record["avg_weight"],
+            "weight_change": record["weight_change"],
+            "weight_change_prc": record["weight_change_prc"],
+            "net_calories": record["net_calories"],
+            "result": record["result"],
+        }
+        for record in records
+    ]
 
 def get_summary(weekly_entries: Sequence[WeeklyAggregateEntry]) -> ProgressSummary:
-    weekly_entries_df: pd.DataFrame = pd.DataFrame.from_records(weekly_entries)  # type: ignore
+    weekly_entries_df: pd.DataFrame = pd.DataFrame.from_records(weekly_entries)  # pyright: ignore
 
     multiple_entries: bool = len(weekly_entries_df.index) > 1
 
