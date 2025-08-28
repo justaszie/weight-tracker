@@ -12,7 +12,7 @@ from project_types import (
 DATA_SOURCES_SUPPORTED: list[DataSourceName] = ["gfit", "mfp"]
 GOALS_SUPPORTED: list[FitnessGoal] = ["lose", "gain", "maintain"]
 
-REFERENCE_WEEK_DATA: dict[str, float | int | None]  = {
+REFERENCE_WEEK_DATA: dict[str, float | int | None] = {
     "weight_change": 0.0,
     "weight_change_prc": 0.0,
     "net_calories": 0,
@@ -119,7 +119,9 @@ def validate_date_range(date_from: dt.date | None, date_to: dt.date | None) -> N
         raise DateRangeError('"Date To" must be after "Date From"')
 
 
-def parse_date_filters(date_from: str | None, date_to: str | None) -> Tuple[dt.date | None, dt.date | None]:
+def parse_date_filters(
+    date_from: str | None, date_to: str | None
+) -> Tuple[dt.date | None, dt.date | None]:
     try:
         date_from_parsed: dt.date | None = parse_iso_date(date_from)
     except ValueError:
