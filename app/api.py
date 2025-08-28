@@ -1,5 +1,10 @@
-from flask import Blueprint, jsonify, request, url_for
-from project_types import WeeklyAggregateEntry
+from flask import Blueprint, Response, jsonify, request, url_for
+from google.oauth2.credentials import Credentials
+from project_types import (
+    WeeklyAggregateEntry,
+    FitnessGoal,
+)
+from collections.abc import Sequence
 from google_fit import GoogleFitAuth, GoogleFitClient
 from data_integration import (
     DataIntegrationService,
@@ -9,13 +14,14 @@ from data_integration import (
 )
 from project_types import (
     DailyWeightEntry,
+    WeeklyAggregateEntry,
+    APIDailyWeightEntry,
+    APIWeeklyAggregateEntry,
 )
-# from collections.abc import Optional
-from typing import Optional
+from typing import Any, Literal, cast
 from file_storage import FileStorage
 from mfp import MyFitnessPalClient
 import analytics
-import datetime as dt
 import utils
 import traceback
 
@@ -24,8 +30,19 @@ api_bp = Blueprint("api_bp", __name__)
 MFP_SOURCE_NAME = "mfp"
 GFIT_SOURCE_NAME = "gfit"
 
+type DataSourceClient = GoogleFitClient | MyFitnessPalClient
 
-def get_filtered_daily_entries(date_from: Optional[str], date_to: Optional[str]) -> list[DailyWeightEntry]:
+REFERENCE_WEEK_DATA: dict[str, int | float | None] = {
+    "weight_change": 0.0,
+    "weight_change_prc": 0.0,
+    "net_calories": 0,
+    "result": None,
+}
+
+
+def get_filtered_daily_entries(
+    date_from: str | None, date_to: str | None
+) -> list[DailyWeightEntry]:
     """
     Raises:
         utils.InvalidDateError: If the selected date filters are invalid dates
@@ -44,45 +61,49 @@ def get_filtered_daily_entries(date_from: Optional[str], date_to: Optional[str])
     return filtered_daily_entries
 
 
-def get_filtered_weekly_entries(daily_entries, goal, weeks_limit):
+def get_filtered_weekly_entries(
+    daily_entries: Sequence[DailyWeightEntry],
+    goal: FitnessGoal,
+    weeks_limit_param: str | None,
+) -> list[WeeklyAggregateEntry]:
     """
 
     Raises:
         utils.InvalidWeeksLimit: if the weeks limit filter parameter is invalid
     """
-    weekly_entries: list[WeeklyAggregateEntry] = analytics.get_weekly_aggregates(
-        daily_entries, goal
-    )
+    weekly_entries = analytics.get_weekly_aggregates(daily_entries, goal)
 
-    if weeks_limit:
-        if not utils.is_valid_weeks_filter(weeks_limit):
+    if weeks_limit_param:
+        if not utils.is_valid_weeks_filter(weeks_limit_param):
             raise utils.InvalidWeeksLimit
 
-        weeks_limit = int(weeks_limit)
+        weeks_limit = int(weeks_limit_param)
         # Keeping N + 1 weeks because the last week
         # is used as reference point to compare against, as starting point
         weekly_entries = weekly_entries[0 : weeks_limit + 1]
 
-    weekly_entries[-1].update(utils.REFERENCE_WEEK_DATA)
+    last_week = weekly_entries[-1]
+
+    last_week.update(cast(WeeklyAggregateEntry, REFERENCE_WEEK_DATA))
 
     return weekly_entries
 
 
 @api_bp.route("/api/daily-entries", methods=["GET"])
-def get_daily_entries():
+def get_daily_entries() -> Response | tuple[Response, Literal[200, 400, 500]]:
     date_from_param = request.args.get("date_from", None)
     date_to_param = request.args.get("date_to", None)
 
     try:
         daily_entries = get_filtered_daily_entries(date_from_param, date_to_param)
-        response = [
+        body: list[APIDailyWeightEntry] = [
             {
                 "date": entry["date"].isoformat(),
                 "weight": entry["weight"],
             }
             for entry in daily_entries
         ]
-        return jsonify(response)
+        return jsonify(body), 200
 
     except (utils.InvalidDateError, utils.DateRangeError) as e:
         return jsonify({"error_message": str(e)}), 400
@@ -92,7 +113,7 @@ def get_daily_entries():
 
 
 @api_bp.route("/api/weekly-aggregates", methods=["GET"])
-def get_weekly_aggregates():
+def get_weekly_aggregates() -> Response | tuple[Response, Literal[200, 400, 500]]:
     date_from_param = request.args.get("date_from", None)
     date_to_param = request.args.get("date_to", None)
 
@@ -105,7 +126,7 @@ def get_weekly_aggregates():
         return jsonify({"error_message": "Error while getting weight data"}), 500
 
     try:
-        warning_message = None
+        warning_message: str | None = None
         goal = request.args.get("goal", utils.DEFAULT_GOAL)
         if not utils.is_valid_goal_selection(goal):
             warning_message = (
@@ -113,22 +134,24 @@ def get_weekly_aggregates():
             )
             goal = utils.DEFAULT_GOAL
 
-        weeks_limit_param = request.args.get("weeks_limit", None)
-
-        weekly_entries = get_filtered_weekly_entries(
+        weeks_limit_param: str | None = request.args.get("weeks_limit", None)
+        weekly_entries: list[WeeklyAggregateEntry] = get_filtered_weekly_entries(
             daily_entries, goal, weeks_limit_param
         )
 
-        for entry in weekly_entries:
-            entry["week_start"] = entry["week_start"].strftime("%Y-%m-%d")
+        api_weekly_data: list[APIWeeklyAggregateEntry] = [
+            {**record, "week_start": record["week_start"].isoformat()}
+            for record in weekly_entries
+        ]
 
-        response = {}
-        response["weekly_data"] = weekly_entries
-        response["goal"] = goal
+        body: dict[str, Any] = {
+            "weekly_data": api_weekly_data,
+            "goal": goal,
+        }
         if warning_message:
-            response["warning_message"] = warning_message
+            body["warning_message"] = warning_message
 
-        return jsonify(response)
+        return jsonify(body), 200
 
     except utils.InvalidWeeksLimit:
         return (
@@ -141,7 +164,7 @@ def get_weekly_aggregates():
 
 
 @api_bp.route("/api/summary", methods=["GET"])
-def get_summary():
+def get_summary() -> Response | tuple[Response, Literal[400, 200, 500]]:
     date_from_param = request.args.get("date_from", None)
     date_to_param = request.args.get("date_to", None)
 
@@ -159,13 +182,12 @@ def get_summary():
         weekly_entries = get_filtered_weekly_entries(
             daily_entries, utils.DEFAULT_GOAL, weeks_limit_param
         )
+        body = {"summary": analytics.get_summary(weekly_entries)}
 
-        response = {}
-        response["summary"] = analytics.get_summary(weekly_entries)
         # TODO - Upcoming feature, to be implemented later
         # response["goal_progress"] = analytics.get_evaluation(response["summary"])
 
-        return jsonify(response)
+        return jsonify(body), 200
     except utils.InvalidWeeksLimit:
         return (
             jsonify({"error_message": "Weeks limit must be positive"}),
@@ -178,21 +200,29 @@ def get_summary():
 
 
 @api_bp.route("/api/latest-entry", methods=["GET"])
-def get_latest_entry():
+def get_latest_entry() -> Response | tuple[Response, Literal[200, 500]]:
     try:
         data_storage = FileStorage()
-        daily_entries = data_storage.get_weight_entries()
-        latest_daily_entry = utils.get_latest_daily_entry(daily_entries)
+        daily_entries: list[DailyWeightEntry] = data_storage.get_weight_entries()
+        latest_daily_entry: DailyWeightEntry | None = utils.get_latest_daily_entry(
+            daily_entries
+        )
 
-        latest_daily_entry["date"] = latest_daily_entry["date"].isoformat()
-        return jsonify(latest_daily_entry)
+        body: APIDailyWeightEntry | None = None
+        if latest_daily_entry:
+            body = {
+                "date": latest_daily_entry["date"].isoformat(),
+                "weight": latest_daily_entry["weight"],
+            }
+
+        return jsonify(body), 200
     except Exception:
         traceback.print_exc()
         return jsonify({"error_message": "Error while getting weight data"}), 500
 
 
 @api_bp.route("/api/sync-data", methods=["POST"])
-def sync_data():
+def sync_data()-> Response | tuple[Response, Literal[200, 500, 422, 401]]:
     try:
         data_storage = FileStorage()
     except Exception:
@@ -227,8 +257,10 @@ def sync_data():
             422,
         )
 
+    data_source_client: DataSourceClient
+
     if data_source == GFIT_SOURCE_NAME:
-        oauth_credentials = GoogleFitAuth().load_auth_token()
+        oauth_credentials: Credentials | None = GoogleFitAuth().load_auth_token()
         if not oauth_credentials:
             # Response that includes redirect to google auth flow
             return (
@@ -247,10 +279,15 @@ def sync_data():
     elif data_source == MFP_SOURCE_NAME:
         data_source_client = MyFitnessPalClient()
 
+    else:
+        raise ValueError('Unsupported Data Source Type')
+
+    # Above we validated that the source name is valid,
+    # so there is no risk of not having data_source_client defined here
     data_integration = DataIntegrationService(data_storage, data_source_client)
 
     try:
-        new_entries = data_integration.refresh_weight_entries(
+        new_entries: list[DailyWeightEntry] = data_integration.refresh_weight_entries(
             store_raw_copy=True, store_csv_copy=True
         )
     except SourceFetchError:
@@ -268,7 +305,7 @@ def sync_data():
     except SourceNoDataError:
         return (
             jsonify({"status": "no_data_received", "message": "No data received"}),
-            204,
+            500,
         )
     except DataSyncError:
         traceback.print_exc()

@@ -1,6 +1,6 @@
 import datetime as dt
 import traceback
-from typing import Tuple
+from typing import Tuple, TypeGuard
 from collections.abc import Iterable
 from project_types import (
     DailyWeightEntry,
@@ -19,9 +19,9 @@ REFERENCE_WEEK_DATA: dict[str, float | int | None]  = {
     "result": None,
 }
 
-DEFAULT_GOAL = "lose"
+DEFAULT_GOAL: FitnessGoal = "lose"
 DEFAULT_WEEKS_LIMIT = 4  # used in app.py
-DEFAULT_DATA_SOURCE = "gfit"
+DEFAULT_DATA_SOURCE: DataSourceName = "gfit"
 
 
 class InvalidDateError(Exception):
@@ -96,11 +96,11 @@ def is_valid_weeks_filter(value: int | str) -> bool:
         return False
 
 
-def is_valid_goal_selection(goal: str) -> bool:
+def is_valid_goal_selection(goal: str) -> TypeGuard[FitnessGoal]:
     return goal.lower() in GOALS_SUPPORTED
 
 
-def is_valid_data_source(source: str) -> bool:
+def is_valid_data_source(source: str) -> TypeGuard[DataSourceName]:
     return source.lower() in DATA_SOURCES_SUPPORTED
 
 

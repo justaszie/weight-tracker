@@ -13,7 +13,7 @@ RAW_DATA_FILE_PATH: Path = Path.joinpath(
     BASE_DIR, DATA_DIR, "raw", "mfp", RAW_DATA_FILE_NAME
 )
 
-# Default 1 year
+# Default fetching data back 1 year
 DEFAULT_LOOKBACK_YEARS = 1
 DEFAULT_DATE_FROM: dt.date = (
     dt.datetime.now() - dt.timedelta(days=365 * DEFAULT_LOOKBACK_YEARS)

@@ -19,6 +19,18 @@ flask-cors = "^6.0.1"
 mypy = "^1.17.1"
 google-auth-stubs = "^0.3.0"
 
+[tool.mypy]
+exclude = [
+    "^throwaway/.*\\.py$",
+    "^data/.*\\.py$",
+    "^static/.*\\.py$",
+    "^templates/.*\\.py$",
+    "^__pycache__/.*\\.py$",
+    "venv/",
+    ".venv/",
+    "app/app.py",
+]
+
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.5"

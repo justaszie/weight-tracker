@@ -70,7 +70,7 @@ class DataIntegrationService:
         return self.source.convert_to_daily_entries(raw_data)
 
     @raises_sync_error
-    def get_existing_weight_entries(self):
+    def get_existing_weight_entries(self) -> list[DailyWeightEntry]:
         return self.storage.get_weight_entries()
 
     @raises_sync_error

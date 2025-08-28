@@ -106,7 +106,7 @@ class GoogleFitAuth:
             return None
 
         try:
-            creds = cast(Credentials, Credentials.from_authorized_user_info( # type: ignore
+            creds = cast(Credentials, Credentials.from_authorized_user_info( # pyright: ignore[reportUnknownMemberType]
                 json.loads(open(TOKEN_FILE_PATH).read())
             ))
         except:
@@ -114,10 +114,10 @@ class GoogleFitAuth:
 
         if creds.valid: # pyright: ignore
             return creds
-        elif creds and creds.expired and creds.refresh_token: # pyright: ignore
+        elif creds and creds.expired and creds.refresh_token: # pyright: ignore[reportUnknownMemberType]
             # If token has expired but we have a refresh token, refresh the access token
             try:
-                creds.refresh(Request()) # type: ignore
+                creds.refresh(Request()) # pyright: ignore[reportUnknownMemberType]
                 # Save the credentials for future runs
                 self.save_auth_token_to_file(creds)
                 return creds
@@ -129,7 +129,7 @@ class GoogleFitAuth:
     def save_auth_token_to_file(self, creds: Credentials) -> None:
         Path(TOKEN_FILE_PATH).parent.mkdir(parents=True, exist_ok=True)
         with open(TOKEN_FILE_PATH, "w") as token:
-            token.write(cast(str, creds.to_json())) # type: ignore
+            token.write(cast(str, creds.to_json())) # pyright: ignore[reportUnknownMemberType]
 
 
 class GoogleFitClient:
