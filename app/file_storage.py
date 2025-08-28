@@ -76,7 +76,11 @@ class FileStorage:
 
     def export_to_csv(self) -> None:
         try:
-            pd.DataFrame(self.data).set_index("date").to_csv( # pyright: ignore[reportUnknownMemberType]
+            pd.DataFrame(
+                self.data
+            ).set_index(  # pyright: ignore[reportUnknownMemberType]
+                "date"
+            ).to_csv(
                 FileStorage.DAILY_ENTRIES_CSV_FILE_PATH
             )
         except:
