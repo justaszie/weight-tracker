@@ -38,6 +38,38 @@ exclude = [
 ipykernel = "^6.29.5"
 pandas-stubs = "^2.3.0.250703"
 google-api-python-client-stubs = "^1.30.0"
+ruff = "^0.12.11"
+black = "^25.1.0"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+src = ['app']
+
+[tool.ruff.lint]
+select = [
+  "E",   # pycodestyle
+  "F",   # pyflakes
+  "I",   # isort
+  "B",   # flake8-bugbear
+  "UP",  # pyupgrade
+  "SIM", # flake8-simplify
+  "RUF", # Ruff-specific
+]
+exclude = [
+    "./app/throwaway",
+    "app/data",
+    "app/static",
+    "app/templates",
+    "app/_pycache__",
+    "app/app.py",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+skip-magic-trailing-comma = false
 
 [build-system]
 requires = ["poetry-core"]

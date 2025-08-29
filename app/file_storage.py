@@ -1,10 +1,12 @@
-import json
 import datetime as dt
-import utils
-import pandas as pd
-from pathlib import Path
+import json
 import traceback
+from pathlib import Path
 from typing import TypedDict
+
+import pandas as pd
+
+import utils
 from project_types import DailyWeightEntry
 
 
@@ -83,7 +85,7 @@ class FileStorage:
             ).to_csv(
                 FileStorage.DAILY_ENTRIES_CSV_FILE_PATH
             )
-        except:
+        except Exception:
             traceback.print_exc()
 
     def data_refresh_needed(self) -> bool:
@@ -95,7 +97,7 @@ class FileStorage:
 
     def _load_weights_from_file(self) -> list[DailyWeightEntry]:
         try:
-            with open(FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH, "r") as file:
+            with open(FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH) as file:
                 file_entries: list[JSONPersistedWeightEntry] = json.load(file)
                 result: list[DailyWeightEntry] = [
                     {

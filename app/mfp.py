@@ -1,9 +1,11 @@
+import datetime as dt
+import json
 from http.cookiejar import CookieJar
 from pathlib import Path
-import json
-import myfitnesspal  # type: ignore
+
 import browser_cookie3  # type: ignore
-import datetime as dt
+import myfitnesspal  # type: ignore
+
 from project_types import DailyWeightEntry
 
 BASE_DIR: Path = Path(__file__).resolve().parent

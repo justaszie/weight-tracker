@@ -26,9 +26,8 @@ import api
 from flask_cors import CORS
 
 
-
-MFP_SOURCE_NAME = 'mfp'
-GFIT_SOURCE_NAME = 'gfit'
+MFP_SOURCE_NAME = "mfp"
+GFIT_SOURCE_NAME = "gfit"
 
 
 app = Flask(__name__)
@@ -58,7 +57,7 @@ def sync_data():
         flash("Your data is already up to date", "info")
         return redirect(url_for("tracker"))
 
-    data_source = request.args.get('source', utils.DEFAULT_DATA_SOURCE)
+    data_source = request.args.get("source", utils.DEFAULT_DATA_SOURCE)
     if not utils.is_valid_data_source(data_source):
         flash("Data source not supported. Choose one of the listed sources", "error")
         return redirect(url_for("tracker"))
@@ -84,7 +83,9 @@ def sync_data():
         if data_source == MFP_SOURCE_NAME:
             error_message = "We couldn't connect to MyFitnessPal. Please check if you're logged in and try again."
         elif data_source == GFIT_SOURCE_NAME:
-            error_message = "We couldn't get your data from Google Fit. Please try again later."
+            error_message = (
+                "We couldn't get your data from Google Fit. Please try again later."
+            )
         else:
             error_message = "We couldn't get your data. Please try again later."
 
@@ -161,12 +162,12 @@ def tracker():
             return render_template("tracker.html", **filter_values)
 
         if date_from is not None or date_to is not None:
-            daily_entries = utils.filter_daily_entries(daily_entries, date_from, date_to)
-
+            daily_entries = utils.filter_daily_entries(
+                daily_entries, date_from, date_to
+            )
 
     if not daily_entries:
         return render_template("tracker.html", **filter_values)
-
 
     try:
         weekly_entries = analytics.get_weekly_aggregates(daily_entries, session["goal"])
@@ -200,6 +201,7 @@ def tracker():
         latest_daily_entry=latest_daily_entry,
         **filter_values,
     )
+
 
 @app.route("/")
 def home():

@@ -1,19 +1,21 @@
-import os
-import json
-from pathlib import Path
-import traceback
 import datetime as dt
-from typing import Any, Hashable, cast, Callable
+import json
+import os
+import traceback
+from collections.abc import Hashable
+from pathlib import Path
+from typing import Any, cast
+
 import pandas as pd
-from flask import Blueprint, session, redirect, request
-from google.oauth2.credentials import Credentials
+from flask import Blueprint, redirect, request, session
 from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow  # type: ignore
 from googleapiclient.discovery import build  # pyright: ignore
 from googleapiclient.errors import HttpError
 from werkzeug import Response
-from project_types import DailyWeightEntry
 
+from project_types import DailyWeightEntry
 
 ### CONFIGS ###
 SCOPES = [
@@ -41,9 +43,9 @@ RAW_DATA_FILE_PATH: Path = Path.joinpath(
 
 FRONTEND_REDIRECT_URL = "http://localhost:5173/"
 
-os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = (
-    "1"  # FOR DEVELOPMENT: allow google to send authorization to HTTP (insecure) endpoint of this app. For testing.
-)
+# FOR DEVELOPMENT ONLY: allow google to send authorization to HTTP (insecure)
+# endpoint of this app. For testing.
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 gfit_auth_bp = Blueprint("gfit_auth_bp", __name__)
 ###############
@@ -113,18 +115,20 @@ class GoogleFitAuth:
         creds: Credentials | None = None
 
         # The file token.json stores the user's access and refresh tokens
-        # It is created automatically when the authorization flow completes for the first time
+        # It is created automatically when the authorization flow
+        # completes for the first time
         if not os.path.exists(TOKEN_FILE_PATH):
             return None
 
         try:
-            creds = cast(
-                Credentials,
-                Credentials.from_authorized_user_info(  # type: ignore
-                    json.loads(open(TOKEN_FILE_PATH).read())
-                ),
-            )
-        except:
+            with open(TOKEN_FILE_PATH) as token_file:
+                creds = cast(
+                    Credentials,
+                    Credentials.from_authorized_user_info(  # type: ignore
+                        json.load(token_file)
+                    ),
+                )
+        except Exception:
             return None
 
         if creds.valid:  # pyright: ignore[reportUnknownMemberType]
@@ -140,7 +144,7 @@ class GoogleFitAuth:
                 # Save the credentials for future runs
                 self.save_auth_token_to_file(creds)
                 return creds
-            except:
+            except Exception:
                 traceback.print_exc()
 
         return None
@@ -157,45 +161,52 @@ class GoogleFitClient:
         self._source = "google_fit"
 
     def ready_to_fetch(self) -> bool:
-        return True if self.creds else False
+        return bool(self.creds)
 
     def get_raw_data(
         self, date_from: str | None = None, date_to: str | None = None
     ) -> Any:
-        dataset = None
-        fitness_service = build("fitness", "v1", credentials=self.creds)
+        try:
+            fitness_service = build("fitness", "v1", credentials=self.creds)
+        except Exception:
+            traceback.print_exc()
+            raise
 
         # Get all available data
         date_from_ns_timestamp = 0
         tomorrow: dt.datetime = dt.datetime.now() + dt.timedelta(days=1)
         date_to_ns_timestamp = int(tomorrow.timestamp() * 1e9)
 
-        DATA_SOURCE = "derived:com.google.weight:com.google.android.gms:merge_weight"
+        # DATA_SOURCE = "derived:com.google.weight:com.google.android.gms:merge_weight"
+        DATA_SOURCE = "deriv:com.google.weight:com.google.android.gms:merge_weight"
         DATA_SET: str = f"{date_from_ns_timestamp}-{date_to_ns_timestamp}"
 
-        # # Using google api library to build the HTTP request object to call Fit API with relevant parameters
-        request = (
-            fitness_service.users()
+        # Using google api library to build the HTTP request object
+        # to call Fit API with relevant parameters
+        request = (  # pyright: ignore
+            fitness_service.users()  # pyright: ignore
             .dataSources()
             .datasets()
             .get(userId="me", dataSourceId=DATA_SOURCE, datasetId=DATA_SET)
         )
 
+        dataset = None
         try:
-            dataset = request.execute()
-            fitness_service.close()
+            dataset = request.execute()  # pyright: ignore
         except HttpError as e:
             print(
-                "Error response status code : {}, reason : {}".format(
-                    e.resp.status, e.error_details
-                )
+                f"Error response status code : \
+                    {e.resp.status}, reason : {e.error_details}"
             )
-            fitness_service.close()
+            traceback.print_exc()
             raise
         except Exception:
+            traceback.print_exc()
             raise
         finally:
-            return dataset
+            fitness_service.close()
+
+        return dataset if not self._is_empty_dataset(dataset) else []  # pyright: ignore
 
     def store_raw_data(self, raw_data: Any) -> None:
         Path(RAW_DATA_FILE_PATH).parent.mkdir(parents=True, exist_ok=True)
@@ -203,11 +214,15 @@ class GoogleFitClient:
             json.dump(raw_data, file)
 
     def convert_to_daily_entries(self, raw_data: Any) -> list[DailyWeightEntry]:
+        def nanos_ts_to_datetime(nanos: int) -> dt.datetime:
+            return dt.datetime.fromtimestamp(int(nanos) / 1e9)
+
+        # Extracting weight value from nested field 'fpVal' inside 'value'
+        def extract_weight_value(raw_data: list[dict[str, Any]]) -> float:
+            return round(raw_data[-1]["fpVal"], 2)
+
         df: pd.DataFrame = pd.json_normalize(raw_data, "point")  # pyright: ignore
 
-        nanos_ts_to_datetime: Callable[[int], dt.datetime] = (
-            lambda x: dt.datetime.fromtimestamp(int(x) / 1e9)
-        )
         # Transform timestamp in nanoseconds to the date when weight was captured
         df["date"] = (
             df["endTimeNanos"].apply(nanos_ts_to_datetime).dt.date  # pyright: ignore
@@ -218,10 +233,6 @@ class GoogleFitClient:
             subset="date", keep="last"
         )
 
-        # Extracting weight value from nested field 'fpVal' inside 'value'
-        extract_weight_value: Callable[[list[dict[str, Any]]], float] = lambda x: round(
-            x[-1]["fpVal"], 2
-        )
         df["weight"] = df["value"].apply(extract_weight_value)  # pyright: ignore
 
         df.drop(
@@ -249,3 +260,6 @@ class GoogleFitClient:
             }
             for record in records
         ]
+
+    def _is_empty_dataset(self, dataset: dict[str, Any]) -> bool:
+        return not ("point" in dataset and len(dataset["point"]) > 0)

@@ -1,20 +1,22 @@
 import traceback
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable, TypeVar, ParamSpec, Any
-from project_types import DailyWeightEntry, DataSourceClient, DataStorage
+from typing import Any, ParamSpec, TypeVar
+
 from file_storage import FileStorage
+from project_types import DailyWeightEntry, DataSourceClient, DataStorage
 
 P = ParamSpec("P")
 R = TypeVar("R")
 
 
-def raises_sync_error(method: Callable[P, R]) -> Callable[P, R]:
+def raises_sync_error[**P, R](method: Callable[P, R]) -> Callable[P, R]:
     @wraps(method)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         try:
             return method(*args, **kwargs)
-        except Exception:
-            raise DataSyncError
+        except Exception as e:
+            raise DataSyncError from e
 
     return wrapper
 
@@ -33,11 +35,7 @@ class DataIntegrationService:
         Load data from source and insert only new weight entries in the storage
         Return value: list of inserted new weight entries
         """
-        raw_data = None
-
         raw_data = self.get_raw_data()
-        if not raw_data:
-            raise SourceNoDataError
 
         if store_raw_copy:
             self.store_raw_data(raw_data)  # pyright: ignore
@@ -58,14 +56,18 @@ class DataIntegrationService:
     # E.g. date range limit may be needed if it takes a long time to fetch
     def get_raw_data(self) -> Any:
         try:
-            return self.source.get_raw_data()
-        except:
-            raise SourceFetchError
+            raw_data: Any = self.source.get_raw_data()
+        except Exception as e:
+            raise SourceFetchError from e
+
+        if not raw_data:
+            raise SourceNoDataError
+        return raw_data
 
     def store_raw_data(self, raw_data: Any) -> None:
         try:
             self.source.store_raw_data(raw_data)
-        except:
+        except Exception:
             traceback.print_exc()
 
     @raises_sync_error

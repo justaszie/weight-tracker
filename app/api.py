@@ -1,29 +1,28 @@
+import traceback
+from collections.abc import Sequence
+from typing import Any, Literal, cast
+
 from flask import Blueprint, Response, jsonify, request, url_for
 from google.oauth2.credentials import Credentials
-from project_types import (
-    WeeklyAggregateEntry,
-    FitnessGoal,
-)
-from collections.abc import Sequence
-from google_fit import GoogleFitAuth, GoogleFitClient
+
+import analytics
+import utils
 from data_integration import (
     DataIntegrationService,
     DataSyncError,
     SourceFetchError,
     SourceNoDataError,
 )
+from file_storage import FileStorage
+from google_fit import GoogleFitAuth, GoogleFitClient
+from mfp import MyFitnessPalClient
 from project_types import (
-    DailyWeightEntry,
-    WeeklyAggregateEntry,
     APIDailyWeightEntry,
     APIWeeklyAggregateEntry,
+    DailyWeightEntry,
+    FitnessGoal,
+    WeeklyAggregateEntry,
 )
-from typing import Any, Literal, cast
-from file_storage import FileStorage
-from mfp import MyFitnessPalClient
-import analytics
-import utils
-import traceback
 
 api_bp = Blueprint("api_bp", __name__)
 
@@ -107,7 +106,7 @@ def get_daily_entries() -> Response | tuple[Response, Literal[200, 400, 500]]:
 
     except (utils.InvalidDateError, utils.DateRangeError) as e:
         return jsonify({"error_message": str(e)}), 400
-    except:
+    except Exception:
         traceback.print_exc()
         return jsonify({"error_message": "Error while getting weight data"}), 500
 
@@ -121,7 +120,7 @@ def get_weekly_aggregates() -> Response | tuple[Response, Literal[200, 400, 500]
         daily_entries = get_filtered_daily_entries(date_from_param, date_to_param)
     except (utils.InvalidDateError, utils.DateRangeError) as e:
         return jsonify({"error_message": str(e)}), 400
-    except:
+    except Exception:
         traceback.print_exc()
         return jsonify({"error_message": "Error while getting weight data"}), 500
 
@@ -158,7 +157,7 @@ def get_weekly_aggregates() -> Response | tuple[Response, Literal[200, 400, 500]
             jsonify({"error_message": "Weeks limit must be positive"}),
             400,
         )
-    except:
+    except Exception:
         traceback.print_exc()
         return jsonify({"error_message": "Error while getting analytics data"}), 500
 
@@ -172,7 +171,7 @@ def get_summary() -> Response | tuple[Response, Literal[400, 200, 500]]:
         daily_entries = get_filtered_daily_entries(date_from_param, date_to_param)
     except (utils.InvalidDateError, utils.DateRangeError) as e:
         return jsonify({"error_message": str(e)}), 400
-    except:
+    except Exception:
         traceback.print_exc()
         return jsonify({"error_message": "Error while getting weight data"}), 500
 
@@ -194,7 +193,7 @@ def get_summary() -> Response | tuple[Response, Literal[400, 200, 500]]:
             400,
         )
 
-    except:
+    except Exception:
         traceback.print_exc()
         return jsonify({"error_message": "Error while getting analytics data"}), 500
 
@@ -222,7 +221,7 @@ def get_latest_entry() -> Response | tuple[Response, Literal[200, 500]]:
 
 
 @api_bp.route("/api/sync-data", methods=["POST"])
-def sync_data()-> Response | tuple[Response, Literal[200, 500, 422, 401]]:
+def sync_data() -> Response | tuple[Response, Literal[200, 500, 422, 401]]:
     try:
         data_storage = FileStorage()
     except Exception:
@@ -251,7 +250,8 @@ def sync_data()-> Response | tuple[Response, Literal[200, 500, 422, 401]]:
             jsonify(
                 {
                     "status": "error",
-                    "message": "Data source not supported. Choose one of the listed sources",
+                    "message": "Data source not supported. \
+                        Choose one of the listed sources",
                 }
             ),
             422,
@@ -280,7 +280,7 @@ def sync_data()-> Response | tuple[Response, Literal[200, 500, 422, 401]]:
         data_source_client = MyFitnessPalClient()
 
     else:
-        raise ValueError('Unsupported Data Source Type')
+        raise ValueError("Unsupported Data Source Type")
 
     # Above we validated that the source name is valid,
     # so there is no risk of not having data_source_client defined here
@@ -293,7 +293,8 @@ def sync_data()-> Response | tuple[Response, Literal[200, 500, 422, 401]]:
     except SourceFetchError:
         traceback.print_exc()
         if data_source == MFP_SOURCE_NAME:
-            error_message = "We couldn't connect to MyFitnessPal. Please check if you're logged in and try again."
+            error_message = "We couldn't connect to MyFitnessPal. Please check \
+                if you're logged in and try again."
         elif data_source == GFIT_SOURCE_NAME:
             error_message = (
                 "We couldn't get your data from Google Fit. Please try again later."
@@ -305,7 +306,7 @@ def sync_data()-> Response | tuple[Response, Literal[200, 500, 422, 401]]:
     except SourceNoDataError:
         return (
             jsonify({"status": "no_data_received", "message": "No data received"}),
-            500,
+            200,
         )
     except DataSyncError:
         traceback.print_exc()
@@ -313,7 +314,8 @@ def sync_data()-> Response | tuple[Response, Literal[200, 500, 422, 401]]:
             jsonify(
                 {
                     "status": "error",
-                    "message": "We're having trouble syncing your data. We're working on it.",
+                    "message": "We're having trouble syncing your data. \
+                        We're working on it.",
                 }
             ),
             500,

@@ -1,7 +1,8 @@
 import datetime as dt
 import traceback
-from typing import Tuple, TypeGuard
 from collections.abc import Iterable
+from typing import TypeGuard
+
 from project_types import (
     DailyWeightEntry,
     DataSourceName,
@@ -92,7 +93,7 @@ def message_category_to_class_name(category: ToastMessageCategory) -> str:
 def is_valid_weeks_filter(value: int | str) -> bool:
     try:
         return int(value) > 0
-    except:
+    except Exception:
         return False
 
 
@@ -110,8 +111,8 @@ def parse_iso_date(date_str: str | None) -> None | dt.date:
 
     try:
         return dt.date.fromisoformat(date_str.strip())
-    except:
-        raise ValueError("Invalid Date")
+    except Exception as e:
+        raise ValueError("Invalid Date") from e
 
 
 def validate_date_range(date_from: dt.date | None, date_to: dt.date | None) -> None:
@@ -121,15 +122,15 @@ def validate_date_range(date_from: dt.date | None, date_to: dt.date | None) -> N
 
 def parse_date_filters(
     date_from: str | None, date_to: str | None
-) -> Tuple[dt.date | None, dt.date | None]:
+) -> tuple[dt.date | None, dt.date | None]:
     try:
         date_from_parsed: dt.date | None = parse_iso_date(date_from)
-    except ValueError:
-        raise InvalidDateError('"Date From" must be a valid date')
+    except ValueError as e:
+        raise InvalidDateError('"Date From" must be a valid date') from e
     try:
         date_to_parsed: dt.date | None = parse_iso_date(date_to)
-    except ValueError:
-        raise InvalidDateError('"Date To" must be a valid date"')
+    except ValueError as e:
+        raise InvalidDateError('"Date To" must be a valid date"') from e
 
     try:
         validate_date_range(date_from_parsed, date_to_parsed)

@@ -43,7 +43,7 @@ function App() {
         const body = await response.json();
         const errorMessage =
           "message" in body
-            ? body["error_message"]
+            ? body["message"]
             : "Error while syncing data";
         throw new Error(errorMessage);
       }
@@ -56,7 +56,7 @@ function App() {
       } else if (["data_up_to_date", "no_data_received", "no_new_data"].includes(body.status)) {
         showToast("info", body.message);
       } else {
-        showToast("error", body.message);
+        throw new Error(body.message);
       }
     } catch (err: unknown) {
       if (err instanceof Error) {

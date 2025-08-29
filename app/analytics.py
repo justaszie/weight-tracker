@@ -1,12 +1,14 @@
-import pandas as pd
-from collections.abc import Sequence, Callable, Hashable
+from collections.abc import Hashable, Sequence
 from typing import Any
+
+import pandas as pd
+
 from project_types import (
-    Result,
     DailyWeightEntry,
-    WeeklyAggregateEntry,
-    ProgressSummary,
     FitnessGoal,
+    ProgressSummary,
+    Result,
+    WeeklyAggregateEntry,
 )
 
 MAINTAIN_ACCEPTABLE_CHANGE = 0.2
@@ -16,6 +18,9 @@ def get_weekly_aggregates(
     daily_entries: Sequence[DailyWeightEntry], goal: FitnessGoal
 ) -> list[WeeklyAggregateEntry]:
     # Return value - Weekly entries in descending order (most recent to oldest
+
+    def weight_change_to_result(weight_change: float) -> Result:
+        return calculate_result(weight_change, goal)
 
     # 1. Convert daily_entries JSON to data frame
     df: pd.DataFrame = (
@@ -64,9 +69,6 @@ def get_weekly_aggregates(
         .astype(int)
     )
 
-    weight_change_to_result: Callable[[float], Result] = lambda x: calculate_result(
-        x, goal
-    )
     # Add positive / negative result based on goal
     weekly_entries["result"] = weekly_entries[
         "weight_change"
@@ -150,6 +152,7 @@ def calculate_result(weight_change: float, goal: FitnessGoal) -> Result:
             )
 
 
-# TODO - Here we will implement the logic to build text that evaluates the overall results
+# TODO - Here we will implement the logic
+# to build text that evaluates the overall results
 def get_evaluation(weekly_data: Sequence[WeeklyAggregateEntry]) -> str | None:
     return None
