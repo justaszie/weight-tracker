@@ -177,8 +177,7 @@ class GoogleFitClient:
         tomorrow: dt.datetime = dt.datetime.now() + dt.timedelta(days=1)
         date_to_ns_timestamp = int(tomorrow.timestamp() * 1e9)
 
-        # DATA_SOURCE = "derived:com.google.weight:com.google.android.gms:merge_weight"
-        DATA_SOURCE = "deriv:com.google.weight:com.google.android.gms:merge_weight"
+        DATA_SOURCE = "derived:com.google.weight:com.google.android.gms:merge_weight"
         DATA_SET: str = f"{date_from_ns_timestamp}-{date_to_ns_timestamp}"
 
         # Using google api library to build the HTTP request object

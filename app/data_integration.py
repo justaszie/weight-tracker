@@ -1,5 +1,5 @@
 import traceback
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from functools import wraps
 from typing import Any, ParamSpec, TypeVar
 
@@ -80,7 +80,7 @@ class DataIntegrationService:
 
     @raises_sync_error
     def filter_new_weight_entries(
-        self, source_entries: list[DailyWeightEntry]
+        self, source_entries: Sequence[DailyWeightEntry]
     ) -> list[DailyWeightEntry]:
         existing_dates = {entry["date"] for entry in self.get_existing_weight_entries()}
         return [
