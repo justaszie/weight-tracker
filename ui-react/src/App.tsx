@@ -41,6 +41,11 @@ function App() {
       });
       if (!response.ok) {
         const body = await response.json();
+        // Launch Google Auth Flow
+        if (body.status === "auth_needed") {
+          window.location.replace(`${SERVER_BASE_URL}${body.auth_url}`);
+          return;
+        }
         const errorMessage =
           "message" in body
             ? body["message"]
@@ -48,9 +53,7 @@ function App() {
         throw new Error(errorMessage);
       }
       const body = await response.json();
-      if (body.status === "auth_needed") {
-        window.location.replace(`${SERVER_BASE_URL}${body.auth_url}`);
-      } else if (body.status === "sync_success") {
+       if (body.status === "sync_success") {
         // 2) if sync success,  update state to trigger re-rendering
         markDataSyncComplete();
       } else if (["data_up_to_date", "no_data_received", "no_new_data"].includes(body.status)) {
