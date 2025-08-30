@@ -260,5 +260,5 @@ class GoogleFitClient:
             for record in records
         ]
 
-    def _is_empty_dataset(self, dataset: dict[str, Any]) -> bool:
+    def _is_empty_dataset(self, dataset: Any) -> bool:
         return not ("point" in dataset and len(dataset["point"]) > 0)

@@ -40,7 +40,7 @@ class InvalidWeeksLimit(Exception):
 # TODO - to be removed - used by templates
 def to_signed_amt_str(amount: float | int, decimals: bool = True) -> str:
     return ("+" if amount >= 0 else "-") + (
-        f"{abs(amount):.2f}" if decimals else str(abs(amount))
+        f"{abs(amount):.2f}" if decimals else str(round(abs(amount)))
     )
 
 

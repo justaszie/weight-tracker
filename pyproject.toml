@@ -18,6 +18,8 @@ ipykernel = "^6.29.5"
 flask-cors = "^6.0.1"
 mypy = "^1.17.1"
 google-auth-stubs = "^0.3.0"
+pytest = "^8.4.1"
+pytest-mock = "^3.14.1"
 
 [tool.mypy]
 mypy_path = "app"
@@ -70,6 +72,11 @@ quote-style = "double"
 indent-style = "space"
 line-ending = "auto"
 skip-magic-trailing-comma = false
+
+[tool.pytest.ini_options]
+pythonpath = ["app"]
+testpaths = ["app"]
+python_files = ["test_*.py"]
 
 [build-system]
 requires = ["poetry-core"]
