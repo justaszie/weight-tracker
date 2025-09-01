@@ -26,20 +26,20 @@ class FileStorage:
     )
 
     def __init__(self) -> None:
-        self.data: list[DailyWeightEntry] = self._load_weights_from_file()
+        self._data: list[DailyWeightEntry] = FileStorage._load_weights_from_file()
 
     def get_weight_entries(self) -> list[DailyWeightEntry]:
-        return self.data
+        return self._data
 
     def get_weight_entry(self, date: dt.date) -> DailyWeightEntry | None:
         filtered: list[DailyWeightEntry] = [
-            entry for entry in self.data if entry["date"] == date
+            entry for entry in self._data if entry["date"] == date
         ]
         return filtered[0] if filtered else None
 
     def create_weight_entry(self, date: dt.date, weight: float | int) -> None:
         existing: list[DailyWeightEntry] = [
-            entry for entry in self.data if entry["date"] == date
+            entry for entry in self._data if entry["date"] == date
         ]
         if existing:
             raise ValueError(
@@ -47,14 +47,14 @@ class FileStorage:
                 f"Use update method to replace it."
             )
 
-        self.data.append({"date": date, "weight": float(weight)})
+        self._data.append({"date": date, "weight": float(weight)})
 
     def delete_weight_entry(self, date: dt.date) -> None:
-        self.data = [entry for entry in self.data if entry["date"] != date]
+        self._data = [entry for entry in self._data if entry["date"] != date]
 
     def update_weight_entry(self, date: dt.date, weight: float | int) -> None:
         existing: list[DailyWeightEntry] = [
-            entry for entry in self.data if entry["date"] == date
+            entry for entry in self._data if entry["date"] == date
         ]
         if not existing:
             raise ValueError(
@@ -72,14 +72,14 @@ class FileStorage:
                     "date": entry["date"].isoformat(),
                     "weight": entry["weight"],
                 }
-                for entry in self.data
+                for entry in self._data
             ]
             json.dump(entries, file)
 
     def export_to_csv(self) -> None:
         try:
             pd.DataFrame(
-                self.data
+                self._data
             ).set_index(  # pyright: ignore[reportUnknownMemberType]
                 "date"
             ).to_csv(
@@ -89,15 +89,16 @@ class FileStorage:
             traceback.print_exc()
 
     def data_refresh_needed(self) -> bool:
-        if not self.data:
+        if not self._data:
             return True
 
-        latest_entry_date: dt.date | None = utils.get_latest_entry_date(self.data)
+        latest_entry_date: dt.date | None = utils.get_latest_entry_date(self._data)
         return latest_entry_date < dt.date.today() if latest_entry_date else True
 
-    def _load_weights_from_file(self) -> list[DailyWeightEntry]:
+    @classmethod
+    def _load_weights_from_file(cls) -> list[DailyWeightEntry]:
         try:
-            with open(FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH) as file:
+            with open(cls.DAILY_ENTRIES_MAIN_FILE_PATH) as file:
                 file_entries: list[JSONPersistedWeightEntry] = json.load(file)
                 result: list[DailyWeightEntry] = [
                     {
@@ -108,7 +109,7 @@ class FileStorage:
                 ]
                 return result
         except FileNotFoundError:
-            with open(FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH, "w") as file:
+            with open(cls.DAILY_ENTRIES_MAIN_FILE_PATH, "w") as file:
                 json.dump([], file)
                 traceback.print_exc()
                 print("Data file missing. Creating empty file")
