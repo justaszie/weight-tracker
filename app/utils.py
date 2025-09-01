@@ -37,7 +37,7 @@ class InvalidWeeksLimit(Exception):
     pass
 
 
-# TODO - to be removed - used by templates
+# TODO - to be removed - used only by SSR templates
 def to_signed_amt_str(amount: float | int, decimals: bool = True) -> str:
     return ("+" if amount >= 0 else "-") + (
         f"{abs(amount):.2f}" if decimals else str(round(abs(amount)))
@@ -81,7 +81,7 @@ def get_latest_daily_entry(
         traceback.print_exc()
         return None
 
-
+# TODO - to be removed - used only by SSR templates
 def message_category_to_class_name(category: ToastMessageCategory) -> str:
     return {
         "info": "flash__message--info",
@@ -98,11 +98,17 @@ def is_valid_weeks_filter(value: int | str) -> bool:
 
 
 def is_valid_goal_selection(goal: str) -> TypeGuard[FitnessGoal]:
-    return goal.lower() in GOALS_SUPPORTED
+    try:
+        return goal.lower() in GOALS_SUPPORTED
+    except Exception:
+        return False
 
 
 def is_valid_data_source(source: str) -> TypeGuard[DataSourceName]:
-    return source.lower() in DATA_SOURCES_SUPPORTED
+    try:
+        return source.lower() in DATA_SOURCES_SUPPORTED
+    except Exception:
+        return False
 
 
 def parse_iso_date(date_str: str | None) -> None | dt.date:
@@ -135,5 +141,5 @@ def parse_date_filters(
     try:
         validate_date_range(date_from_parsed, date_to_parsed)
         return (date_from_parsed, date_to_parsed)
-    except:
+    except Exception:
         raise
