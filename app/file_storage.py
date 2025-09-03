@@ -50,6 +50,12 @@ class FileStorage:
         self._data.append({"date": date, "weight": float(weight)})
 
     def delete_weight_entry(self, date: dt.date) -> None:
+        existing: list[DailyWeightEntry] = [
+            entry for entry in self._data if entry["date"] == date
+        ]
+        if not existing:
+            raise ValueError("Weight entry doesn't exist for this date.")
+
         self._data = [entry for entry in self._data if entry["date"] != date]
 
     def update_weight_entry(self, date: dt.date, weight: float | int) -> None:
