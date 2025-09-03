@@ -81,9 +81,6 @@ def get_weekly_aggregates(
     weekly_entries.reset_index(inplace=True)
     weekly_entries["week_start"] = weekly_entries["week_start"].dt.date
 
-    # Display in the order from the most recent
-    weekly_entries = weekly_entries[::-1]
-
     records: list[dict[Hashable, Any]] = (
         weekly_entries.to_dict(  # pyright: ignore[reportUnknownMemberType]
             orient="records"

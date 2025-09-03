@@ -72,6 +72,9 @@ def get_filtered_weekly_entries(
     """
     weekly_entries = analytics.get_weekly_aggregates(daily_entries, goal)
 
+    # Sort the weeks starting from the  most recent:
+    weekly_entries.sort(key=lambda week: week["week_start"], reverse=True)
+
     if weeks_limit_param:
         if not utils.is_valid_weeks_filter(weeks_limit_param):
             raise utils.InvalidWeeksLimit

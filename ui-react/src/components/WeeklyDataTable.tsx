@@ -23,9 +23,7 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
           className={`data-table__cell  ${
             result === "positive" ? "data-table__cell--positive" : ""
           }
-            ${
-              result === "negative" ? "data-table__cell--negative" : ""
-            }`}
+            ${result === "negative" ? "data-table__cell--negative" : ""}`}
         >
           {toSignedString(weekEntry["weight_change"], 2)} kg
         </td>
@@ -33,9 +31,7 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
           className={`data-table__cell  ${
             result === "positive" ? "data-table__cell--positive" : ""
           }
-            ${
-              result === "negative" ? "data-table__cell--negative" : ""
-            }`}
+            ${result === "negative" ? "data-table__cell--negative" : ""}`}
         >
           {toSignedString(weekEntry["weight_change_prc"], 2)} %
         </td>
@@ -43,9 +39,7 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
           className={`data-table__cell ${
             result === "positive" ? "data-table__cell--positive" : ""
           }
-            ${
-              result === "negative" ? " data-table__cell--negative" : ""
-            }`}
+            ${result === "negative" ? " data-table__cell--negative" : ""}`}
         >
           {toSignedString(weekEntry["net_calories"])} kcal / day
         </td>
@@ -55,6 +49,22 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
 
   // Fetching data when filter values change
   useEffect(() => {
+    // const sortByWeekStart = function (
+    //   weekA: WeeklyDataEntry,
+    //   weekB: WeeklyDataEntry
+    // ): number {
+    //   const weekAStart = weekA["week_start"];
+    //   const weekBStart = weekB["week_start"];
+    //   console.log(weekAStart, weekBStart);
+    //   if (weekAStart < weekBStart) {
+    //     return 1;
+    //   } else if (weekAStart > weekBStart) {
+    //     return -1;
+    //   } else {
+    //     return 0;
+    //   }
+    // };
+
     const fetchDataWithFilters = async () => {
       const { weeksLimit } = props.weeksFilterValues ?? {};
       const { dateTo, dateFrom } = props.datesFilterValues ?? {};
@@ -82,6 +92,9 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
           throw new Error(errorMessage);
         }
         const body = await response.json();
+        // body["weekly_data"].sort(
+        //   (weekA: WeeklyDataEntry, weekB: WeeklyDataEntry) => sortByWeekStart(weekA, weekB)
+        // );
         setWeeklyData(body["weekly_data"]);
       } catch (err: unknown) {
         setWeeklyData([]);
@@ -92,7 +105,12 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
     };
 
     fetchDataWithFilters();
-  }, [props.datesFilterValues, props.weeksFilterValues, props.goalSelected, props.dataSyncComplete]);
+  }, [
+    props.datesFilterValues,
+    props.weeksFilterValues,
+    props.goalSelected,
+    props.dataSyncComplete,
+  ]);
 
   return (
     <section>
