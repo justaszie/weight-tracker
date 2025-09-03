@@ -22,6 +22,9 @@ def get_weekly_aggregates(
     def weight_change_to_result(weight_change: float) -> Result:
         return calculate_result(weight_change, goal)
 
+    if len(daily_entries) == 0:
+        return []
+
     # 1. Convert daily_entries JSON to data frame
     df: pd.DataFrame = (
         pd.DataFrame.from_records(  # pyright: ignore[reportUnknownMemberType]
@@ -54,7 +57,7 @@ def get_weekly_aggregates(
 
     # Calculate % of weight change compared to previous week
     weekly_entries["weight_change_prc"] = (
-        (weekly_entries["weight_change"] / weekly_entries["avg_weight"] * 100)
+        (weekly_entries["weight_change"] / weekly_entries["avg_weight"].shift(1) * 100)
         .round(2)
         .fillna(0)  # pyright: ignore[reportUnknownMemberType]
     )
@@ -100,7 +103,16 @@ def get_weekly_aggregates(
     ]
 
 
-def get_summary(weekly_entries: Sequence[WeeklyAggregateEntry]) -> ProgressSummary:
+def get_summary(
+    weekly_entries: list[WeeklyAggregateEntry],
+) -> ProgressSummary | None:
+    if len(weekly_entries) == 0:
+        return None
+
+    weekly_entries.sort( # pyright: ignore
+        key=lambda week: week["week_start"], reverse=True
+    )
+
     weekly_entries_df: pd.DataFrame = (
         pd.DataFrame.from_records(  # pyright: ignore[reportUnknownMemberType]
             weekly_entries
@@ -135,7 +147,7 @@ def get_summary(weekly_entries: Sequence[WeeklyAggregateEntry]) -> ProgressSumma
     return summary
 
 
-def calculate_result(weight_change: float, goal: FitnessGoal) -> Result:
+def calculate_result(weight_change: float, goal: FitnessGoal) -> Result | None:
     match goal:
         case "lose":
             return "positive" if weight_change < 0 else "negative"
