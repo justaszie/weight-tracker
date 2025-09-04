@@ -1,17 +1,13 @@
+# type: ignore
 import datetime as dt
-from typing import Any
 import pytest
+from typing import Any
 
 from analytics import (
     get_weekly_aggregates,
     get_summary,
     calculate_result,
 )
-
-
-# Function signatures from analytics.py:
-
-# def get_summary(weekly_entries: Sequence[WeeklyAggregateEntry]) -> ProgressSummary:
 
 
 @pytest.fixture
@@ -155,14 +151,6 @@ def test_calculate_maintain_result(
 def test_calculate_result_invalid_goal():
     assert calculate_result(weight_change=1.2, goal="bulk") == None
     assert calculate_result(weight_change=1.2, goal="stabiliZe") == None
-
-
-# TODO - test summary
-# Test structure
-#  Single week
-#  No weeks
-#  3+ weeks
-# def test_get_summary()
 
 
 def test_get_summary():
