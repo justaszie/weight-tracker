@@ -59,8 +59,6 @@ class DataStorage(Protocol):
 
 
 class DataSourceClient(Protocol):
-    def ready_to_fetch(self) -> bool: ...
-
     def get_raw_data(
         self, date_from: str | None = None, date_to: str | None = None
     ) -> dict[dt.date, float]: ...

@@ -3,6 +3,7 @@ from collections.abc import Callable, Sequence
 from functools import wraps
 from typing import Any, ParamSpec, TypeVar
 
+from app.google_fit import NoCredentialsError
 from file_storage import FileStorage
 from project_types import DailyWeightEntry, DataSourceClient, DataStorage
 
@@ -57,6 +58,8 @@ class DataIntegrationService:
     def get_raw_data(self) -> Any:
         try:
             raw_data: Any = self.source.get_raw_data()
+        except NoCredentialsError as e:
+            raise SourceFetchError from e
         except Exception as e:
             raise SourceFetchError from e
 

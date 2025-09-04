@@ -26,9 +26,6 @@ class MyFitnessPalClient:
     def __init__(self) -> None:
         self._source = "myfitnesspal"
 
-    def ready_to_fetch(self) -> bool:
-        return True
-
     def get_raw_data(
         self, date_from: str | None = None, date_to: str | None = None
     ) -> dict[dt.date, float]:

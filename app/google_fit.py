@@ -156,16 +156,17 @@ class GoogleFitAuth:
 
 
 class GoogleFitClient:
-    def __init__(self, creds: Credentials | None) -> None:
+    def __init__(self, creds: Credentials | None = None) -> None:
         self.creds = creds
         self._source = "google_fit"
-
-    def ready_to_fetch(self) -> bool:
-        return bool(self.creds)
 
     def get_raw_data(
         self, date_from: str | None = None, date_to: str | None = None
     ) -> Any:
+        if not self.creds:
+            print("Cannot get data from Google Fit API without valid credentials")
+            raise NoCredentialsError
+
         try:
             fitness_service = build("fitness", "v1", credentials=self.creds)
         except Exception:
@@ -262,3 +263,7 @@ class GoogleFitClient:
 
     def _is_empty_dataset(self, dataset: Any) -> bool:
         return not ("point" in dataset and len(dataset["point"]) > 0)
+
+
+class NoCredentialsError(Exception):
+    pass
