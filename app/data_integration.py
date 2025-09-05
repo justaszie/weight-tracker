@@ -3,7 +3,7 @@ from collections.abc import Callable, Sequence
 from functools import wraps
 from typing import Any, ParamSpec, TypeVar
 
-from app.google_fit import NoCredentialsError
+from google_fit import NoCredentialsError
 from file_storage import FileStorage
 from project_types import DailyWeightEntry, DataSourceClient, DataStorage
 

@@ -267,3 +267,4 @@ class GoogleFitClient:
 
 class NoCredentialsError(Exception):
     pass
+
