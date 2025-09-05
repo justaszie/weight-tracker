@@ -206,14 +206,14 @@ class GoogleFitClient:
         finally:
             fitness_service.close()
 
-        return dataset if not self._is_empty_dataset(dataset) else []  # pyright: ignore
+        return dataset
 
     def store_raw_data(self, raw_data: Any) -> None:
         Path(RAW_DATA_FILE_PATH).parent.mkdir(parents=True, exist_ok=True)
         with open(RAW_DATA_FILE_PATH, "w") as file:
             json.dump(raw_data, file)
 
-    def convert_to_daily_entries(self, raw_data: Any) -> list[DailyWeightEntry]:
+    def convert_to_daily_entries(self, raw_dataset: Any) -> list[DailyWeightEntry]:
         def nanos_ts_to_datetime(nanos: int) -> dt.datetime:
             return dt.datetime.fromtimestamp(int(nanos) / 1e9)
 
@@ -221,7 +221,11 @@ class GoogleFitClient:
         def extract_weight_value(raw_data: list[dict[str, Any]]) -> float:
             return round(raw_data[-1]["fpVal"], 2)
 
-        df: pd.DataFrame = pd.json_normalize(raw_data, "point")  # pyright: ignore
+        data = self._extract_datapoints(raw_dataset)
+        if not data:
+            return []
+
+        df: pd.DataFrame = pd.DataFrame.from_records(data)  # pyright: ignore
 
         # Transform timestamp in nanoseconds to the date when weight was captured
         df["date"] = (
@@ -248,9 +252,9 @@ class GoogleFitClient:
         )
 
         # Remove outliers that were added by mistake
-        df = df[(df["weight"] > 50) & (df["weight"] < 100)]
+        filtered_df = df[(df["weight"] > 50) & (df["weight"] < 100)]
 
-        records: list[dict[Hashable, Any]] = df.to_dict(  # pyright: ignore
+        records: list[dict[Hashable, Any]] = filtered_df.to_dict(  # pyright: ignore
             orient="records"
         )
         return [
@@ -261,8 +265,8 @@ class GoogleFitClient:
             for record in records
         ]
 
-    def _is_empty_dataset(self, dataset: Any) -> bool:
-        return not ("point" in dataset and len(dataset["point"]) > 0)
+    def _extract_datapoints(self, raw_dataset: Any) -> list[Any]:
+        return raw_dataset['point']
 
 
 class NoCredentialsError(Exception):

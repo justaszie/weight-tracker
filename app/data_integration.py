@@ -63,8 +63,6 @@ class DataIntegrationService:
         except Exception as e:
             raise SourceFetchError from e
 
-        if not raw_data:
-            raise SourceNoDataError
         return raw_data
 
     def store_raw_data(self, raw_data: Any) -> None:
@@ -75,7 +73,11 @@ class DataIntegrationService:
 
     @raises_sync_error
     def convert_to_daily_entries(self, raw_data: Any) -> list[DailyWeightEntry]:
-        return self.source.convert_to_daily_entries(raw_data)
+        daily_entries = self.source.convert_to_daily_entries(raw_data)
+        if not daily_entries:
+            raise SourceNoDataError
+
+        return daily_entries
 
     @raises_sync_error
     def get_existing_weight_entries(self) -> list[DailyWeightEntry]:
