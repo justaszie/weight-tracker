@@ -28,8 +28,8 @@ class TestWeightStorageUsingFile:
     def test_load_weights_from_wrong_format_file(self, mocker):
         test_file_data = ""
 
-        mock_storage_file = mocker.mock_open(read_data=test_file_data)
-        mock_file_load = mocker.patch("file_storage.open", new=mock_storage_file)
+        mock_open_fn = mocker.mock_open(read_data=test_file_data)
+        mock_file_load = mocker.patch("file_storage.open", mock_open_fn)
 
         with pytest.raises(json.JSONDecodeError):
             FileStorage._load_weights_from_file()
@@ -44,8 +44,8 @@ class TestWeightStorageUsingFile:
             ]
         )
 
-        mock_storage_file = mocker.mock_open(read_data=test_file_data)
-        mock_file_load = mocker.patch("file_storage.open", new=mock_storage_file)
+        mock_open_fn = mocker.mock_open(read_data=test_file_data)
+        mock_file_load = mocker.patch("file_storage.open", mock_open_fn)
 
         entries = FileStorage._load_weights_from_file()
 
