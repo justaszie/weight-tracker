@@ -16,6 +16,8 @@ def raises_sync_error[**P, R](method: Callable[P, R]) -> Callable[P, R]:
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         try:
             return method(*args, **kwargs)
+        except (SourceFetchError, SourceNoDataError, DataSyncError):
+            raise
         except Exception as e:
             raise DataSyncError from e
 
