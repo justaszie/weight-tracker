@@ -20,6 +20,7 @@ from project_types import (
     APIDailyWeightEntry,
     APIWeeklyAggregateEntry,
     DailyWeightEntry,
+    DataSourceClient,
     FitnessGoal,
     WeeklyAggregateEntry,
 )
@@ -28,8 +29,6 @@ api_bp = Blueprint("api_bp", __name__)
 
 MFP_SOURCE_NAME = "mfp"
 GFIT_SOURCE_NAME = "gfit"
-
-type DataSourceClient = GoogleFitClient | MyFitnessPalClient
 
 REFERENCE_WEEK_DATA: dict[str, int | float | None] = {
     "weight_change": 0.0,
@@ -71,6 +70,8 @@ def get_filtered_weekly_entries(
         utils.InvalidWeeksLimit: if the weeks limit filter parameter is invalid
     """
     weekly_entries = analytics.get_weekly_aggregates(daily_entries, goal)
+    if not weekly_entries:
+        return []
 
     # Sort the weeks starting from the  most recent:
     weekly_entries.sort(key=lambda week: week["week_start"], reverse=True)
@@ -85,7 +86,6 @@ def get_filtered_weekly_entries(
         weekly_entries = weekly_entries[0 : weeks_limit + 1]
 
     last_week = weekly_entries[-1]
-
     last_week.update(cast(WeeklyAggregateEntry, REFERENCE_WEEK_DATA))
 
     return weekly_entries
