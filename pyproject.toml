@@ -79,6 +79,11 @@ pythonpath = ["app"]
 testpaths = ["app"]
 python_files = ["test_*.py"]
 
+[tool.coverage.run]
+omit = [
+  "app/app.py",
+]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
