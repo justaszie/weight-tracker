@@ -53,6 +53,6 @@ class MyFitnessPalClient:
         self, raw_data: dict[dt.date, float]
     ) -> list[DailyWeightEntry]:
         return [
-            {"date": entry[0], "weight": float(entry[1])}
-            for entry in reversed(raw_data.items())
+            {"date": entry[0], "weight": round(float(entry[1]), 2)}
+            for entry in raw_data.items()
         ]
