@@ -22,7 +22,7 @@ class APIDailyWeightEntry(TypedDict):
     weight: float
 
 
-class WeeklyAggregateEntry(TypedDict):
+class WeeklyAggregateEntry(BaseModel):
     week_start: dt.date
     avg_weight: float
     weight_change: float

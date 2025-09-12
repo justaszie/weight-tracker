@@ -1,11 +1,12 @@
 import datetime as dt
 import traceback
 from collections.abc import Sequence
-from typing import Any, Literal, cast
+from typing import Annotated, Any, Literal, cast
 from typing_extensions import Self
 from fastapi import (
     APIRouter,
     HTTPException,
+    Query,
 )
 from google.oauth2.credentials import Credentials
 
@@ -46,15 +47,15 @@ from pydantic import (
 #         return self
 
 
+class WeeklyAggregateResponse(BaseModel):
+    weekly_data: list[WeeklyAggregateEntry]
+    goal: FitnessGoal
+
+
 MFP_SOURCE_NAME = "mfp"
 GFIT_SOURCE_NAME = "gfit"
 
-REFERENCE_WEEK_DATA: dict[str, int | float | None] = {
-    "weight_change": 0.0,
-    "weight_change_prc": 0.0,
-    "net_calories": 0,
-    "result": None,
-}
+# REFERENCE_WEEK_DATA: dict[str, int | float | None] =
 
 router = APIRouter()
 
@@ -76,31 +77,31 @@ def get_filtered_daily_entries(
 def get_filtered_weekly_entries(
     daily_entries: Sequence[WeightEntry],
     goal: FitnessGoal,
-    weeks_limit_param: str | None,
+    weeks_limit: int | None,
 ) -> list[WeeklyAggregateEntry]:
-    """
 
-    Raises:
-        utils.InvalidWeeksLimit: if the weeks limit filter parameter is invalid
-    """
     weekly_entries = analytics.get_weekly_aggregates(daily_entries, goal)
     if not weekly_entries:
         return []
 
     # Sort the weeks starting from the  most recent:
-    weekly_entries.sort(key=lambda week: week["week_start"], reverse=True)
+    weekly_entries.sort(key=lambda week: week.week_start, reverse=True)
 
-    if weeks_limit_param:
-        if not utils.is_valid_weeks_filter(weeks_limit_param):
-            raise utils.InvalidWeeksLimit
-
-        weeks_limit = int(weeks_limit_param)
+    if weeks_limit:
         # Keeping N + 1 weeks because the last week
         # is used as reference point to compare against, as starting point
         weekly_entries = weekly_entries[0 : weeks_limit + 1]
 
     last_week = weekly_entries[-1]
-    last_week.update(cast(WeeklyAggregateEntry, REFERENCE_WEEK_DATA))
+    reference_week = last_week.model_copy(
+        update={
+            "weight_change": 0.0,
+            "weight_change_prc": 0.0,
+            "net_calories": 0,
+            "result": None,
+        }
+    )
+    weekly_entries[-1] = reference_week
 
     return weekly_entries
 
@@ -116,20 +117,41 @@ def get_daily_entries(
         )
 
     try:
-        body: list[WeightEntry] = get_filtered_daily_entries(date_from=date_from, date_to=date_to)
-        # body: list[WeightEntry] = [
-        #     {
-        #         "date": entry["date"],
-        #         "weight": entry["weight"],
-        #     }
-        #     for entry in daily_entries
-        # ]
+        body: list[WeightEntry] = get_filtered_daily_entries(
+            date_from=date_from, date_to=date_to
+        )
         return body
-    except:
+    except Exception:
         traceback.print_exc()
-        raise HTTPException(status_code=500)
-    # except (utils.InvalidDateError, utils.DateRangeError) as e:
-    #     return jsonify({"error_message": str(e)}), 400
-    # except Exception:
-    #     traceback.print_exc()
-    #     return jsonify({"error_message": "Error while getting weight data"}), 500
+        raise HTTPException(status_code=500, detail="Error while getting weight data")
+
+
+@router.get("/weekly-aggregates", response_model=WeeklyAggregateResponse)
+def get_weekly_aggregates(
+    date_from: dt.date | None = None,
+    date_to: dt.date | None = None,
+    weeks_limit: Annotated[int | None, Query(gt=0)] = None,
+    goal: FitnessGoal | None = None,
+) -> WeeklyAggregateResponse:
+
+    if date_from and date_to and date_from > date_to:
+        raise HTTPException(
+            status_code=422, detail="'Date To' must be after 'Date From'"
+        )
+    try:
+        daily_entries = get_filtered_daily_entries(date_from, date_to)
+        if not goal:
+            goal = utils.DEFAULT_GOAL
+
+        weekly_entries: list[WeeklyAggregateEntry] = get_filtered_weekly_entries(
+            daily_entries, goal, weeks_limit
+        )
+
+        body = WeeklyAggregateResponse(weekly_data=weekly_entries, goal=goal)
+
+        return body
+    except Exception:
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500, detail="Error while getting analytics data"
+        )

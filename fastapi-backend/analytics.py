@@ -89,14 +89,15 @@ def get_weekly_aggregates(
     )
 
     return [
-        {
-            "week_start": record["week_start"],
-            "avg_weight": record["avg_weight"],
-            "weight_change": record["weight_change"],
-            "weight_change_prc": record["weight_change_prc"],
-            "net_calories": record["net_calories"],
-            "result": record["result"],
-        }
+        WeeklyAggregateEntry(**record)
+        # {
+        #     "week_start": record["week_start"],
+        #     "avg_weight": record["avg_weight"],
+        #     "weight_change": record["weight_change"],
+        #     "weight_change_prc": record["weight_change_prc"],
+        #     "net_calories": record["net_calories"],
+        #     "result": record["result"],
+        # }
         for record in records
     ]
 
