@@ -10,6 +10,14 @@ app/testing.py
 app/testing.ipynb
 app/throwaway
 app/throwaway/*
+fastapi-backend/__pycache__/*
+fastapi-backend/data/*
+fastapi-backend/auth/*
+fastapi-backend/static/images/*
+fastapi-backend/testing.py
+fastapi-backend/testing.ipynb
+fastapi-backend/throwaway
+fastapi-backend/throwaway/*
 .coverage
 
 # # Logs

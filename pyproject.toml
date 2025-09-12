@@ -21,6 +21,8 @@ google-auth-stubs = "^0.3.0"
 pytest = "^8.4.1"
 pytest-mock = "^3.14.1"
 pytest-cov = "^6.2.1"
+fastapi = "^0.116.1"
+uvicorn = "^0.35.0"
 
 [tool.mypy]
 mypy_path = "app"
