@@ -48,7 +48,7 @@ export default function Summary(props: SummaryProps) {
           throw new Error(errorMessage);
         }
         const body = await response.json();
-        setSummaryData(body.summary);
+        setSummaryData(body.metrics);
 
       } catch (err: unknown) {
         setSummaryData({});

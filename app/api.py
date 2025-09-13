@@ -184,7 +184,7 @@ def get_summary() -> Response | tuple[Response, Literal[400, 200, 500]]:
         weekly_entries = get_filtered_weekly_entries(
             daily_entries, utils.DEFAULT_GOAL, weeks_limit_param
         )
-        body = {"summary": analytics.get_summary(weekly_entries)}
+        body = {"metrics": analytics.get_summary(weekly_entries)}
 
         # TODO - Upcoming feature, to be implemented later
         # response["goal_progress"] = analytics.get_evaluation(response["summary"])
