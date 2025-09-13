@@ -17,6 +17,7 @@ class WeightEntry(BaseModel):
     date: dt.date
     weight: float
 
+
 class APIDailyWeightEntry(TypedDict):
     date: str
     weight: float
@@ -31,6 +32,17 @@ class WeeklyAggregateEntry(BaseModel):
     result: Result
 
 
+class ProgressSummaryMetrics(BaseModel):
+    total_change: float
+    avg_change: float
+    avg_change_prc: float
+    avg_net_calories: int
+
+
+class ProgressSummary(BaseModel):
+    metrics: ProgressSummaryMetrics | None = None
+
+
 class APIWeeklyAggregateEntry(TypedDict):
     week_start: str
     avg_weight: float
@@ -38,13 +50,6 @@ class APIWeeklyAggregateEntry(TypedDict):
     weight_change_prc: float
     net_calories: int
     result: Result
-
-
-class ProgressSummary(TypedDict):
-    total_change: float
-    avg_change: float
-    avg_change_prc: float
-    avg_net_calories: int
 
 
 class DataStorage(Protocol):

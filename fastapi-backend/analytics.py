@@ -6,7 +6,7 @@ import pandas as pd
 from project_types import (
     WeightEntry,
     FitnessGoal,
-    ProgressSummary,
+    ProgressSummaryMetrics,
     Result,
     WeeklyAggregateEntry,
 )
@@ -104,44 +104,44 @@ def get_weekly_aggregates(
 
 def get_summary(
     weekly_entries: list[WeeklyAggregateEntry],
-) -> ProgressSummary | None:
+) -> ProgressSummaryMetrics | None:
     if len(weekly_entries) == 0:
         return None
 
     weekly_entries.sort( # pyright: ignore
-        key=lambda week: week["week_start"], reverse=True
+        key=lambda week: week.week_start, reverse=True
     )
 
     weekly_entries_df: pd.DataFrame = (
         pd.DataFrame.from_records(  # pyright: ignore[reportUnknownMemberType]
-            weekly_entries
+            [entry.model_dump() for entry in weekly_entries]
         )
     )
 
     multiple_entries: bool = len(weekly_entries_df.index) > 1
 
-    summary: ProgressSummary = {
-        "total_change": (
+    summary = ProgressSummaryMetrics(
+        total_change = (
             round(float(weekly_entries_df["weight_change"].iloc[:-1].sum()), 2)
             if multiple_entries
             else 0.0
         ),
-        "avg_change": (
+        avg_change = (
             round(float(weekly_entries_df["weight_change"].iloc[:-1].mean()), 2)
             if multiple_entries
             else 0.0
         ),
-        "avg_change_prc": (
+        avg_change_prc = (
             round(float(weekly_entries_df["weight_change_prc"].iloc[:-1].mean()), 2)
             if multiple_entries
             else 0.0
         ),
-        "avg_net_calories": (
+        avg_net_calories = (
             int(weekly_entries_df["net_calories"].iloc[:-1].mean())
             if multiple_entries
             else 0
         ),
-    }
+    )
 
     return summary
 

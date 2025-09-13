@@ -26,6 +26,8 @@ from project_types import (
     APIWeeklyAggregateEntry,
     DataSourceClient,
     FitnessGoal,
+    ProgressSummary,
+    ProgressSummaryMetrics,
     WeeklyAggregateEntry,
     WeightEntry,
 )
@@ -155,3 +157,32 @@ def get_weekly_aggregates(
         raise HTTPException(
             status_code=500, detail="Error while getting analytics data"
         )
+
+
+@router.get("/summary", response_model=ProgressSummary)
+def get_summary(
+    date_from: dt.date | None = None,
+    date_to: dt.date | None = None,
+    weeks_limit: Annotated[int | None, Query(gt=0)] = None,
+) -> ProgressSummary:
+    if date_from and date_to and date_from > date_to:
+        raise HTTPException(
+            status_code=422, detail="'Date To' must be after 'Date From'"
+        )
+
+    try:
+        daily_entries = get_filtered_daily_entries(date_from, date_to)
+
+        weekly_entries = get_filtered_weekly_entries(
+            daily_entries, utils.DEFAULT_GOAL, weeks_limit
+        )
+        summary_metrics = analytics.get_summary(weekly_entries)
+        body = ProgressSummary(metrics=summary_metrics)
+
+        return body
+    except Exception:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Error while getting analytics data")
+
+# @router.get("/latest-entry", response_model=)
+# def get_latest_entry():
