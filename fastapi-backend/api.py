@@ -182,7 +182,19 @@ def get_summary(
         return body
     except Exception:
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail="Error while getting analytics data")
+        raise HTTPException(
+            status_code=500, detail="Error while getting analytics data"
+        )
 
-# @router.get("/latest-entry", response_model=)
-# def get_latest_entry():
+
+@router.get("/latest-entry", response_model=(WeightEntry | None))
+def get_latest_entry() -> WeightEntry | None:
+    try:
+        data_storage = FileStorage()
+        daily_entries = data_storage.get_weight_entries()
+        latest_daily_entry = utils.get_latest_daily_entry(daily_entries)
+
+        return latest_daily_entry
+    except Exception:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Error while getting weight data")
