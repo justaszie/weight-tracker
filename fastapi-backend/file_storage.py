@@ -2,6 +2,7 @@ import datetime as dt
 import json
 import traceback
 from pathlib import Path
+from pydantic import TypeAdapter
 from typing import TypedDict
 
 import pandas as pd
@@ -72,20 +73,14 @@ class FileStorage:
         row_to_update.weight = float(weight)
 
     def save(self) -> None:
-        with open(FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH, "w") as file:
-            entries: list[JSONPersistedWeightEntry] = [
-                {
-                    "date": entry.date.isoformat(),
-                    "weight": entry.weight,
-                }
-                for entry in self._data
-            ]
-            json.dump(entries, file)
+        json_data = TypeAdapter(list[WeightEntry]).dump_json(self._data)
+        FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH.write_bytes(json_data)
 
     def export_to_csv(self) -> None:
         try:
-            pd.DataFrame(
-                self._data
+            entries = [entry.model_dump() for entry in self._data]
+            pd.DataFrame.from_records(  # pyright: ignore[reportUnknownMemberType]
+                entries
             ).set_index(  # pyright: ignore[reportUnknownMemberType]
                 "date"
             ).to_csv(
@@ -104,16 +99,10 @@ class FileStorage:
     @classmethod
     def _load_weights_from_file(cls) -> list[WeightEntry]:
         try:
-            with open(cls.DAILY_ENTRIES_MAIN_FILE_PATH) as file:
-                file_entries: list[JSONPersistedWeightEntry] = json.load(file)
-                result: list[WeightEntry] = [
-                    WeightEntry(
-                        date=dt.date.fromisoformat(entry["date"]),
-                        weight=float(entry["weight"]),
-                    )
-                    for entry in file_entries
-                ]
-                return result
+            json_string = cls.DAILY_ENTRIES_MAIN_FILE_PATH.read_bytes()
+            weight_entries = TypeAdapter(list[WeightEntry]).validate_json(json_string)
+
+            return weight_entries
         except FileNotFoundError:
             with open(cls.DAILY_ENTRIES_MAIN_FILE_PATH, "w") as file:
                 json.dump([], file)
