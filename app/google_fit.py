@@ -2,7 +2,6 @@ import datetime as dt
 import json
 import os
 import traceback
-from collections.abc import Hashable
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from pathlib import Path
@@ -47,16 +46,14 @@ FRONTEND_REDIRECT_URL = "http://localhost:5173/"
 # endpoint of this app. For testing.
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
-# gfit_auth_bp = Blueprint("gfit_auth_bp", __name__)
-
 router = APIRouter()
+
 ###############
 
 ### ROUTES USED IN OAUTH FLOW ###
 
 
 # This route initiates the google auth flow
-# @gfit_auth_bp.route("/google-signin", methods=["GET"])
 @router.get("/google-signin")
 def google_signin(request: Request) -> RedirectResponse:
     # Create flow instance to manage the OAuth 2.0 Authorization Grant Flow steps
@@ -81,8 +78,7 @@ def google_signin(request: Request) -> RedirectResponse:
 
 
 # This is endpoint that Google calls with the authorization.
-# From here, we need to continue process of getting the data
-# @gfit_auth_bp.route("/google-auth")
+# After successfully getting token, we transfer the user back to frontend
 @router.get("/google-auth")
 def handle_google_auth_callback(request: Request) -> RedirectResponse:
     state = request.session["state"]
@@ -154,9 +150,8 @@ class GoogleFitAuth:
         return None
 
     def save_auth_token_to_file(self, creds: Credentials) -> None:
-        Path(TOKEN_FILE_PATH).parent.mkdir(parents=True, exist_ok=True)
-        with open(TOKEN_FILE_PATH, "w") as token:
-            token.write(cast(str, creds.to_json()))  # type: ignore
+        TOKEN_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        TOKEN_FILE_PATH.write_text(creds.to_json())  # pyright: ignore
 
 
 class GoogleFitClient:
@@ -210,12 +205,12 @@ class GoogleFitClient:
         finally:
             fitness_service.close()
 
-        return dataset
+        return dataset  # pyright: ignore[reportUnknownVariableType]
 
     def store_raw_data(self, raw_dataset: Any) -> None:
-        Path(RAW_DATA_FILE_PATH).parent.mkdir(parents=True, exist_ok=True)
-        with open(RAW_DATA_FILE_PATH, "w") as file:
-            json.dump(raw_dataset, file)
+        RAW_DATA_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        json_data = json.dumps(raw_dataset)
+        RAW_DATA_FILE_PATH.write_text(json_data)
 
     def convert_to_daily_entries(self, raw_dataset: Any) -> list[WeightEntry]:
         def nanos_ts_to_datetime(nanos: int) -> dt.datetime:
@@ -223,7 +218,7 @@ class GoogleFitClient:
 
         # Extracting weight value from nested field 'fpVal' inside 'value'
         def extract_weight_value(raw_data: list[dict[str, Any]]) -> float:
-            return round(raw_data[-1]["fpVal"], 2)
+            return round(float(raw_data[-1]["fpVal"]), 2)
 
         data = self._extract_datapoints(raw_dataset)
         if not data:
@@ -258,21 +253,12 @@ class GoogleFitClient:
         # Remove outliers that were added by mistake
         filtered_df = df[(df["weight"] > 50) & (df["weight"] < 100)]
 
-        records: list[dict[Hashable, Any]] = filtered_df.to_dict(  # pyright: ignore
-            orient="records"
-        )
-        return [
-            WeightEntry(
-                date=record["date"],
-                weight=float(record["weight"]),
-            )
-            for record in records
-        ]
+        records = filtered_df.to_dict(orient="records")  # pyright: ignore
+        return [WeightEntry.model_validate(record) for record in records]
 
     def _extract_datapoints(self, raw_dataset: Any) -> list[Any]:
-        return raw_dataset['point']
+        return cast(list[dict[str, Any]], raw_dataset["point"])
 
 
 class NoCredentialsError(Exception):
     pass
-

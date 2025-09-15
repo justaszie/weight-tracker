@@ -74,18 +74,18 @@ class FileStorage:
 
     def save(self) -> None:
         json_data = TypeAdapter(list[WeightEntry]).dump_json(self._data)
+
+        FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH.parent.mkdir(
+            parents=True, exist_ok=True
+        )
         FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH.write_bytes(json_data)
 
     def export_to_csv(self) -> None:
         try:
             entries = [entry.model_dump() for entry in self._data]
-            pd.DataFrame.from_records(  # pyright: ignore[reportUnknownMemberType]
-                entries
-            ).set_index(  # pyright: ignore[reportUnknownMemberType]
+            pd.DataFrame(entries).set_index(  # pyright: ignore[reportUnknownMemberType]
                 "date"
-            ).to_csv(
-                FileStorage.DAILY_ENTRIES_CSV_FILE_PATH
-            )
+            ).to_csv(FileStorage.DAILY_ENTRIES_CSV_FILE_PATH)
         except Exception:
             traceback.print_exc()
 
@@ -104,10 +104,12 @@ class FileStorage:
 
             return weight_entries
         except FileNotFoundError:
-            with open(cls.DAILY_ENTRIES_MAIN_FILE_PATH, "w") as file:
-                json.dump([], file)
-                traceback.print_exc()
-                print("Data file missing. Creating empty file")
-                return []
+            traceback.print_exc()
+            print("Data file missing. Creating empty file")
+            cls.DAILY_ENTRIES_MAIN_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
+            cls.DAILY_ENTRIES_MAIN_FILE_PATH.write_text(json.dumps([]))
+
+            return []
+
         except (json.JSONDecodeError, Exception):
             raise

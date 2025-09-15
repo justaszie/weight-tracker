@@ -41,7 +41,7 @@ class DataIntegrationService:
         raw_data = self.get_raw_data()
 
         if store_raw_copy:
-            self.store_raw_data(raw_data)  # pyright: ignore
+            self.store_raw_data(raw_data)
 
         daily_entries: list[WeightEntry] = self.convert_to_daily_entries(raw_data)
         new_entries: list[WeightEntry] = self.filter_new_weight_entries(
@@ -55,7 +55,7 @@ class DataIntegrationService:
 
         return new_entries
 
-    # TODO: depending on data source we may need params here
+    # Depending on data source we may need params here
     # E.g. date range limit may be needed if it takes a long time to fetch
     def get_raw_data(self) -> Any:
         try:
@@ -99,7 +99,7 @@ class DataIntegrationService:
         for entry in new_entries:
             self.storage.create_weight_entry(entry.date, entry.weight)
 
-        # Only needed because we're using file storage
+        # Only need this step to persist the data if we're using file storage
         if isinstance(self.storage, FileStorage):
             self.storage.save()
 

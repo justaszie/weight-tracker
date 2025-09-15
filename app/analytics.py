@@ -1,12 +1,11 @@
-from collections.abc import Hashable, Sequence
-from typing import Any
+from collections.abc import Sequence
 
 import pandas as pd
 
 from project_types import (
     WeightEntry,
     FitnessGoal,
-    ProgressSummaryMetrics,
+    ProgressMetrics,
     Result,
     WeeklyAggregateEntry,
 )
@@ -17,18 +16,14 @@ MAINTAIN_ACCEPTABLE_CHANGE = 0.2
 def get_weekly_aggregates(
     daily_entries: Sequence[WeightEntry], goal: FitnessGoal
 ) -> list[WeeklyAggregateEntry]:
-    # Return value - Weekly entries in descending order (most recent to oldest
-
     def weight_change_to_result(weight_change: float) -> Result:
         return calculate_result(weight_change, goal)
 
     if len(daily_entries) == 0:
         return []
 
-    # 1. Convert daily_entries JSON to data frame
-    df: pd.DataFrame = (
-        pd.DataFrame([entry.model_dump() for entry in daily_entries])  # pyright: ignore[reportUnknownMemberType]
-    )
+    # 1. Convert daily_entries DTO list to data frame
+    df = pd.DataFrame([entry.model_dump() for entry in daily_entries])
 
     # Set date index to aggregate by week
     df["week_start"] = pd.to_datetime(df["date"])
@@ -82,61 +77,40 @@ def get_weekly_aggregates(
     weekly_entries.reset_index(inplace=True)
     weekly_entries["week_start"] = weekly_entries["week_start"].dt.date
 
-    records: list[dict[Hashable, Any]] = (
-        weekly_entries.to_dict(  # pyright: ignore[reportUnknownMemberType]
-            orient="records"
-        )
+    records = weekly_entries.to_dict(  # pyright: ignore[reportUnknownMemberType]
+        orient="records"
     )
 
-    return [
-        WeeklyAggregateEntry(**record)
-        # {
-        #     "week_start": record["week_start"],
-        #     "avg_weight": record["avg_weight"],
-        #     "weight_change": record["weight_change"],
-        #     "weight_change_prc": record["weight_change_prc"],
-        #     "net_calories": record["net_calories"],
-        #     "result": record["result"],
-        # }
-        for record in records
-    ]
+    return [WeeklyAggregateEntry.model_validate(record) for record in records]
 
 
 def get_summary(
     weekly_entries: list[WeeklyAggregateEntry],
-) -> ProgressSummaryMetrics | None:
+) -> ProgressMetrics | None:
     if len(weekly_entries) == 0:
         return None
 
-    weekly_entries.sort( # pyright: ignore
-        key=lambda week: week.week_start, reverse=True
-    )
-
-    weekly_entries_df: pd.DataFrame = (
-        pd.DataFrame.from_records(  # pyright: ignore[reportUnknownMemberType]
-            [entry.model_dump() for entry in weekly_entries]
-        )
-    )
+    weekly_entries_df = pd.DataFrame([entry.model_dump() for entry in weekly_entries])
 
     multiple_entries: bool = len(weekly_entries_df.index) > 1
 
-    summary = ProgressSummaryMetrics(
-        total_change = (
+    summary = ProgressMetrics(
+        total_change=(
             round(float(weekly_entries_df["weight_change"].iloc[:-1].sum()), 2)
             if multiple_entries
             else 0.0
         ),
-        avg_change = (
+        avg_change=(
             round(float(weekly_entries_df["weight_change"].iloc[:-1].mean()), 2)
             if multiple_entries
             else 0.0
         ),
-        avg_change_prc = (
+        avg_change_prc=(
             round(float(weekly_entries_df["weight_change_prc"].iloc[:-1].mean()), 2)
             if multiple_entries
             else 0.0
         ),
-        avg_net_calories = (
+        avg_net_calories=(
             int(weekly_entries_df["net_calories"].iloc[:-1].mean())
             if multiple_entries
             else 0

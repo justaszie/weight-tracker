@@ -3,6 +3,7 @@ import json
 from http.cookiejar import CookieJar
 from pathlib import Path
 
+
 import browser_cookie3  # type: ignore
 import myfitnesspal  # type: ignore
 
@@ -15,9 +16,9 @@ RAW_DATA_FILE_PATH: Path = Path.joinpath(
     BASE_DIR, DATA_DIR, "raw", "mfp", RAW_DATA_FILE_NAME
 )
 
-# Default fetching data back 1 year
+# By Default fetching MFP data starting from 1 year ago
 DEFAULT_LOOKBACK_YEARS = 1
-DEFAULT_DATE_FROM: dt.date = (
+DEFAULT_DATE_FROM = (
     dt.datetime.now() - dt.timedelta(days=365 * DEFAULT_LOOKBACK_YEARS)
 ).date()
 
@@ -43,16 +44,16 @@ class MyFitnessPalClient:
         return weight_entries
 
     def store_raw_data(self, raw_dataset: dict[dt.date, float]) -> None:
-        Path(RAW_DATA_FILE_PATH).parent.mkdir(parents=True, exist_ok=True)
-        with open(RAW_DATA_FILE_PATH, "w") as file:
-            json.dump(
-                [{entry[0].isoformat(): entry[1]} for entry in raw_dataset.items()], file
-            )
+        RAW_DATA_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        json_data = json.dumps(
+            [{entry[0].isoformat(): entry[1]} for entry in raw_dataset.items()]
+        )
+        RAW_DATA_FILE_PATH.write_text(json_data)
 
     def convert_to_daily_entries(
         self, raw_dataset: dict[dt.date, float]
     ) -> list[WeightEntry]:
         return [
-            {"date": entry[0], "weight": round(float(entry[1]), 2)}
+            WeightEntry(date=entry[0], weight=round(float(entry[1]), 2))
             for entry in raw_dataset.items()
         ]

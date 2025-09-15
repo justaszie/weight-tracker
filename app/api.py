@@ -1,8 +1,7 @@
 import datetime as dt
 import traceback
 from collections.abc import Sequence
-from typing import Annotated, Any, Literal, cast
-from typing_extensions import Self
+from typing import Annotated
 from fastapi import (
     APIRouter,
     HTTPException,
@@ -23,13 +22,10 @@ from file_storage import FileStorage
 from google_fit import GoogleFitAuth, GoogleFitClient
 from mfp import MyFitnessPalClient
 from project_types import (
-    APIDailyWeightEntry,
-    APIWeeklyAggregateEntry,
     DataSourceClient,
     DataSourceName,
     FitnessGoal,
     ProgressSummary,
-    ProgressSummaryMetrics,
     WeeklyAggregateEntry,
     WeightEntry,
 )
@@ -56,8 +52,6 @@ class DataSyncResponse(BaseModel):
 
 MFP_SOURCE_NAME = "mfp"
 GFIT_SOURCE_NAME = "gfit"
-
-# REFERENCE_WEEK_DATA: dict[str, int | float | None] =
 
 router = APIRouter()
 
@@ -86,7 +80,8 @@ def get_filtered_weekly_entries(
     if not weekly_entries:
         return []
 
-    # Sort the weeks starting from the  most recent:
+    # Sort the weeks starting from the  most recent
+    # so we can limit the return to N most recent:
     weekly_entries.sort(key=lambda week: week.week_start, reverse=True)
 
     if weeks_limit:
@@ -176,8 +171,8 @@ def get_summary(
         weekly_entries = get_filtered_weekly_entries(
             daily_entries, utils.DEFAULT_GOAL, weeks_limit
         )
-        summary_metrics = analytics.get_summary(weekly_entries)
-        body = ProgressSummary(metrics=summary_metrics)
+        progress_metrics = analytics.get_summary(weekly_entries)
+        body = ProgressSummary(metrics=progress_metrics)
 
         return body
     except Exception:
@@ -203,7 +198,7 @@ def get_latest_entry() -> WeightEntry | None:
 @router.post(
     "/sync-data", response_model=DataSyncResponse, response_model_exclude_unset=True
 )
-def sync_data(sync_request: DataSyncRequest, http_request: Request):
+def sync_data(sync_request: DataSyncRequest, http_request: Request) -> DataSyncResponse:
     try:
         data_storage = FileStorage()
     except Exception:
@@ -249,8 +244,7 @@ def sync_data(sync_request: DataSyncRequest, http_request: Request):
             )
         else:
             return DataSyncResponse(
-                status="no_new_data",
-                message="No new data was found"
+                status="no_new_data", message="No new data was found"
             )
     except SourceNoDataError:
         return DataSyncResponse(status="no_data_received", message="No data received")

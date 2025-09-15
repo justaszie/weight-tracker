@@ -1,20 +1,14 @@
 import datetime as dt
-from typing import Any, Literal, Protocol, TypedDict
+from typing import Any, Literal, Protocol
 from pydantic import BaseModel
 
 type FitnessGoal = Literal["gain", "lose", "maintain"]
 type Result = Literal["positive", "negative"] | None
 type DataSourceName = Literal["gfit", "mfp"]
-type ToastMessageCategory = Literal["info", "success", "error"]
 
 
 class WeightEntry(BaseModel):
     date: dt.date
-    weight: float
-
-
-class APIDailyWeightEntry(TypedDict):
-    date: str
     weight: float
 
 
@@ -27,7 +21,7 @@ class WeeklyAggregateEntry(BaseModel):
     result: Result
 
 
-class ProgressSummaryMetrics(BaseModel):
+class ProgressMetrics(BaseModel):
     total_change: float
     avg_change: float
     avg_change_prc: float
@@ -35,16 +29,7 @@ class ProgressSummaryMetrics(BaseModel):
 
 
 class ProgressSummary(BaseModel):
-    metrics: ProgressSummaryMetrics | None = None
-
-
-class APIWeeklyAggregateEntry(TypedDict):
-    week_start: str
-    avg_weight: float
-    weight_change: float
-    weight_change_prc: float
-    net_calories: int
-    result: Result
+    metrics: ProgressMetrics | None = None
 
 
 class DataStorage(Protocol):
