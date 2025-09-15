@@ -2,7 +2,10 @@ import datetime as dt
 import json
 import os
 import traceback
+from pathlib import Path
+from typing import Any, cast
 
+import pandas as pd
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from google.auth.transport.requests import Request as GoogleRequest
@@ -10,9 +13,6 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow  # type: ignore
 from googleapiclient.discovery import build  # pyright: ignore
 from googleapiclient.errors import HttpError
-import pandas as pd
-from pathlib import Path
-from typing import Any, cast
 
 from .project_types import WeightEntry
 
@@ -57,10 +57,8 @@ router = APIRouter()
 @router.get("/google-signin")
 def google_signin(request: Request) -> RedirectResponse:
     # Create flow instance to manage the OAuth 2.0 Authorization Grant Flow steps
-    flow: Flow = (
-        Flow.from_client_secrets_file(  # pyright: ignore[reportUnknownMemberType]
-            CLIENT_SECRETS_FILE_PATH, scopes=SCOPES
-        )
+    flow: Flow = Flow.from_client_secrets_file(  # pyright: ignore[reportUnknownMemberType]
+        CLIENT_SECRETS_FILE_PATH, scopes=SCOPES
     )
     flow.redirect_uri = REDIRECT_URI
 
@@ -83,10 +81,8 @@ def google_signin(request: Request) -> RedirectResponse:
 def handle_google_auth_callback(request: Request) -> RedirectResponse:
     state = request.session["state"]
 
-    flow: Flow = (
-        Flow.from_client_secrets_file(  # pyright: ignore[reportUnknownMemberType]
-            CLIENT_SECRETS_FILE_PATH, scopes=SCOPES, state=state
-        )
+    flow: Flow = Flow.from_client_secrets_file(  # pyright: ignore[reportUnknownMemberType]
+        CLIENT_SECRETS_FILE_PATH, scopes=SCOPES, state=state
     )
 
     flow.redirect_uri = REDIRECT_URI

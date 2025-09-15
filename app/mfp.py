@@ -3,7 +3,6 @@ import json
 from http.cookiejar import CookieJar
 from pathlib import Path
 
-
 import browser_cookie3  # type: ignore
 import myfitnesspal  # type: ignore
 

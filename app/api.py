@@ -1,22 +1,20 @@
-from collections.abc import Sequence
 import datetime as dt
 import traceback
-
-from google.oauth2.credentials import Credentials
+from collections.abc import Sequence
 from typing import Annotated
+
 from fastapi import (
     APIRouter,
     HTTPException,
     Query,
     Request,
 )
-
+from google.oauth2.credentials import Credentials
 from pydantic import (
     BaseModel,
 )
 
-from . import analytics
-from . import utils
+from . import analytics, utils
 from .data_integration import (
     DataIntegrationService,
     DataSyncError,
@@ -34,7 +32,6 @@ from .project_types import (
     WeeklyAggregateEntry,
     WeightEntry,
 )
-
 
 
 class WeeklyAggregateResponse(BaseModel):
@@ -78,7 +75,6 @@ def get_filtered_weekly_entries(
     goal: FitnessGoal,
     weeks_limit: int | None,
 ) -> list[WeeklyAggregateEntry]:
-
     weekly_entries = analytics.get_weekly_aggregates(daily_entries, goal)
     if not weekly_entries:
         return []
@@ -110,7 +106,6 @@ def get_filtered_weekly_entries(
 def get_daily_entries(
     date_from: dt.date | None = None, date_to: dt.date | None = None
 ) -> list[WeightEntry]:
-
     if date_from and date_to and date_from > date_to:
         raise HTTPException(
             status_code=422, detail="'Date To' must be after 'Date From'"
@@ -121,9 +116,11 @@ def get_daily_entries(
             date_from=date_from, date_to=date_to
         )
         return body
-    except Exception:
+    except Exception as e:
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail="Error while getting weight data")
+        raise HTTPException(
+            status_code=500, detail="Error while getting weight data"
+        ) from e
 
 
 @router.get("/weekly-aggregates", response_model=WeeklyAggregateResponse)
@@ -133,7 +130,6 @@ def get_weekly_aggregates(
     weeks_limit: Annotated[int | None, Query(gt=0)] = None,
     goal: FitnessGoal | None = None,
 ) -> WeeklyAggregateResponse:
-
     if date_from and date_to and date_from > date_to:
         raise HTTPException(
             status_code=422, detail="'Date To' must be after 'Date From'"
@@ -150,11 +146,11 @@ def get_weekly_aggregates(
         body = WeeklyAggregateResponse(weekly_data=weekly_entries, goal=goal)
 
         return body
-    except Exception:
+    except Exception as e:
         traceback.print_exc()
         raise HTTPException(
             status_code=500, detail="Error while getting analytics data"
-        )
+        ) from e
 
 
 @router.get("/summary", response_model=ProgressSummary)
@@ -178,11 +174,11 @@ def get_summary(
         body = ProgressSummary(metrics=progress_metrics)
 
         return body
-    except Exception:
+    except Exception as e:
         traceback.print_exc()
         raise HTTPException(
             status_code=500, detail="Error while getting analytics data"
-        )
+        ) from e
 
 
 @router.get("/latest-entry", response_model=(WeightEntry | None))
@@ -193,9 +189,11 @@ def get_latest_entry() -> WeightEntry | None:
         latest_daily_entry = utils.get_latest_daily_entry(daily_entries)
 
         return latest_daily_entry
-    except Exception:
+    except Exception as e:
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail="Error while getting weight data")
+        raise HTTPException(
+            status_code=500, detail="Error while getting weight data"
+        ) from e
 
 
 @router.post(
@@ -204,8 +202,10 @@ def get_latest_entry() -> WeightEntry | None:
 def sync_data(sync_request: DataSyncRequest, http_request: Request) -> DataSyncResponse:
     try:
         data_storage = FileStorage()
-    except Exception:
-        raise HTTPException(status_code=500, detail="Error while getting weight data")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail="Error while getting weight data"
+        ) from e
 
     if not data_storage.data_refresh_needed():
         return DataSyncResponse(
@@ -251,7 +251,7 @@ def sync_data(sync_request: DataSyncRequest, http_request: Request) -> DataSyncR
             )
     except SourceNoDataError:
         return DataSyncResponse(status="no_data_received", message="No data received")
-    except SourceFetchError:
+    except SourceFetchError as e:
         traceback.print_exc()
         if data_source == MFP_SOURCE_NAME:
             error_message = "We couldn't connect to MyFitnessPal. Please check \
@@ -263,11 +263,11 @@ if you're logged in and try again."
         else:
             error_message = "We couldn't get your data. Please try again later."
 
-        raise HTTPException(status_code=500, detail=error_message)
-    except DataSyncError:
+        raise HTTPException(status_code=500, detail=error_message) from e
+    except DataSyncError as e:
         traceback.print_exc()
         raise HTTPException(
             status_code=500,
             detail="We're having trouble syncing your data. \
 We're working on it",
-        )
+        ) from e

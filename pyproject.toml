@@ -66,6 +66,7 @@ exclude = [
     "app/data",
     "app/auth",
     "app/_pycache__",
+    "tests/*"
 ]
 
 [tool.ruff.format]

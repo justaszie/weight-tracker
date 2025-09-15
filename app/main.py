@@ -1,4 +1,5 @@
 import secrets
+
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
@@ -12,13 +13,13 @@ app.add_middleware(
     SessionMiddleware,
     secret_key=secrets.token_hex(32),
     max_age=60 * 60,
-    https_only=False,             # In Dev, we need insecure transport via http
+    https_only=False,  # In Dev, we need insecure transport via http
 )
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=['*'],
+    allow_methods=["*"],
     allow_credentials=False,
 )
 

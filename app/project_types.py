@@ -1,5 +1,6 @@
 import datetime as dt
 from typing import Any, Literal, Protocol
+
 from pydantic import BaseModel
 
 type FitnessGoal = Literal["gain", "lose", "maintain"]
@@ -55,6 +56,4 @@ class DataSourceClient(Protocol):
 
     def store_raw_data(self, raw_dataset: Any) -> None: ...
 
-    def convert_to_daily_entries(
-        self, raw_dataset: Any
-    ) -> list[WeightEntry]: ...
+    def convert_to_daily_entries(self, raw_dataset: Any) -> list[WeightEntry]: ...

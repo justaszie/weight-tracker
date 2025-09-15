@@ -3,9 +3,13 @@ from collections.abc import Callable, Sequence
 from functools import wraps
 from typing import Any, ParamSpec, TypeVar
 
-from .google_fit import NoCredentialsError
 from .file_storage import FileStorage
-from .project_types import WeightEntry, DataSourceClient, DataStorage
+from .google_fit import NoCredentialsError
+from .project_types import (
+    DataSourceClient,
+    DataStorage,
+    WeightEntry,
+)
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -44,9 +48,7 @@ class DataIntegrationService:
             self.store_raw_data(raw_data)
 
         daily_entries: list[WeightEntry] = self.convert_to_daily_entries(raw_data)
-        new_entries: list[WeightEntry] = self.filter_new_weight_entries(
-            daily_entries
-        )
+        new_entries: list[WeightEntry] = self.filter_new_weight_entries(daily_entries)
 
         self.store_new_weight_entries(new_entries)
 
@@ -90,9 +92,7 @@ class DataIntegrationService:
         self, source_entries: Sequence[WeightEntry]
     ) -> list[WeightEntry]:
         existing_dates = {entry.date for entry in self.get_existing_weight_entries()}
-        return [
-            entry for entry in source_entries if entry.date not in existing_dates
-        ]
+        return [entry for entry in source_entries if entry.date not in existing_dates]
 
     @raises_sync_error
     def store_new_weight_entries(self, new_entries: list[WeightEntry]) -> None:

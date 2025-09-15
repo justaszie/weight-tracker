@@ -2,12 +2,12 @@ from collections.abc import Sequence
 
 import pandas as pd
 
-from app.project_types import (
-    WeightEntry,
+from .project_types import (
     FitnessGoal,
     ProgressMetrics,
     Result,
     WeeklyAggregateEntry,
+    WeightEntry,
 )
 
 MAINTAIN_ACCEPTABLE_CHANGE = 0.2
@@ -57,18 +57,14 @@ def get_weekly_aggregates(
 
     # Calculate estimated calorie deficit based on weight change
     weekly_entries["net_calories"] = (
-        (
-            weekly_entries["weight_change"] * 500 / 0.45
-        )  # pyright: ignore[reportUnknownMemberType]
+        (weekly_entries["weight_change"] * 500 / 0.45)  # pyright: ignore[reportUnknownMemberType]
         .round(0)
         .fillna(0)
         .astype(int)
     )
 
     # Add positive / negative result based on goal
-    weekly_entries["result"] = weekly_entries[
-        "weight_change"
-    ].apply(  # pyright: ignore[reportUnknownMemberType]
+    weekly_entries["result"] = weekly_entries["weight_change"].apply(  # pyright: ignore[reportUnknownMemberType]
         weight_change_to_result
     )
 

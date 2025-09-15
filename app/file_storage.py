@@ -2,10 +2,10 @@ import datetime as dt
 import json
 import traceback
 from pathlib import Path
-from pydantic import TypeAdapter
 from typing import TypedDict
 
 import pandas as pd
+from pydantic import TypeAdapter
 
 from . import utils
 from .project_types import WeightEntry
@@ -44,7 +44,7 @@ class FileStorage:
         ]
         if existing:
             raise ValueError(
-                f"Weight entry already exists for date {date.strftime("%Y-%m-%d")}. "
+                f"Weight entry already exists for date {date.strftime('%Y-%m-%d')}. "
                 f"Use update method to replace it."
             )
 
