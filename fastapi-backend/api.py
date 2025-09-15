@@ -7,6 +7,7 @@ from fastapi import (
     APIRouter,
     HTTPException,
     Query,
+    Request,
 )
 from google.oauth2.credentials import Credentials
 
@@ -25,6 +26,7 @@ from project_types import (
     APIDailyWeightEntry,
     APIWeeklyAggregateEntry,
     DataSourceClient,
+    DataSourceName,
     FitnessGoal,
     ProgressSummary,
     ProgressSummaryMetrics,
@@ -33,25 +35,23 @@ from project_types import (
 )
 from pydantic import (
     BaseModel,
-    # field_validator,
-    model_validator,
 )
-
-
-# class DailyEntriesRequestParams(BaseModel):
-#     date_from: dt.date | None = None
-#     date_to: dt.date | None = None
-
-#     @model_validator(mode="after")
-#     def validate_date_params(self) -> Self:
-#         if self.date_from > self.date_to:
-#             raise ValueError('"Date To" must be after "Date From"')
-#         return self
 
 
 class WeeklyAggregateResponse(BaseModel):
     weekly_data: list[WeeklyAggregateEntry]
     goal: FitnessGoal
+
+
+class DataSyncRequest(BaseModel):
+    data_source: DataSourceName
+
+
+class DataSyncResponse(BaseModel):
+    status: str
+    message: str
+    new_entries_count: int | None = None
+    auth_url: str | None = None
 
 
 MFP_SOURCE_NAME = "mfp"
@@ -198,3 +198,79 @@ def get_latest_entry() -> WeightEntry | None:
     except Exception:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="Error while getting weight data")
+
+
+@router.post(
+    "/sync-data", response_model=DataSyncResponse, response_model_exclude_unset=True
+)
+def sync_data(sync_request: DataSyncRequest, http_request: Request):
+    try:
+        data_storage = FileStorage()
+    except Exception:
+        raise HTTPException(status_code=500, detail="Error while getting weight data")
+
+    if not data_storage.data_refresh_needed():
+        return DataSyncResponse(
+            status="data_up_to_date", message="Your data is already up to date"
+        )
+
+    data_source = sync_request.data_source
+
+    data_source_client: DataSourceClient
+    if data_source == GFIT_SOURCE_NAME:
+        oauth_credentials: Credentials | None = GoogleFitAuth().load_auth_token()
+        if not oauth_credentials:
+            print(http_request.app.url_path_for("google_signin"))
+            return DataSyncResponse(
+                status="auth_needed",
+                message="Google Fit authentication needed",
+                auth_url=http_request.app.url_path_for("google_signin"),
+            )
+
+        data_source_client = GoogleFitClient(oauth_credentials)
+
+    elif data_source == MFP_SOURCE_NAME:
+        data_source_client = MyFitnessPalClient()
+
+    else:
+        raise HTTPException(status_code=422, detail="Unsupported Data Source Type")
+
+    data_integration = DataIntegrationService(data_storage, data_source_client)
+
+    try:
+        new_entries = data_integration.refresh_weight_entries(
+            store_raw_copy=True, store_csv_copy=True
+        )
+        if new_entries:
+            return DataSyncResponse(
+                status="sync_success",
+                message="Data updated successfully",
+                new_entries_count=len(new_entries),
+            )
+        else:
+            return DataSyncResponse(
+                status="no_new_data",
+                message="No new data was found"
+            )
+    except SourceNoDataError:
+        return DataSyncResponse(status="no_data_received", message="No data received")
+    except SourceFetchError:
+        traceback.print_exc()
+        if data_source == MFP_SOURCE_NAME:
+            error_message = "We couldn't connect to MyFitnessPal. Please check \
+if you're logged in and try again."
+        elif data_source == GFIT_SOURCE_NAME:
+            error_message = (
+                "We couldn't get your data from Google Fit. Please try again later."
+            )
+        else:
+            error_message = "We couldn't get your data. Please try again later."
+
+        raise HTTPException(status_code=500, detail=error_message)
+    except DataSyncError:
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail="We're having trouble syncing your data. \
+We're working on it",
+        )
