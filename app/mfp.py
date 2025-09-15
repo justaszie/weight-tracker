@@ -7,7 +7,7 @@ from pathlib import Path
 import browser_cookie3  # type: ignore
 import myfitnesspal  # type: ignore
 
-from project_types import WeightEntry
+from .project_types import WeightEntry
 
 BASE_DIR: Path = Path(__file__).resolve().parent
 DATA_DIR = "data"

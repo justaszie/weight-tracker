@@ -4,26 +4,17 @@ import datetime as dt
 
 import pytest
 
-from project_types import DailyWeightEntry
-from utils import (
-    # to_signed_amt_str,
+from app.project_types import WeightEntry
+from app.utils import (
     filter_daily_entries,
     get_latest_daily_entry,
     get_latest_entry_date,
-    is_valid_weeks_filter,
-    is_valid_goal_selection,
-    is_valid_data_source,
-    parse_iso_date,
-    validate_date_range,
-    DateRangeError,
-    InvalidDateError,
-    parse_date_filters,
 )
 
 
 class TestDailyEntriesManipulation:
     @pytest.fixture
-    def sample_daily_entries(self) -> list[DailyWeightEntry]:
+    def sample_daily_entries(self) -> list[WeightEntry]:
         return [
             {"date": dt.date(2025, 8, 30), "weight": 72.5},
             {"date": dt.date(2025, 8, 29), "weight": 73.5},
@@ -43,7 +34,7 @@ class TestDailyEntriesManipulation:
     def test_filter_empty_daily_entries(
         self, daily_entries, date_from, date_to, expected_count
     ):
-        filtered: list[DailyWeightEntry] = filter_daily_entries(
+        filtered: list[WeightEntry] = filter_daily_entries(
             daily_entries=daily_entries, date_from=date_from, date_to=date_to
         )
         assert len(filtered) == expected_count
@@ -62,7 +53,7 @@ class TestDailyEntriesManipulation:
     def test_filter_sample_daily_entries(
         self, sample_daily_entries, date_from, date_to, expected_count
     ):
-        filtered: list[DailyWeightEntry] = filter_daily_entries(
+        filtered: list[WeightEntry] = filter_daily_entries(
             daily_entries=sample_daily_entries, date_from=date_from, date_to=date_to
         )
         assert len(filtered) == expected_count
@@ -190,7 +181,7 @@ def test_parsing_invalid_iso_date_str():
     ],
 )
 def test_valid_date_range_validation(date_from, date_to):
-    assert validate_date_range(date_from, date_to) == None
+    assert validate_date_range(date_from, date_to) is None
 
 
 def test_invaid_date_range_validation():

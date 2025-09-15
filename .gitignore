@@ -20,6 +20,8 @@ fastapi-backend/throwaway
 fastapi-backend/throwaway/*
 .coverage
 
+**/__pycache__/*
+
 # # Logs
 # ui-react/logs
 # ui-react/*.log

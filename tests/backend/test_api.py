@@ -1,16 +1,10 @@
 import datetime as dt
 import pytest
 
-from api import (
+from app.api import (
     get_filtered_daily_entries,
     get_filtered_weekly_entries,
 )
-from utils import (
-    InvalidDateError,
-    DateRangeError,
-    InvalidWeeksLimit,
-)
-
 
 @pytest.fixture
 def sample_daily_entries():
@@ -106,7 +100,7 @@ def sample_daily_entries_extended():
 def test_get_filtered_daily_entries(
     mocker, sample_daily_entries, date_from_param, date_to_param, expected_entries
 ) -> None:
-    mocker.patch("api.FileStorage").return_value.get_weight_entries.return_value = (
+    mocker.patch("app.api.FileStorage").return_value.get_weight_entries.return_value = (
         sample_daily_entries
     )
 

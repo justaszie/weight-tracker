@@ -2,10 +2,10 @@ import datetime as dt
 import traceback
 from collections.abc import Iterable
 
-from project_types import (
-    WeightEntry,
+from .project_types import (
     DataSourceName,
     FitnessGoal,
+    WeightEntry,
 )
 
 DATA_SOURCES_SUPPORTED: list[DataSourceName] = ["gfit", "mfp"]

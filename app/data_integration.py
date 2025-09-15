@@ -3,9 +3,9 @@ from collections.abc import Callable, Sequence
 from functools import wraps
 from typing import Any, ParamSpec, TypeVar
 
-from google_fit import NoCredentialsError
-from file_storage import FileStorage
-from project_types import WeightEntry, DataSourceClient, DataStorage
+from .google_fit import NoCredentialsError
+from .file_storage import FileStorage
+from .project_types import WeightEntry, DataSourceClient, DataStorage
 
 P = ParamSpec("P")
 R = TypeVar("R")

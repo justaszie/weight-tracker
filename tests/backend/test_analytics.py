@@ -3,7 +3,7 @@ import datetime as dt
 import pytest
 from typing import Any
 
-from analytics import (
+from app.analytics import (
     get_weekly_aggregates,
     get_summary,
     calculate_result,
@@ -141,7 +141,7 @@ def test_calculate_result(weight_change, goal, expected_result):
 def test_calculate_maintain_result(
     mocker, maintain_positive_range, weight_change, expected_result
 ):
-    mocker.patch("analytics.MAINTAIN_ACCEPTABLE_CHANGE", maintain_positive_range)
+    mocker.patch("app.analytics.MAINTAIN_ACCEPTABLE_CHANGE", maintain_positive_range)
     assert (
         calculate_result(weight_change=weight_change, goal="maintain")
         == expected_result

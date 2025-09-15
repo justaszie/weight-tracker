@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import pytest
 
-from file_storage import (
+from app.file_storage import (
     FileStorage,
 )
 
@@ -13,7 +13,7 @@ class TestWeightStorageUsingFile:
     def test_load_weights_from_nonexistent_file(self, mocker):
         mock_file_path = Path(__file__).resolve().parent / "non_existing.json"
         mocker.patch(
-            "file_storage.FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH",
+            "app.file_storage.FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH",
             new=mock_file_path,
         )
         entries = FileStorage._load_weights_from_file()
@@ -29,7 +29,7 @@ class TestWeightStorageUsingFile:
         test_file_data = ""
 
         mock_open_fn = mocker.mock_open(read_data=test_file_data)
-        mock_file_load = mocker.patch("file_storage.open", mock_open_fn)
+        mock_file_load = mocker.patch("app.file_storage.open", mock_open_fn)
 
         with pytest.raises(json.JSONDecodeError):
             FileStorage._load_weights_from_file()
@@ -45,7 +45,7 @@ class TestWeightStorageUsingFile:
         )
 
         mock_open_fn = mocker.mock_open(read_data=test_file_data)
-        mock_file_load = mocker.patch("file_storage.open", mock_open_fn)
+        mock_file_load = mocker.patch("app.file_storage.open", mock_open_fn)
 
         entries = FileStorage._load_weights_from_file()
 
@@ -69,7 +69,7 @@ class TestWeightStorageProtocol:
 
     @pytest.fixture
     def mock_load_data_function(self, mocker):
-        return mocker.patch("file_storage.FileStorage._load_weights_from_file")
+        return mocker.patch("app.file_storage.FileStorage._load_weights_from_file")
 
     @pytest.fixture
     def sample_storage(self, mocker, mock_load_data_function, sample_weight_entries):

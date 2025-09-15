@@ -7,8 +7,8 @@ from typing import TypedDict
 
 import pandas as pd
 
-import utils
-from project_types import WeightEntry
+from . import utils
+from .project_types import WeightEntry
 
 
 class JSONPersistedWeightEntry(TypedDict):

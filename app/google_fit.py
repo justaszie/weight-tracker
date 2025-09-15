@@ -2,19 +2,19 @@ import datetime as dt
 import json
 import os
 import traceback
+
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
-from pathlib import Path
-from typing import Any, cast
-
-import pandas as pd
 from google.auth.transport.requests import Request as GoogleRequest
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow  # type: ignore
 from googleapiclient.discovery import build  # pyright: ignore
 from googleapiclient.errors import HttpError
+import pandas as pd
+from pathlib import Path
+from typing import Any, cast
 
-from project_types import WeightEntry
+from .project_types import WeightEntry
 
 ### CONFIGS ###
 SCOPES = [

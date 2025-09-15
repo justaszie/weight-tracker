@@ -1,14 +1,14 @@
 import datetime as dt
 import pytest
 
-from google_fit import NoCredentialsError
-from data_integration import (
+from app.google_fit import NoCredentialsError
+from app.data_integration import (
     DataIntegrationService,
     DataSyncError,
     SourceNoDataError,
     SourceFetchError,
 )
-from file_storage import FileStorage
+from app.file_storage import FileStorage
 
 
 @pytest.fixture

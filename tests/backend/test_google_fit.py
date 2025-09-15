@@ -2,7 +2,7 @@ import datetime as dt
 import json
 import pytest
 
-from google_fit import (
+from app.google_fit import (
     GoogleFitAuth,
     GoogleFitClient,
     HttpError,
@@ -14,7 +14,7 @@ from google_fit import (
 """
  def __init__(self, creds: Credentials | None) -> None
 #
-#     def convert_to_daily_entries(self, raw_data: Any) -> list[DailyWeightEntry]
+#     def convert_to_daily_entries(self, raw_data: Any) -> list[WeightEntry]
 #         # Normalizes raw API data into [{'date': date, 'weight': float}, ...]
 #         # Keeps last weight per day, filters weight outliers (50 < w < 100).
 #
@@ -115,10 +115,10 @@ def test_get_raw_data(mocker, client, sample_raw_dataset):
     }
 
     # Mocking the datetime to compare fixed param values
-    mocker.patch("google_fit.dt.datetime").now.return_value = test_now_timestamp
+    mocker.patch("app.google_fit.dt.datetime").now.return_value = test_now_timestamp
 
     # Mocking the 3rd party function objects
-    mock_service_build_fn = mocker.patch("google_fit.build")
+    mock_service_build_fn = mocker.patch("app.google_fit.build")
     mock_service = mock_service_build_fn.return_value
 
     mock_get_request_fn = mock_service.users().dataSources().datasets().get
@@ -140,7 +140,7 @@ def test_get_raw_data(mocker, client, sample_raw_dataset):
 
 
 def test_get_empty_raw_dataset(mocker, client, empty_raw_dataset):
-    mock_service = mocker.patch("google_fit.build").return_value
+    mock_service = mocker.patch("app.google_fit.build").return_value
     mock_execute_fn = (
         mock_service.users().dataSources().datasets().get.return_value.execute
     )
@@ -152,7 +152,7 @@ def test_get_empty_raw_dataset(mocker, client, empty_raw_dataset):
     assert result == empty_raw_dataset
 
 def test_get_raw_data_api_http_errors(mocker, client):
-    mock_service = mocker.patch("google_fit.build").return_value
+    mock_service = mocker.patch("app.google_fit.build").return_value
     mock_execute_fn = (
         mock_service.users().dataSources().datasets().get.return_value.execute
     )
@@ -197,9 +197,9 @@ def test_convert_to_daily_entries_empty_dataset(client_no_creds, empty_raw_datas
     assert client_no_creds.convert_to_daily_entries(empty_raw_dataset) == []
 
 def test_store_raw_data(mocker, client, sample_raw_dataset):
-    mock_open_fn = mocker.patch('google_fit.open', mocker.mock_open())
+    mock_open_fn = mocker.patch('app.google_fit.open', mocker.mock_open())
     mock_file = mock_open_fn.return_value
-    mock_dump_fn = mocker.patch("google_fit.json.dump")
+    mock_dump_fn = mocker.patch("app.google_fit.json.dump")
 
     client.store_raw_data(sample_raw_dataset)
 
@@ -209,8 +209,8 @@ def test_store_raw_data(mocker, client, sample_raw_dataset):
 
 def test_load_creds_no_file(mocker, auth_client):
     test_filename = "app/nonexisting_file.json"
-    mocker.patch("google_fit.TOKEN_FILE_PATH", test_filename)
-    file_open_fn = mocker.patch('google_fit.open', mocker.mock_open())
+    mocker.patch("app.google_fit.TOKEN_FILE_PATH", test_filename)
+    file_open_fn = mocker.patch('app.google_fit.open', mocker.mock_open())
     creds = auth_client.load_auth_token()
 
     assert creds == None
@@ -218,10 +218,10 @@ def test_load_creds_no_file(mocker, auth_client):
     assert not file_open_fn.called
 
 def test_load_valid_creds(mocker, auth_client, test_token_file_data):
-    mocker.patch("google_fit.os.path.exists").return_value = True
+    mocker.patch("app.google_fit.os.path.exists").return_value = True
 
-    token_file_load_fn = mocker.patch('google_fit.open', mocker.mock_open(read_data=test_token_file_data))
-    creds_load_fn = mocker.patch("google_fit.Credentials.from_authorized_user_info")
+    token_file_load_fn = mocker.patch('app.google_fit.open', mocker.mock_open(read_data=test_token_file_data))
+    creds_load_fn = mocker.patch("app.google_fit.Credentials.from_authorized_user_info")
     creds_object = creds_load_fn.return_value
 
     creds_object.valid = True
@@ -236,10 +236,10 @@ def test_load_valid_creds(mocker, auth_client, test_token_file_data):
     assert creds == creds_object
 
 def test_load_creds_with_refresh_success(mocker, auth_client, test_token_file_data):
-    mocker.patch("google_fit.os.path.exists").return_value = True
+    mocker.patch("app.google_fit.os.path.exists").return_value = True
 
-    token_file_load_fn = mocker.patch('google_fit.open', mocker.mock_open(read_data=test_token_file_data))
-    creds_load_fn = mocker.patch("google_fit.Credentials.from_authorized_user_info")
+    token_file_load_fn = mocker.patch('app.google_fit.open', mocker.mock_open(read_data=test_token_file_data))
+    creds_load_fn = mocker.patch("app.google_fit.Credentials.from_authorized_user_info")
     creds_object = creds_load_fn.return_value
 
     creds_object.valid = False
@@ -256,10 +256,10 @@ def test_load_creds_with_refresh_success(mocker, auth_client, test_token_file_da
     assert creds == creds_object
 
 def test_load_creds_with_refresh_fail(mocker, auth_client, test_token_file_data):
-    mocker.patch("google_fit.os.path.exists").return_value = True
+    mocker.patch("app.google_fit.os.path.exists").return_value = True
 
-    token_file_load_fn = mocker.patch('google_fit.open', mocker.mock_open(read_data=test_token_file_data))
-    creds_load_fn = mocker.patch("google_fit.Credentials.from_authorized_user_info")
+    token_file_load_fn = mocker.patch('app.google_fit.open', mocker.mock_open(read_data=test_token_file_data))
+    creds_load_fn = mocker.patch("app.google_fit.Credentials.from_authorized_user_info")
     creds_object = creds_load_fn.return_value
 
     creds_object.valid = False
@@ -275,10 +275,10 @@ def test_load_creds_with_refresh_fail(mocker, auth_client, test_token_file_data)
     assert creds == None
 
 def test_load_creds_no_refresh_token(mocker, auth_client, test_token_file_data):
-    mocker.patch("google_fit.os.path.exists").return_value = True
+    mocker.patch("app.google_fit.os.path.exists").return_value = True
 
-    token_file_load_fn = mocker.patch('google_fit.open', mocker.mock_open(read_data=test_token_file_data))
-    creds_load_fn = mocker.patch("google_fit.Credentials.from_authorized_user_info")
+    token_file_load_fn = mocker.patch('app.google_fit.open', mocker.mock_open(read_data=test_token_file_data))
+    creds_load_fn = mocker.patch("app.google_fit.Credentials.from_authorized_user_info")
     creds_object = creds_load_fn.return_value
 
     creds_object.valid = False
@@ -294,10 +294,10 @@ def test_save_auth_token(mocker, auth_client):
     test_creds_as_json = json.dumps({"token": "aaa111"})
 
     mocker.patch.object(test_creds_obj, "to_json").return_value = test_creds_as_json
-    mock_file_open_fn = mocker.patch('google_fit.open', mocker.mock_open())
+    mock_file_open_fn = mocker.patch('app.google_fit.open', mocker.mock_open())
     mock_file = mock_file_open_fn.return_value
 
-    mock_token_file_path = mocker.patch('google_fit.Path').return_value
+    mock_token_file_path = mocker.patch('app.google_fit.Path').return_value
     mock_create_token_file_dir_fn = mock_token_file_path.parent.mkdir
 
     auth_client.save_auth_token_to_file(test_creds_obj)

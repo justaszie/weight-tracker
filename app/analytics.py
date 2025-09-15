@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 import pandas as pd
 
-from project_types import (
+from app.project_types import (
     WeightEntry,
     FitnessGoal,
     ProgressMetrics,

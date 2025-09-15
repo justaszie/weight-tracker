@@ -2,7 +2,7 @@ import datetime as dt
 import json
 import pytest
 
-from mfp import (
+from app.mfp import (
     MyFitnessPalClient,
     DEFAULT_LOOKBACK_YEARS,
 )
@@ -24,15 +24,15 @@ def sample_raw_data():
 
 
 def test_get_raw_data_default_date_from(mocker, client, sample_raw_data):
-    mocker.patch("mfp.browser_cookie3.chrome")
+    mocker.patch("app.mfp.browser_cookie3.chrome")
 
-    mock_mfp_client = mocker.patch("mfp.myfitnesspal.Client").return_value
+    mock_mfp_client = mocker.patch("app.mfp.myfitnesspal.Client").return_value
     mock_get_measurements = mocker.patch.object(
         mock_mfp_client, "get_measurements", return_value=sample_raw_data
     )
 
     today_timestamp = dt.datetime.now()
-    mocker.patch("mfp.dt.datetime").now.return_value = today_timestamp
+    mocker.patch("app.mfp.dt.datetime").now.return_value = today_timestamp
     expected_default_date_from = (
         today_timestamp - dt.timedelta(days=365 * DEFAULT_LOOKBACK_YEARS)
     ).date()
@@ -46,9 +46,9 @@ def test_get_raw_data_default_date_from(mocker, client, sample_raw_data):
 
 
 def test_get_raw_data_provided_date_from(mocker, client, sample_raw_data):
-    mocker.patch("mfp.browser_cookie3.chrome")
+    mocker.patch("app.mfp.browser_cookie3.chrome")
 
-    mock_mfp_client = mocker.patch("mfp.myfitnesspal.Client").return_value
+    mock_mfp_client = mocker.patch("app.mfp.myfitnesspal.Client").return_value
     mock_get_measurements = mocker.patch.object(
         mock_mfp_client, "get_measurements", return_value=sample_raw_data
     )
@@ -63,9 +63,9 @@ def test_get_raw_data_provided_date_from(mocker, client, sample_raw_data):
 
 
 def test_get_raw_data_no_data(mocker, client):
-    mocker.patch("mfp.browser_cookie3.chrome")
+    mocker.patch("app.mfp.browser_cookie3.chrome")
 
-    mock_mfp_client = mocker.patch("mfp.myfitnesspal.Client").return_value
+    mock_mfp_client = mocker.patch("app.mfp.myfitnesspal.Client").return_value
     mock_get_measurements = mocker.patch.object(
         mock_mfp_client, "get_measurements", return_value={}
     )
@@ -102,7 +102,7 @@ def test_convert_to_daily_entries_empty_dataset(mocker, client, sample_raw_data)
 
 def test_store_raw_data(mocker, client, sample_raw_data, tmp_path):
     test_file_path = tmp_path / "test_raw_data.json"
-    mocker.patch("mfp.RAW_DATA_FILE_PATH", test_file_path)
+    mocker.patch("app.mfp.RAW_DATA_FILE_PATH", test_file_path)
     expected_stored_format =  [
         {"2025-01-02": 72.562},
         {"2025-02-15": 70.2},
@@ -120,7 +120,7 @@ def test_store_raw_data(mocker, client, sample_raw_data, tmp_path):
 
 def test_store_raw_data_empty_dataset(mocker, client, tmp_path):
     test_file_path = tmp_path / "test_raw_data.json"
-    mocker.patch("mfp.RAW_DATA_FILE_PATH", test_file_path)
+    mocker.patch("app.mfp.RAW_DATA_FILE_PATH", test_file_path)
     empty_dataset= {}
     client.store_raw_data(empty_dataset)
 

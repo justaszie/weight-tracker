@@ -3,8 +3,8 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from api import router as api_router
-from google_fit import router as auth_router
+from .api import router as api_router
+from .google_fit import router as auth_router
 
 app = FastAPI()
 

@@ -64,10 +64,8 @@ select = [
 exclude = [
     "./app/throwaway",
     "app/data",
-    "app/static",
-    "app/templates",
+    "app/auth",
     "app/_pycache__",
-    "app/app.py",
 ]
 
 [tool.ruff.format]
@@ -77,14 +75,12 @@ line-ending = "auto"
 skip-magic-trailing-comma = false
 
 [tool.pytest.ini_options]
-pythonpath = ["app"]
-testpaths = ["app"]
+pythonpath = ["."]
+testpaths = ["tests/backend"]
 python_files = ["test_*.py"]
 
 [tool.coverage.run]
-omit = [
-  "app/app.py",
-]
+omit = []
 
 [build-system]
 requires = ["poetry-core"]

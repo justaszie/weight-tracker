@@ -1,6 +1,8 @@
+from collections.abc import Sequence
 import datetime as dt
 import traceback
-from collections.abc import Sequence
+
+from google.oauth2.credentials import Credentials
 from typing import Annotated
 from fastapi import (
     APIRouter,
@@ -8,20 +10,23 @@ from fastapi import (
     Query,
     Request,
 )
-from google.oauth2.credentials import Credentials
 
-import analytics
-import utils
-from data_integration import (
+from pydantic import (
+    BaseModel,
+)
+
+from . import analytics
+from . import utils
+from .data_integration import (
     DataIntegrationService,
     DataSyncError,
     SourceFetchError,
     SourceNoDataError,
 )
-from file_storage import FileStorage
-from google_fit import GoogleFitAuth, GoogleFitClient
-from mfp import MyFitnessPalClient
-from project_types import (
+from .file_storage import FileStorage
+from .google_fit import GoogleFitAuth, GoogleFitClient
+from .mfp import MyFitnessPalClient
+from .project_types import (
     DataSourceClient,
     DataSourceName,
     FitnessGoal,
@@ -29,9 +34,7 @@ from project_types import (
     WeeklyAggregateEntry,
     WeightEntry,
 )
-from pydantic import (
-    BaseModel,
-)
+
 
 
 class WeeklyAggregateResponse(BaseModel):
