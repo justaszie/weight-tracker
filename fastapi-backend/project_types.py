@@ -1,16 +1,11 @@
 import datetime as dt
-from typing import Literal, Protocol, TypedDict
+from typing import Any, Literal, Protocol, TypedDict
 from pydantic import BaseModel
 
 type FitnessGoal = Literal["gain", "lose", "maintain"]
 type Result = Literal["positive", "negative"] | None
 type DataSourceName = Literal["gfit", "mfp"]
 type ToastMessageCategory = Literal["info", "success", "error"]
-
-
-# class WeightEntry(TypedDict):
-#     date: dt.date
-#     weight: float
 
 
 class WeightEntry(BaseModel):
@@ -71,10 +66,10 @@ class DataStorage(Protocol):
 class DataSourceClient(Protocol):
     def get_raw_data(
         self, date_from: str | None = None, date_to: str | None = None
-    ) -> dict[dt.date, float]: ...
+    ) -> Any: ...
 
-    def store_raw_data(self, raw_data: dict[dt.date, float]) -> None: ...
+    def store_raw_data(self, raw_dataset: Any) -> None: ...
 
     def convert_to_daily_entries(
-        self, raw_data: dict[dt.date, float]
+        self, raw_dataset: Any
     ) -> list[WeightEntry]: ...

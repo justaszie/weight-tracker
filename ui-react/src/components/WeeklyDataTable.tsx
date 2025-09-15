@@ -7,7 +7,7 @@ import type {
   WeeklyDataEntry,
 } from "@/types/weekly-table";
 
-const SERVER_BASE_URL = "http://localhost:5040";
+const SERVER_BASE_URL = "http://localhost:8000";
 
 export default function WeeklyDataTable(props: WeeklyDataTableProps) {
   const [weeklyData, setWeeklyData] = useState([]);

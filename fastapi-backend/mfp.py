@@ -42,17 +42,17 @@ class MyFitnessPalClient:
 
         return weight_entries
 
-    def store_raw_data(self, raw_data: dict[dt.date, float]) -> None:
+    def store_raw_data(self, raw_dataset: dict[dt.date, float]) -> None:
         Path(RAW_DATA_FILE_PATH).parent.mkdir(parents=True, exist_ok=True)
         with open(RAW_DATA_FILE_PATH, "w") as file:
             json.dump(
-                [{entry[0].isoformat(): entry[1]} for entry in raw_data.items()], file
+                [{entry[0].isoformat(): entry[1]} for entry in raw_dataset.items()], file
             )
 
     def convert_to_daily_entries(
-        self, raw_data: dict[dt.date, float]
+        self, raw_dataset: dict[dt.date, float]
     ) -> list[WeightEntry]:
         return [
             {"date": entry[0], "weight": round(float(entry[1]), 2)}
-            for entry in raw_data.items()
+            for entry in raw_dataset.items()
         ]

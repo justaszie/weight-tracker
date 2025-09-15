@@ -11,7 +11,7 @@ const GOAL_LABELS: { [key in Goal]: string } = {
   maintain: "Maintaining",
   gain: "Gaining Muscle",
 };
-const SERVER_BASE_URL = "http://localhost:5040";
+const SERVER_BASE_URL = "http://localhost:8000";
 
 export default function Summary(props: SummaryProps) {
   const [summaryData, setSummaryData] = useState<SummaryData>({});

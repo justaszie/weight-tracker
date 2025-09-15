@@ -10,7 +10,7 @@ import { isDataSourceName, type DataSourceName } from "@/types/utils";
 
 const DEFAULT_GOAL = "maintain";
 const DEFAULT_DATA_SOURCE = "gfit";
-const SERVER_BASE_URL = "http://localhost:5040";
+const SERVER_BASE_URL = "http://localhost:8000";
 
 function App() {
   const goalStored: Goal | null = localStorage.getItem("goalSelected") as Goal;
@@ -42,21 +42,23 @@ function App() {
       if (!response.ok) {
         const body = await response.json();
         // Launch Google Auth Flow
-        if (body.status === "auth_needed") {
-          window.location.replace(`${SERVER_BASE_URL}${body.auth_url}`);
-          return;
-        }
         const errorMessage =
-          "message" in body
-            ? body["message"]
-            : "Error while syncing data";
+          "message" in body ? body["message"] : "Error while syncing data";
         throw new Error(errorMessage);
       }
       const body = await response.json();
-       if (body.status === "sync_success") {
+      if (body.status === "auth_needed") {
+        window.location.replace(`${SERVER_BASE_URL}${body.auth_url}`);
+        return;
+      }
+      if (body.status === "sync_success") {
         // 2) if sync success,  update state to trigger re-rendering
         markDataSyncComplete();
-      } else if (["data_up_to_date", "no_data_received", "no_new_data"].includes(body.status)) {
+      } else if (
+        ["data_up_to_date", "no_data_received", "no_new_data"].includes(
+          body.status
+        )
+      ) {
         showToast("info", body.message);
       } else {
         throw new Error(body.message);

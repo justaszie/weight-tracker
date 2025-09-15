@@ -3,17 +3,17 @@ import json
 import os
 import traceback
 from collections.abc import Hashable
+from fastapi import APIRouter, Request
+from fastapi.responses import RedirectResponse
 from pathlib import Path
 from typing import Any, cast
 
 import pandas as pd
-from flask import Blueprint, redirect, request, session
-from google.auth.transport.requests import Request
+from google.auth.transport.requests import Request as GoogleRequest
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow  # type: ignore
 from googleapiclient.discovery import build  # pyright: ignore
 from googleapiclient.errors import HttpError
-from werkzeug import Response
 
 from project_types import WeightEntry
 
@@ -22,7 +22,7 @@ SCOPES = [
     "https://www.googleapis.com/auth/fitness.body.read",
     "https://www.googleapis.com/auth/fitness.activity.read",
 ]
-REDIRECT_URI = "http://localhost:5040/google-auth"
+REDIRECT_URI = "http://localhost:8000/auth/google-auth"
 
 BASE_DIR: Path = Path(__file__).resolve().parent
 AUTH_DIR = "auth"
@@ -47,15 +47,18 @@ FRONTEND_REDIRECT_URL = "http://localhost:5173/"
 # endpoint of this app. For testing.
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
-gfit_auth_bp = Blueprint("gfit_auth_bp", __name__)
+# gfit_auth_bp = Blueprint("gfit_auth_bp", __name__)
+
+router = APIRouter()
 ###############
 
 ### ROUTES USED IN OAUTH FLOW ###
 
 
 # This route initiates the google auth flow
-@gfit_auth_bp.route("/google-signin", methods=["GET"])
-def google_signin() -> Response:
+# @gfit_auth_bp.route("/google-signin", methods=["GET"])
+@router.get("/google-signin")
+def google_signin(request: Request) -> RedirectResponse:
     # Create flow instance to manage the OAuth 2.0 Authorization Grant Flow steps
     flow: Flow = (
         Flow.from_client_secrets_file(  # pyright: ignore[reportUnknownMemberType]
@@ -71,17 +74,18 @@ def google_signin() -> Response:
     )
 
     # Store the state in the session so you can verify the callback request
-    session["state"] = state
+    request.session["state"] = state
 
     authorization_url = cast(str, authorization_url)
-    return redirect(authorization_url)
+    return RedirectResponse(authorization_url)
 
 
 # This is endpoint that Google calls with the authorization.
 # From here, we need to continue process of getting the data
-@gfit_auth_bp.route("/google-auth")
-def handle_google_auth_callback() -> Response:
-    state = session["state"]
+# @gfit_auth_bp.route("/google-auth")
+@router.get("/google-auth")
+def handle_google_auth_callback(request: Request) -> RedirectResponse:
+    state = request.session["state"]
 
     flow: Flow = (
         Flow.from_client_secrets_file(  # pyright: ignore[reportUnknownMemberType]
@@ -92,7 +96,7 @@ def handle_google_auth_callback() -> Response:
     flow.redirect_uri = REDIRECT_URI
 
     # Use the authorization server's response to fetch the OAuth 2.0 tokens
-    authorization_response: str = request.url
+    authorization_response = str(request.url)
     flow.fetch_token(  # pyright: ignore[reportUnknownMemberType]
         authorization_response=authorization_response
     )
@@ -103,7 +107,7 @@ def handle_google_auth_callback() -> Response:
 
     initiator_query_str = "initiator=data_source_auth_success&source=gfit"
 
-    return redirect(FRONTEND_REDIRECT_URL + "?" + initiator_query_str)
+    return RedirectResponse(FRONTEND_REDIRECT_URL + "?" + initiator_query_str)
 
 
 #################################
@@ -140,7 +144,7 @@ class GoogleFitAuth:
         ):
             # If token has expired but we have a refresh token, refresh the access token
             try:
-                creds.refresh(Request())  # type: ignore
+                creds.refresh(GoogleRequest())  # type: ignore
                 # Save the credentials for future runs
                 self.save_auth_token_to_file(creds)
                 return creds
@@ -208,10 +212,10 @@ class GoogleFitClient:
 
         return dataset
 
-    def store_raw_data(self, raw_data: Any) -> None:
+    def store_raw_data(self, raw_dataset: Any) -> None:
         Path(RAW_DATA_FILE_PATH).parent.mkdir(parents=True, exist_ok=True)
         with open(RAW_DATA_FILE_PATH, "w") as file:
-            json.dump(raw_data, file)
+            json.dump(raw_dataset, file)
 
     def convert_to_daily_entries(self, raw_dataset: Any) -> list[WeightEntry]:
         def nanos_ts_to_datetime(nanos: int) -> dt.datetime:
