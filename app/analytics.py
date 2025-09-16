@@ -57,14 +57,18 @@ def get_weekly_aggregates(
 
     # Calculate estimated calorie deficit based on weight change
     weekly_entries["net_calories"] = (
-        (weekly_entries["weight_change"] * 500 / 0.45)  # pyright: ignore[reportUnknownMemberType]
+        (
+            weekly_entries["weight_change"] * 500 / 0.45
+        )  # pyright: ignore[reportUnknownMemberType]
         .round(0)
         .fillna(0)
         .astype(int)
     )
 
     # Add positive / negative result based on goal
-    weekly_entries["result"] = weekly_entries["weight_change"].apply(  # pyright: ignore[reportUnknownMemberType]
+    weekly_entries["result"] = weekly_entries[
+        "weight_change"
+    ].apply(  # pyright: ignore[reportUnknownMemberType]
         weight_change_to_result
     )
 
@@ -86,7 +90,14 @@ def get_summary(
     if len(weekly_entries) == 0:
         return None
 
-    weekly_entries_df = pd.DataFrame([entry.model_dump() for entry in weekly_entries])
+    # Sorting the weekly entries in descending order so the reference week is excluded
+    sorted_weekly_entries = sorted(
+        weekly_entries, key=lambda entry: entry.week_start, reverse=True
+    )
+
+    weekly_entries_df = pd.DataFrame(
+        [entry.model_dump() for entry in sorted_weekly_entries]
+    )
 
     multiple_entries: bool = len(weekly_entries_df.index) > 1
 
