@@ -1,11 +1,14 @@
 import datetime as dt
 import json
+
 import pytest
+from pydantic import TypeAdapter
 
 from app.mfp import (
     MyFitnessPalClient,
     DEFAULT_LOOKBACK_YEARS,
 )
+from app.project_types import WeightEntry
 
 
 @pytest.fixture
@@ -75,56 +78,59 @@ def test_get_raw_data_no_data(mocker, client):
     assert raw_data == {}
 
 
-def test_convert_to_daily_entries(mocker, client, sample_raw_data):
-    expected_return = [
-        {
-            "date": dt.date(2025, 1, 2),
-            "weight": 72.56,
-        },
-        {
-            "date": dt.date(2025, 2, 15),
-            "weight": 70.2,
-        },
-        {
-            "date": dt.date(2025, 5, 28),
-            "weight": 80.11,
-        },
-        {
-            "date": dt.date(2025, 9, 5),
-            "weight": 75.4,
-        },
-    ]
+def test_convert_to_daily_entries(client, sample_raw_data):
+    expected_return = TypeAdapter(list[WeightEntry]).validate_python(
+        [
+            {
+                "date": dt.date(2025, 1, 2),
+                "weight": 72.56,
+            },
+            {
+                "date": dt.date(2025, 2, 15),
+                "weight": 70.2,
+            },
+            {
+                "date": dt.date(2025, 5, 28),
+                "weight": 80.11,
+            },
+            {
+                "date": dt.date(2025, 9, 5),
+                "weight": 75.4,
+            },
+        ]
+    )
     assert client.convert_to_daily_entries(sample_raw_data) == expected_return
 
 
-def test_convert_to_daily_entries_empty_dataset(mocker, client, sample_raw_data):
+def test_convert_to_daily_entries_empty_dataset(mocker, client):
     assert client.convert_to_daily_entries({}) == []
 
+
 def test_store_raw_data(mocker, client, sample_raw_data, tmp_path):
-    test_file_path = tmp_path / "test_raw_data.json"
-    mocker.patch("app.mfp.RAW_DATA_FILE_PATH", test_file_path)
-    expected_stored_format =  [
-        {"2025-01-02": 72.562},
-        {"2025-02-15": 70.2},
-        {"2025-05-28":  80.1111},
-        {"2025-09-05": 75.4},
-    ]
+    test_file = tmp_path / "test_raw_data.json"
+    mocker.patch("app.mfp.RAW_DATA_FILE_PATH", test_file)
+
+    expected_stored_format = json.dumps(
+        [
+            {"2025-01-02": 72.562},
+            {"2025-02-15": 70.2},
+            {"2025-05-28": 80.1111},
+            {"2025-09-05": 75.4},
+        ]
+    )
 
     client.store_raw_data(sample_raw_data)
 
-    assert test_file_path.exists()
-    with open(test_file_path) as raw_data_file:
-        stored_data = json.load(raw_data_file)
-        assert stored_data == expected_stored_format
+    assert test_file.exists()
+    written_text = test_file.read_text()
+    assert written_text == expected_stored_format
 
 
 def test_store_raw_data_empty_dataset(mocker, client, tmp_path):
-    test_file_path = tmp_path / "test_raw_data.json"
-    mocker.patch("app.mfp.RAW_DATA_FILE_PATH", test_file_path)
-    empty_dataset= {}
+    test_file = tmp_path / "test_raw_data.json"
+    mocker.patch("app.mfp.RAW_DATA_FILE_PATH", test_file)
+    empty_dataset = {}
     client.store_raw_data(empty_dataset)
 
-    assert test_file_path.exists()
-    with open(test_file_path) as raw_data_file:
-        stored_data = json.load(raw_data_file)
-        assert stored_data == []
+    assert test_file.exists()
+    assert test_file.read_text() == "[]"

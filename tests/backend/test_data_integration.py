@@ -1,5 +1,6 @@
 import datetime as dt
 import pytest
+from pydantic import TypeAdapter
 
 from app.google_fit import NoCredentialsError
 from app.data_integration import (
@@ -9,6 +10,7 @@ from app.data_integration import (
     SourceFetchError,
 )
 from app.file_storage import FileStorage
+from app.project_types import WeightEntry
 
 
 @pytest.fixture
@@ -23,17 +25,18 @@ def sample_raw_data():
 
 @pytest.fixture
 def sample_daily_entries():
-    return [
+    data = [
         {"date": dt.date(2025, 8, 28), "weight": 73.6},
         {"date": dt.date(2025, 8, 29), "weight": 73.6},
         {"date": dt.date(2025, 9, 1), "weight": 73.0},
     ]
+    return TypeAdapter(list[WeightEntry]).validate_python(data)
 
 
 def test_refresh_no_raw_data_found(mocker, service):
     mocker.patch(
-        "data_integration.DataIntegrationService.convert_to_daily_entries",
-        side_effect=SourceNoDataError(),
+        "app.data_integration.DataIntegrationService.convert_to_daily_entries",
+        side_effect=SourceNoDataError,
     )
 
     with pytest.raises(SourceNoDataError):
@@ -60,14 +63,15 @@ def test_refresh_no_raw_data_found(mocker, service):
     ],
 )
 def test_refresh_no_new_data(mocker, service, sample_daily_entries, test_entries):
+    test_entries = TypeAdapter(list[WeightEntry]).validate_python(test_entries)
     mocker.patch(
-        "data_integration.DataIntegrationService.convert_to_daily_entries"
+        "app.data_integration.DataIntegrationService.convert_to_daily_entries"
     ).return_value = test_entries
     mocker.patch(
-        "data_integration.DataIntegrationService.get_existing_weight_entries"
+        "app.data_integration.DataIntegrationService.get_existing_weight_entries"
     ).return_value = sample_daily_entries
     mock_store_data = mocker.patch(
-        "data_integration.DataIntegrationService.store_new_weight_entries"
+        "app.data_integration.DataIntegrationService.store_new_weight_entries"
     )
 
     new_entries = service.refresh_weight_entries()
@@ -106,14 +110,19 @@ def test_refresh_no_new_data(mocker, service, sample_daily_entries, test_entries
 def test_refresh_new_data(
     mocker, service, sample_daily_entries, test_entries, expected_new_entries
 ):
+    test_entries = TypeAdapter(list[WeightEntry]).validate_python(test_entries)
+    expected_new_entries = TypeAdapter(list[WeightEntry]).validate_python(
+        expected_new_entries
+    )
+
     mocker.patch(
-        "data_integration.DataIntegrationService.convert_to_daily_entries"
+        "app.data_integration.DataIntegrationService.convert_to_daily_entries"
     ).return_value = test_entries
     mocker.patch(
-        "data_integration.DataIntegrationService.get_existing_weight_entries"
+        "app.data_integration.DataIntegrationService.get_existing_weight_entries"
     ).return_value = sample_daily_entries
     mock_store_data = mocker.patch(
-        "data_integration.DataIntegrationService.store_new_weight_entries"
+        "app.data_integration.DataIntegrationService.store_new_weight_entries"
     )
 
     new_entries = service.refresh_weight_entries()
@@ -123,13 +132,17 @@ def test_refresh_new_data(
 
 
 def test_refresh_with_store_raw_copy_on(mocker, service):
-    mocker.patch("data_integration.DataIntegrationService.get_raw_data")
-    mocker.patch("data_integration.DataIntegrationService.convert_to_daily_entries")
-    mocker.patch("data_integration.DataIntegrationService.get_existing_weight_entries")
-    mocker.patch("data_integration.DataIntegrationService.filter_new_weight_entries")
-    mocker.patch("data_integration.DataIntegrationService.store_new_weight_entries")
+    mocker.patch("app.data_integration.DataIntegrationService.get_raw_data")
+    mocker.patch("app.data_integration.DataIntegrationService.convert_to_daily_entries")
+    mocker.patch(
+        "app.data_integration.DataIntegrationService.get_existing_weight_entries"
+    )
+    mocker.patch(
+        "app.data_integration.DataIntegrationService.filter_new_weight_entries"
+    )
+    mocker.patch("app.data_integration.DataIntegrationService.store_new_weight_entries")
     mock_store_raw_copy_fn = mocker.patch(
-        "data_integration.DataIntegrationService.store_raw_data"
+        "app.data_integration.DataIntegrationService.store_raw_data"
     )
     mock_store_csv_copy_fn = mocker.patch.object(service.storage, "export_to_csv")
 
@@ -140,13 +153,17 @@ def test_refresh_with_store_raw_copy_on(mocker, service):
 
 
 def test_refresh_with_store_csv_on(mocker, service):
-    mocker.patch("data_integration.DataIntegrationService.get_raw_data")
-    mocker.patch("data_integration.DataIntegrationService.convert_to_daily_entries")
-    mocker.patch("data_integration.DataIntegrationService.get_existing_weight_entries")
-    mocker.patch("data_integration.DataIntegrationService.filter_new_weight_entries")
-    mocker.patch("data_integration.DataIntegrationService.store_new_weight_entries")
+    mocker.patch("app.data_integration.DataIntegrationService.get_raw_data")
+    mocker.patch("app.data_integration.DataIntegrationService.convert_to_daily_entries")
+    mocker.patch(
+        "app.data_integration.DataIntegrationService.get_existing_weight_entries"
+    )
+    mocker.patch(
+        "app.data_integration.DataIntegrationService.filter_new_weight_entries"
+    )
+    mocker.patch("app.data_integration.DataIntegrationService.store_new_weight_entries")
     mock_store_raw_copy_fn = mocker.patch(
-        "data_integration.DataIntegrationService.store_raw_data"
+        "app.data_integration.DataIntegrationService.store_raw_data"
     )
     mock_store_csv_copy_fn = mocker.patch.object(service.storage, "export_to_csv")
 
@@ -255,18 +272,24 @@ def test_get_existing_weight_entries(mocker, service, sample_daily_entries):
 def test_filter_new_weight_entries(
     mocker, service, test_entries, sample_daily_entries, expected_filtered_entries
 ):
+
     mocker.patch.object(service, "get_existing_weight_entries").return_value = (
         sample_daily_entries
     )
 
+    test_entries = TypeAdapter(list[WeightEntry]).validate_python(test_entries)
     filtered_new_entries = service.filter_new_weight_entries(test_entries)
 
+    expected_filtered_entries = TypeAdapter(list[WeightEntry]).validate_python(
+        expected_filtered_entries
+    )
     assert filtered_new_entries == expected_filtered_entries
 
 
 def test_store_new_weight_entries(mocker, service, sample_daily_entries):
     mock_storage_fn = mocker.patch.object(service.storage, "create_weight_entry")
-    sample_entry_date, sample_entry_weight = sample_daily_entries[0].values()
+    sample_entry = sample_daily_entries[0]
+    sample_entry_date, sample_entry_weight =  (sample_entry.date, sample_entry.weight)
 
     service.store_new_weight_entries(sample_daily_entries)
 
