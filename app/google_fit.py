@@ -54,7 +54,7 @@ router = APIRouter()
 
 
 # This route initiates the google auth flow
-@router.get("/google-signin")
+@router.get("/google-signin", include_in_schema=False)
 def google_signin(request: Request) -> RedirectResponse:
     # Create flow instance to manage the OAuth 2.0 Authorization Grant Flow steps
     flow: Flow = Flow.from_client_secrets_file(  # pyright: ignore[reportUnknownMemberType]
@@ -77,7 +77,7 @@ def google_signin(request: Request) -> RedirectResponse:
 
 # This is endpoint that Google calls with the authorization.
 # After successfully getting token, we transfer the user back to frontend
-@router.get("/google-auth")
+@router.get("/google-auth", include_in_schema=False)
 def handle_google_auth_callback(request: Request) -> RedirectResponse:
     state = request.session["state"]
 

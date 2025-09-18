@@ -7,7 +7,11 @@ from starlette.middleware.sessions import SessionMiddleware
 from .api import router as api_router
 from .google_fit import router as auth_router
 
-app = FastAPI()
+app = FastAPI(
+    title="Weight Tracker API",
+
+    description="API for fetching weight from various sources and generating analytics data."
+    )
 
 app.add_middleware(
     SessionMiddleware,
