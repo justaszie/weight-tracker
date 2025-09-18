@@ -5,13 +5,16 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from .api import router as api_router
+from .demo import DemoStorage
+from .file_storage import FileStorage
 from .google_fit import router as auth_router
 
 app = FastAPI(
     title="Weight Tracker API",
-
     description="API for fetching weight from various sources and generating analytics data."
-    )
+)
+
+app.state.data_storage = FileStorage()
 
 app.add_middleware(
     SessionMiddleware,

@@ -5,6 +5,7 @@ from typing import Annotated
 
 from fastapi import (
     APIRouter,
+    Depends,
     HTTPException,
     Query,
     Request,
@@ -21,12 +22,15 @@ from .data_integration import (
     SourceFetchError,
     SourceNoDataError,
 )
+from .demo import DemoStorage
 from .file_storage import FileStorage
 from .google_fit import GoogleFitAuth, GoogleFitClient
 from .mfp import MyFitnessPalClient
 from .project_types import (
     DataSourceClient,
     DataSourceName,
+    DataStorage,
+    DataStorageType,
     FitnessGoal,
     ProgressSummary,
     WeeklyAggregateEntry,
@@ -56,10 +60,16 @@ GFIT_SOURCE_NAME = "gfit"
 router = APIRouter()
 
 
+def get_data_storage(request: Request) -> DataStorage:
+    return request.app.state.data_storage
+
+
 def get_filtered_daily_entries(
-    date_from: dt.date | None = None, date_to: dt.date | None = None
+    data_storage: DataStorage,
+    date_from: dt.date | None = None,
+    date_to: dt.date | None = None,
 ) -> list[WeightEntry]:
-    data_storage = FileStorage()
+    # data_storage = get_data_storage()
     filtered_daily_entries = daily_entries = data_storage.get_weight_entries()
 
     if date_from is not None or date_to is not None:
@@ -104,7 +114,9 @@ def get_filtered_weekly_entries(
 
 @router.get("/daily-entries", response_model=list[WeightEntry])
 def get_daily_entries(
-    date_from: dt.date | None = None, date_to: dt.date | None = None
+    date_from: dt.date | None = None,
+    date_to: dt.date | None = None,
+    data_storage: DataStorage = Depends(get_data_storage),
 ) -> list[WeightEntry]:
     if date_from and date_to and date_from > date_to:
         raise HTTPException(
@@ -112,7 +124,7 @@ def get_daily_entries(
         )
 
     try:
-        body = get_filtered_daily_entries(date_from, date_to)
+        body = get_filtered_daily_entries(data_storage, date_from, date_to)
         return body
     except Exception as e:
         traceback.print_exc()
@@ -127,13 +139,14 @@ def get_weekly_aggregates(
     date_to: dt.date | None = None,
     weeks_limit: Annotated[int | None, Query(gt=0)] = None,
     goal: FitnessGoal | None = None,
+    data_storage: DataStorage = Depends(get_data_storage),
 ) -> WeeklyAggregateResponse:
     if date_from and date_to and date_from > date_to:
         raise HTTPException(
             status_code=422, detail="'Date To' must be after 'Date From'"
         )
     try:
-        daily_entries = get_filtered_daily_entries(date_from, date_to)
+        daily_entries = get_filtered_daily_entries(data_storage, date_from, date_to)
         if not goal:
             goal = utils.DEFAULT_GOAL
 
@@ -156,6 +169,7 @@ def get_summary(
     date_from: dt.date | None = None,
     date_to: dt.date | None = None,
     weeks_limit: Annotated[int | None, Query(gt=0)] = None,
+    data_storage: DataStorage = Depends(get_data_storage),
 ) -> ProgressSummary:
     if date_from and date_to and date_from > date_to:
         raise HTTPException(
@@ -163,7 +177,7 @@ def get_summary(
         )
 
     try:
-        daily_entries = get_filtered_daily_entries(date_from, date_to)
+        daily_entries = get_filtered_daily_entries(data_storage, date_from, date_to)
 
         weekly_entries = get_filtered_weekly_entries(
             daily_entries, utils.DEFAULT_GOAL, weeks_limit
@@ -180,9 +194,11 @@ def get_summary(
 
 
 @router.get("/latest-entry", response_model=(WeightEntry | None))
-def get_latest_entry() -> WeightEntry | None:
+def get_latest_entry(
+    data_storage: DataStorage = Depends(get_data_storage),
+) -> WeightEntry | None:
     try:
-        data_storage = FileStorage()
+        # data_storage = get_data_storage()
         daily_entries = data_storage.get_weight_entries()
         latest_daily_entry = utils.get_latest_daily_entry(daily_entries)
 
@@ -197,13 +213,17 @@ def get_latest_entry() -> WeightEntry | None:
 @router.post(
     "/sync-data", response_model=DataSyncResponse, response_model_exclude_unset=True
 )
-def sync_data(sync_request: DataSyncRequest, http_request: Request) -> DataSyncResponse:
-    try:
-        data_storage = FileStorage()
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail="Error while getting weight data"
-        ) from e
+def sync_data(
+    sync_request: DataSyncRequest,
+    http_request: Request,
+    data_storage: DataStorage = Depends(get_data_storage),
+) -> DataSyncResponse:
+    # try:
+        # data_storage = get_data_storage()
+    # except Exception as e:
+    #     raise HTTPException(
+    #         status_code=500, detail="Error while getting weight data"
+    #     ) from e
 
     if not data_storage.data_refresh_needed():
         return DataSyncResponse(
