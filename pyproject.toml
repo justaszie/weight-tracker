@@ -23,9 +23,11 @@ pytest-mock = "^3.14.1"
 pytest-cov = "^6.2.1"
 fastapi = "^0.116.1"
 uvicorn = "^0.35.0"
+httpx = "^0.28.1"
 
 [tool.mypy]
-mypy_path = "app"
+mypy_path = "."
+packages = ["app"]
 namespace_packages = true
 explicit_package_bases = true
 exclude = [
@@ -81,7 +83,11 @@ testpaths = ["tests/backend"]
 python_files = ["test_*.py"]
 
 [tool.coverage.run]
-omit = []
+omit = [
+  "tests/*",
+  "project_types.py",
+  "main.py",
+]
 
 [build-system]
 requires = ["poetry-core"]

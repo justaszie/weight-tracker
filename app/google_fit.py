@@ -147,7 +147,7 @@ class GoogleFitAuth:
 
     def save_auth_token_to_file(self, creds: Credentials) -> None:
         TOKEN_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
-        TOKEN_FILE_PATH.write_text(creds.to_json())  # pyright: ignore
+        TOKEN_FILE_PATH.write_text(creds.to_json())  # type: ignore
 
 
 class GoogleFitClient:

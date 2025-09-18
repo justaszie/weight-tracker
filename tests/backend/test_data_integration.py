@@ -201,7 +201,6 @@ def test_store_raw_data(mocker, service, sample_raw_data):
     mock_source_fn.assert_called_once_with(sample_raw_data)
 
 
-# Test NoDataError,
 def test_convert_to_daily_entries(
     mocker, service, sample_raw_data, sample_daily_entries
 ):

@@ -112,9 +112,7 @@ def get_daily_entries(
         )
 
     try:
-        body: list[WeightEntry] = get_filtered_daily_entries(
-            date_from=date_from, date_to=date_to
-        )
+        body = get_filtered_daily_entries(date_from, date_to)
         return body
     except Exception as e:
         traceback.print_exc()
@@ -218,7 +216,6 @@ def sync_data(sync_request: DataSyncRequest, http_request: Request) -> DataSyncR
     if data_source == GFIT_SOURCE_NAME:
         oauth_credentials: Credentials | None = GoogleFitAuth().load_auth_token()
         if not oauth_credentials:
-            print(http_request.app.url_path_for("google_signin"))
             return DataSyncResponse(
                 status="auth_needed",
                 message="Google Fit authentication needed",
