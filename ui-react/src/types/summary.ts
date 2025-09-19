@@ -1,12 +1,16 @@
 export type SummaryUrlParams = {
-    weeks_limit?: string;
-    date_to?: string;
-    date_from?: string;
-}
+  weeks_limit?: string;
+  date_to?: string;
+  date_from?: string;
+};
+
+export type SummaryMetrics = {
+  total_change: number;
+  avg_change: number;
+  avg_change_prc: number;
+  avg_net_calories: number;
+};
 
 export type SummaryData = {
-    total_change?: number;
-    avg_change?: number;
-    avg_change_prc?: number;
-    avg_net_calories?: number;
-}
+  metrics?: SummaryMetrics | null;
+};

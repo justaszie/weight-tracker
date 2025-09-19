@@ -48,7 +48,7 @@ export default function Summary(props: SummaryProps) {
           throw new Error(errorMessage);
         }
         const body = await response.json();
-        setSummaryData(body.metrics);
+        setSummaryData(body);
 
       } catch (err: unknown) {
         setSummaryData({});
@@ -137,8 +137,8 @@ export default function Summary(props: SummaryProps) {
           </p>
           <div className="summary-card__value-group">
             <h3 className="summary-card__value">
-              {summaryData.total_change &&
-                toSignedString(summaryData.total_change, 2)}
+              {summaryData.metrics &&
+                toSignedString(summaryData.metrics.total_change, 2)}
             </h3>
             <span className="summary-card__subtitle">kg</span>
           </div>
@@ -164,8 +164,8 @@ export default function Summary(props: SummaryProps) {
           </p>
           <div className="summary-card__value-group">
             <h3 className="summary-card__value">
-              {summaryData.avg_change &&
-                toSignedString(summaryData.avg_change, 2)}
+              {summaryData.metrics &&
+                toSignedString(summaryData.metrics.avg_change, 2)}
             </h3>
             <span className="summary-card__subtitle">kg / week</span>
           </div>
@@ -190,8 +190,8 @@ export default function Summary(props: SummaryProps) {
           </p>
           <div className="summary-card__value-group">
             <h3 className="summary-card__value">
-              {summaryData.avg_change_prc &&
-                toSignedString(summaryData.avg_change_prc, 2)}
+              {summaryData.metrics &&
+                toSignedString(summaryData.metrics.avg_change_prc, 2)}
             </h3>
             <span className="summary-card__subtitle">% / week</span>
           </div>
@@ -215,8 +215,8 @@ export default function Summary(props: SummaryProps) {
           <div className="summary-card__value-group">
             {/* Convert to signed amount format  */}
             <h3 className="summary-card__value">
-              {summaryData.avg_net_calories &&
-                toSignedString(summaryData.avg_net_calories)}
+              {summaryData.metrics &&
+                toSignedString(summaryData.metrics.avg_net_calories)}
             </h3>
             <span className="summary-card__subtitle">kcal / day</span>
           </div>
