@@ -41,18 +41,18 @@ function App() {
       });
       if (!response.ok) {
         const body = await response.json();
-        // Launch Google Auth Flow
+        // If auth is needed, launch google auth flow
+        if (response.status === 401) {
+          window.location.replace(`${SERVER_BASE_URL}${body.auth_url}`);
+          return;
+        }
         const errorMessage =
           "message" in body ? body["message"] : "Error while syncing data";
         throw new Error(errorMessage);
       }
       const body = await response.json();
-      if (body.status === "auth_needed") {
-        window.location.replace(`${SERVER_BASE_URL}${body.auth_url}`);
-        return;
-      }
       if (body.status === "sync_success") {
-        // 2) if sync success,  update state to trigger re-rendering
+        // If sync success,  update state to trigger re-rendering
         markDataSyncComplete();
       } else if (
         ["data_up_to_date", "no_data_received", "no_new_data"].includes(

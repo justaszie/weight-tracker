@@ -10,6 +10,7 @@ from fastapi import (
     Query,
     Request,
 )
+from fastapi.responses import JSONResponse
 from google.oauth2.credentials import Credentials
 from pydantic import (
     BaseModel,
@@ -22,15 +23,13 @@ from .data_integration import (
     SourceFetchError,
     SourceNoDataError,
 )
-from .demo import DemoStorage
-from .file_storage import FileStorage
+
 from .google_fit import GoogleFitAuth, GoogleFitClient
 from .mfp import MyFitnessPalClient
 from .project_types import (
     DataSourceClient,
     DataSourceName,
     DataStorage,
-    DataStorageType,
     FitnessGoal,
     ProgressSummary,
     WeeklyAggregateEntry,
@@ -47,11 +46,18 @@ class DataSyncRequest(BaseModel):
     data_source: DataSourceName
 
 
-class DataSyncResponse(BaseModel):
+class DataSyncSuccessResponse(BaseModel):
     status: str
     message: str
     new_entries_count: int | None = None
+
+class DataSyncAuthNeededResponse(BaseModel):
+    message: str
     auth_url: str | None = None
+
+
+class NoCredentialsError(Exception):
+    pass
 
 
 MFP_SOURCE_NAME = "mfp"
@@ -64,12 +70,29 @@ def get_data_storage(request: Request) -> DataStorage:
     return request.app.state.data_storage
 
 
+def get_data_source_client(source_name: DataSourceName) -> DataSourceClient:
+    # TODO: Add a check if the app is in demo mode,
+    # return demo client regardless of the source
+
+    if source_name == GFIT_SOURCE_NAME:
+        oauth_credentials: Credentials | None = GoogleFitAuth().load_auth_token()
+        if not oauth_credentials:
+            raise NoCredentialsError("Google API credentials required")
+
+        return GoogleFitClient(oauth_credentials)
+
+    elif source_name == MFP_SOURCE_NAME:
+        return MyFitnessPalClient()
+
+    else:
+        raise ValueError("Data Source not supported")
+
+
 def get_filtered_daily_entries(
     data_storage: DataStorage,
     date_from: dt.date | None = None,
     date_to: dt.date | None = None,
 ) -> list[WeightEntry]:
-    # data_storage = get_data_storage()
     filtered_daily_entries = daily_entries = data_storage.get_weight_entries()
 
     if date_from is not None or date_to is not None:
@@ -198,7 +221,6 @@ def get_latest_entry(
     data_storage: DataStorage = Depends(get_data_storage),
 ) -> WeightEntry | None:
     try:
-        # data_storage = get_data_storage()
         daily_entries = data_storage.get_weight_entries()
         latest_daily_entry = utils.get_latest_daily_entry(daily_entries)
 
@@ -211,44 +233,38 @@ def get_latest_entry(
 
 
 @router.post(
-    "/sync-data", response_model=DataSyncResponse, response_model_exclude_unset=True
+    "/sync-data",
+    response_model=DataSyncSuccessResponse,
+    response_model_exclude_unset=True,
+    responses={
+        401: {
+            "model": DataSyncAuthNeededResponse,
+            "description": "Data Source requires authentication",
+        }
+    },
 )
 def sync_data(
     sync_request: DataSyncRequest,
     http_request: Request,
     data_storage: DataStorage = Depends(get_data_storage),
-) -> DataSyncResponse:
-    # try:
-        # data_storage = get_data_storage()
-    # except Exception as e:
-    #     raise HTTPException(
-    #         status_code=500, detail="Error while getting weight data"
-    #     ) from e
-
+) -> DataSyncSuccessResponse | JSONResponse:
     if not data_storage.data_refresh_needed():
-        return DataSyncResponse(
+        return DataSyncSuccessResponse(
             status="data_up_to_date", message="Your data is already up to date"
         )
 
     data_source = sync_request.data_source
 
-    data_source_client: DataSourceClient
-    if data_source == GFIT_SOURCE_NAME:
-        oauth_credentials: Credentials | None = GoogleFitAuth().load_auth_token()
-        if not oauth_credentials:
-            return DataSyncResponse(
-                status="auth_needed",
-                message="Google Fit authentication needed",
-                auth_url=http_request.app.url_path_for("google_signin"),
-            )
-
-        data_source_client = GoogleFitClient(oauth_credentials)
-
-    elif data_source == MFP_SOURCE_NAME:
-        data_source_client = MyFitnessPalClient()
-
-    else:
-        raise HTTPException(status_code=422, detail="Unsupported Data Source Type")
+    try:
+        data_source_client = get_data_source_client(data_source)
+    except NoCredentialsError as e:
+        return JSONResponse(
+            status_code=401,
+            content={
+                "message": "Google Fit authentication needed",
+                "auth_url": http_request.app.url_path_for("google_signin"),
+            },
+        )
 
     data_integration = DataIntegrationService(data_storage, data_source_client)
 
@@ -257,17 +273,19 @@ def sync_data(
             store_raw_copy=True, store_csv_copy=True
         )
         if new_entries:
-            return DataSyncResponse(
+            return DataSyncSuccessResponse(
                 status="sync_success",
                 message="Data updated successfully",
                 new_entries_count=len(new_entries),
             )
         else:
-            return DataSyncResponse(
+            return DataSyncSuccessResponse(
                 status="no_new_data", message="No new data was found"
             )
     except SourceNoDataError:
-        return DataSyncResponse(status="no_data_received", message="No data received")
+        return DataSyncSuccessResponse(
+            status="no_data_received", message="No data received"
+        )
     except SourceFetchError as e:
         traceback.print_exc()
         if data_source == MFP_SOURCE_NAME:
