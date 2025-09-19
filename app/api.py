@@ -25,7 +25,7 @@ from .data_integration import (
     SourceFetchError,
     SourceNoDataError,
 )
-
+from .demo import DemoDataSourceClient
 from .google_fit import GoogleFitAuth, GoogleFitClient
 from .mfp import MyFitnessPalClient
 from .project_types import (
@@ -73,10 +73,8 @@ def get_data_storage(request: Request) -> DataStorage:
 
 
 def get_data_source_client(source_name: DataSourceName) -> DataSourceClient:
-    # TODO: Add a check if the app is in demo mode,
-    # return demo client regardless of the source
     if (os.environ.get("DEMO_MODE", "false") == "true"):
-        print("DEMO DATA SOURCE WILL BE SERVED!")
+        return DemoDataSourceClient()
 
     if source_name == GFIT_SOURCE_NAME:
         oauth_credentials: Credentials | None = GoogleFitAuth().load_auth_token()
