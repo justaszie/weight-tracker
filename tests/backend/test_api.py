@@ -1,8 +1,6 @@
 # pyright: reportMissingTypeStubs=false, reportUnknownVariableType=false, reportUnknownParameterType=false, reportUnknownArgumentType=false, reportMissingParameterType=false, reportUnknownMemberType=false
 
-
 import datetime as dt
-from typing import Literal
 
 import pytest
 from fastapi.testclient import TestClient
@@ -11,6 +9,8 @@ from pydantic import TypeAdapter
 from app.api import (
     get_filtered_daily_entries,
     get_filtered_weekly_entries,
+    get_data_storage,
+    NoCredentialsError,
 )
 from app.data_integration import DataSyncError, SourceFetchError, SourceNoDataError
 from app.main import app
@@ -158,15 +158,17 @@ class TestHelperFunctions:
     def test_get_filtered_daily_entries(
         self, mocker, sample_daily_entries, date_from, date_to, expected_entries
     ) -> None:
-        mocker.patch(
-            "app.api.FileStorage"
-        ).return_value.get_weight_entries.return_value = sample_daily_entries
+        mock_storage = mocker.MagicMock()
+        mock_storage.get_weight_entries.return_value = sample_daily_entries
+        app.dependency_overrides[get_data_storage] = lambda: mock_storage
 
-        daily_entries = get_filtered_daily_entries(date_from, date_to)
+        daily_entries = get_filtered_daily_entries(mock_storage, date_from, date_to)
         expected_entries = TypeAdapter(list[WeightEntry]).validate_python(
             expected_entries
         )
         assert daily_entries == expected_entries
+
+        app.dependency_overrides.pop(get_data_storage, None)
 
     @pytest.mark.parametrize(
         "weeks_limit, expected_entries",
@@ -283,6 +285,26 @@ class TestAPIEndpoints:
     def client(self):
         return TestClient(app)
 
+    @pytest.fixture
+    def mock_storage(self, mocker):
+        mock_storage = mocker.MagicMock()
+        app.dependency_overrides[get_data_storage] = lambda: mock_storage
+        yield mock_storage
+        app.dependency_overrides.pop(get_data_storage, None)
+
+    @pytest.fixture
+    def mock_storage_refresh_needed(self, mocker):
+        mock_storage = mocker.MagicMock()
+        mock_storage.data_refresh_needed.return_value = True
+
+        # Override get_data_storage function with a lambda that just returns mock storage
+        app.dependency_overrides[get_data_storage] = lambda: mock_storage
+        yield mock_storage
+
+        # Make sure to remove the dependency override after the tests run
+        app.dependency_overrides.pop(get_data_storage, None)
+
+
     @pytest.mark.parametrize(
         "latest_entry, expected_return",
         [
@@ -312,7 +334,7 @@ class TestAPIEndpoints:
         assert "detail" in response.json()
 
     def _test_dates_params_usage(
-        self, client, mocker, endpoint_name, date_from, date_to
+        self, client, mocker, mock_storage, endpoint_name, date_from, date_to
     ):
         fetch_daily_fn = mocker.patch("app.api.get_filtered_daily_entries")
 
@@ -327,6 +349,7 @@ class TestAPIEndpoints:
 
         assert response.status_code == 200
         fetch_daily_fn.assert_called_once_with(
+            mock_storage,
             dt.date.fromisoformat(date_from) if date_from else None,
             dt.date.fromisoformat(date_to) if date_to else None,
         )
@@ -356,23 +379,23 @@ class TestAPIEndpoints:
 
     @pytest.mark.parametrize("date_from, date_to", DATE_PARAMS_TEST_CASES)
     def test_daily_entries_date_params_usage(
-        self, client, mocker, date_from, date_to
+        self, client, mocker, mock_storage, date_from, date_to
     ) -> None:
         self._test_dates_params_usage(
-            client, mocker, "daily-entries", date_from, date_to
+            client, mocker, mock_storage, "daily-entries", date_from, date_to
         )
 
     @pytest.mark.parametrize("date_from, date_to", DATE_PARAMS_TEST_CASES)
     def test_weekly_aggregates_date_params_usage(
-        self, client, mocker, date_from, date_to
+        self, client, mocker, mock_storage, date_from, date_to
     ):
         self._test_dates_params_usage(
-            client, mocker, "weekly-aggregates", date_from, date_to
+            client, mocker, mock_storage, "weekly-aggregates", date_from, date_to
         )
 
     @pytest.mark.parametrize("date_from, date_to", DATE_PARAMS_TEST_CASES)
-    def test_summary_date_params_usage(self, client, mocker, date_from, date_to):
-        self._test_dates_params_usage(client, mocker, "summary", date_from, date_to)
+    def test_summary_date_params_usage(self, client, mocker, mock_storage, date_from, date_to):
+        self._test_dates_params_usage(client, mocker, mock_storage, "summary", date_from, date_to)
 
     @pytest.mark.parametrize("goal, weeks_limit", WEEKLY_PARAMS_TEST_CASES)
     def test_weekly_aggregates_weekly_params_usage(
@@ -513,12 +536,8 @@ class TestAPIEndpoints:
 
     @pytest.mark.parametrize("data_source_client_name", ["gfit", "mfp"])
     def test_sync_data_data_source_creation(
-        self, client, data_source_client_name, mocker
+        self, client, data_source_client_name, mocker, mock_storage_refresh_needed
     ):
-        # Mocking dependencies
-        mock_storage = mocker.patch("app.api.FileStorage").return_value
-        mock_storage.data_refresh_needed.return_value = True
-
         mocker.patch(
             "app.api.GoogleFitAuth"
         ).return_value.load_auth_token.return_value = "creds123"
@@ -552,10 +571,7 @@ class TestAPIEndpoints:
         assert response.status_code == 422
         assert "detail" in response.json()
 
-    def test_sync_data_success(self, client, mocker, sample_daily_entries):
-        mock_storage = mocker.patch("app.api.FileStorage").return_value
-        mock_storage.data_refresh_needed.return_value = True
-
+    def test_sync_data_success(self, client, mocker, sample_daily_entries, mock_storage_refresh_needed):
         mocker.patch("app.api.GoogleFitAuth")
         mock_service = mocker.patch("app.api.DataIntegrationService").return_value
         mock_service.refresh_weight_entries.return_value = sample_daily_entries
@@ -577,8 +593,7 @@ class TestAPIEndpoints:
         assert response.status_code == 200
         assert all(actual_response[k] == v for k, v in expected_response.items())
 
-    def test_sync_data_refresh_not_needed(self, client, mocker):
-        mock_storage = mocker.patch("app.api.FileStorage").return_value
+    def test_sync_data_refresh_not_needed(self, client, mocker, mock_storage):
         mock_storage.data_refresh_needed.return_value = False
 
         response = client.post(
@@ -588,31 +603,23 @@ class TestAPIEndpoints:
         assert response.status_code == 200
         assert response.json()["status"] == "data_up_to_date"
 
-    def test_sync_data_auth_needed(self, client, mocker):
-        mock_storage = mocker.patch("app.api.FileStorage").return_value
-        mock_storage.data_refresh_needed.return_value = True
+    def test_sync_data_auth_needed(self, client, mocker, mock_storage_refresh_needed):
 
         mocker.patch(
-            "app.api.GoogleFitAuth"
-        ).return_value.load_auth_token.return_value = None
+            "app.api.get_data_source_client"
+        ).side_effect = NoCredentialsError
 
         response = client.post(
             self.ENDPOINT_URLS["sync-data"], json={"data_source": "gfit"}
         )
 
-        expected_response = {
-            "status": "auth_needed",
-            "auth_url": app.url_path_for("google_signin"),
-        }
         actual_response = response.json()
 
-        assert response.status_code == 200
-        assert all(actual_response[k] == v for k, v in expected_response.items())
+        assert response.status_code == 401
+        assert "auth_url" in actual_response
+        assert actual_response["auth_url"] ==  app.url_path_for("google_signin")
 
-    def test_sync_data_no_new_data(self, client, mocker):
-        mock_storage = mocker.patch("app.api.FileStorage").return_value
-        mock_storage.data_refresh_needed.return_value = True
-
+    def test_sync_data_no_new_data(self, client, mocker, mock_storage_refresh_needed):
         mocker.patch("app.api.GoogleFitAuth")
         mock_service = mocker.patch("app.api.DataIntegrationService").return_value
         mock_service.refresh_weight_entries.return_value = []
@@ -626,11 +633,7 @@ class TestAPIEndpoints:
         assert response.status_code == 200
         assert response.json()["status"] == "no_new_data"
 
-    def test_sync_data_no_data_found(self, client, mocker):
-        # Mock refresh_weight_entries to raise SourceNoDataError
-        mock_storage = mocker.patch("app.api.FileStorage").return_value
-        mock_storage.data_refresh_needed.return_value = True
-
+    def test_sync_data_no_data_found(self, client, mocker, mock_storage_refresh_needed):
         mocker.patch("app.api.GoogleFitAuth")
         mock_service = mocker.patch("app.api.DataIntegrationService").return_value
         mock_service.refresh_weight_entries.side_effect = SourceNoDataError("no data")
@@ -647,25 +650,12 @@ class TestAPIEndpoints:
     @pytest.mark.parametrize("exc",
         [SourceFetchError('test'), DataSyncError('test')]
     )
-    def test_sync_data_refresh_exceptions(self, client, mocker, exc):
-        mock_storage = mocker.patch("app.api.FileStorage").return_value
-        mock_storage.data_refresh_needed.return_value = True
-
+    def test_sync_data_refresh_exceptions(self, client, mocker, mock_storage_refresh_needed, exc):
         mocker.patch("app.api.GoogleFitAuth")
         mock_service = mocker.patch("app.api.DataIntegrationService").return_value
         mock_service.refresh_weight_entries.side_effect = exc
 
         mocker.patch("app.api.GoogleFitClient")
-
-        response = client.post(
-            self.ENDPOINT_URLS["sync-data"], json={"data_source": "gfit"}
-        )
-
-        assert response.status_code == 500
-        assert "detail" in response.json()
-
-    def test_sync_data_storage_exceptions(self, client, mocker):
-        mocker.patch("app.api.FileStorage").side_effect = Exception('test')
 
         response = client.post(
             self.ENDPOINT_URLS["sync-data"], json={"data_source": "gfit"}
