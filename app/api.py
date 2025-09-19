@@ -1,7 +1,9 @@
 import datetime as dt
 import traceback
+import os
 from collections.abc import Sequence
 from typing import Annotated
+
 
 from fastapi import (
     APIRouter,
@@ -73,6 +75,8 @@ def get_data_storage(request: Request) -> DataStorage:
 def get_data_source_client(source_name: DataSourceName) -> DataSourceClient:
     # TODO: Add a check if the app is in demo mode,
     # return demo client regardless of the source
+    if (os.environ.get("DEMO_MODE", "false") == "true"):
+        print("DEMO DATA SOURCE WILL BE SERVED!")
 
     if source_name == GFIT_SOURCE_NAME:
         oauth_credentials: Credentials | None = GoogleFitAuth().load_auth_token()

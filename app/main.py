@@ -1,5 +1,8 @@
-import secrets
 
+import secrets
+import os
+
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
@@ -14,7 +17,11 @@ app = FastAPI(
     description="API for fetching weight from various sources and generating analytics data."
 )
 
-app.state.data_storage = FileStorage()
+load_dotenv()
+if (os.environ.get("DEMO_MODE", "false") == "true"):
+    app.state.data_storage = DemoStorage()
+else:
+    app.state.data_storage = FileStorage()
 
 app.add_middleware(
     SessionMiddleware,

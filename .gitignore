@@ -22,6 +22,8 @@ fastapi-backend/throwaway/*
 
 **/__pycache__/*
 
+.env
+
 # # Logs
 # ui-react/logs
 # ui-react/*.log
