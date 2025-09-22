@@ -304,7 +304,6 @@ class TestAPIEndpoints:
         # Make sure to remove the dependency override after the tests run
         app.dependency_overrides.pop(get_data_storage, None)
 
-
     @pytest.mark.parametrize(
         "latest_entry, expected_return",
         [
@@ -394,8 +393,12 @@ class TestAPIEndpoints:
         )
 
     @pytest.mark.parametrize("date_from, date_to", DATE_PARAMS_TEST_CASES)
-    def test_summary_date_params_usage(self, client, mocker, mock_storage, date_from, date_to):
-        self._test_dates_params_usage(client, mocker, mock_storage, "summary", date_from, date_to)
+    def test_summary_date_params_usage(
+        self, client, mocker, mock_storage, date_from, date_to
+    ):
+        self._test_dates_params_usage(
+            client, mocker, mock_storage, "summary", date_from, date_to
+        )
 
     @pytest.mark.parametrize("goal, weeks_limit", WEEKLY_PARAMS_TEST_CASES)
     def test_weekly_aggregates_weekly_params_usage(
@@ -571,7 +574,9 @@ class TestAPIEndpoints:
         assert response.status_code == 422
         assert "detail" in response.json()
 
-    def test_sync_data_success(self, client, mocker, sample_daily_entries, mock_storage_refresh_needed):
+    def test_sync_data_success(
+        self, client, mocker, sample_daily_entries, mock_storage_refresh_needed
+    ):
         mocker.patch("app.api.GoogleFitAuth")
         mock_service = mocker.patch("app.api.DataIntegrationService").return_value
         mock_service.refresh_weight_entries.return_value = sample_daily_entries
@@ -604,10 +609,7 @@ class TestAPIEndpoints:
         assert response.json()["status"] == "data_up_to_date"
 
     def test_sync_data_auth_needed(self, client, mocker, mock_storage_refresh_needed):
-
-        mocker.patch(
-            "app.api.get_data_source_client"
-        ).side_effect = NoCredentialsError
+        mocker.patch("app.api.get_data_source_client").side_effect = NoCredentialsError
 
         response = client.post(
             self.ENDPOINT_URLS["sync-data"], json={"data_source": "gfit"}
@@ -617,7 +619,7 @@ class TestAPIEndpoints:
 
         assert response.status_code == 401
         assert "auth_url" in actual_response
-        assert actual_response["auth_url"] ==  app.url_path_for("google_signin")
+        assert actual_response["auth_url"] == app.url_path_for("google_signin")
 
     def test_sync_data_no_new_data(self, client, mocker, mock_storage_refresh_needed):
         mocker.patch("app.api.GoogleFitAuth")
@@ -647,10 +649,10 @@ class TestAPIEndpoints:
         assert response.status_code == 200
         assert response.json()["status"] == "no_data_received"
 
-    @pytest.mark.parametrize("exc",
-        [SourceFetchError('test'), DataSyncError('test')]
-    )
-    def test_sync_data_refresh_exceptions(self, client, mocker, mock_storage_refresh_needed, exc):
+    @pytest.mark.parametrize("exc", [SourceFetchError("test"), DataSyncError("test")])
+    def test_sync_data_refresh_exceptions(
+        self, client, mocker, mock_storage_refresh_needed, exc
+    ):
         mocker.patch("app.api.GoogleFitAuth")
         mock_service = mocker.patch("app.api.DataIntegrationService").return_value
         mock_service.refresh_weight_entries.side_effect = exc

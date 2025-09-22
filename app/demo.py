@@ -1,8 +1,8 @@
 import datetime as dt
 import json
 import traceback
-from typing import Any
 from pathlib import Path
+from typing import Any
 
 from pydantic import TypeAdapter
 
@@ -107,7 +107,9 @@ class DemoDataSourceClient:
         pass
 
     def convert_to_daily_entries(self, raw_dataset: Any) -> list[WeightEntry]:
-        return TypeAdapter(list[WeightEntry]).validate_python(self._dummy_daily_entries())
+        return TypeAdapter(list[WeightEntry]).validate_python(
+            self._dummy_daily_entries()
+        )
 
     def _dummy_daily_entries(self) -> list[dict[str, str | float]]:
         data: list[dict[str, str | float]] = [

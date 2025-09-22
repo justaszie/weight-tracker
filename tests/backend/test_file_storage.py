@@ -5,10 +5,7 @@ import json
 from pathlib import Path
 
 import pytest
-from pydantic import (
-    TypeAdapter,
-    ValidationError
-)
+from pydantic import TypeAdapter, ValidationError
 
 from app.file_storage import FileStorage
 from app.project_types import WeightEntry
@@ -33,7 +30,9 @@ class TestWeightStorageUsingFile:
     def test_load_weights_from_wrong_format_file(self, mocker, tmp_path):
         test_file_data = ""
         tmp_path = tmp_path / "test_data.json"
-        mocker.patch("app.file_storage.FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH", new=tmp_path)
+        mocker.patch(
+            "app.file_storage.FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH", new=tmp_path
+        )
         tmp_path.write_text(test_file_data)
 
         with pytest.raises(ValidationError):
@@ -42,7 +41,9 @@ class TestWeightStorageUsingFile:
     def test_load_weights_from_file(self, mocker, tmp_path):
         # 1. Mock the filepath to the tmp_path value
         tmp_path = tmp_path / "test_data.json"
-        mocker.patch("app.file_storage.FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH", new=tmp_path)
+        mocker.patch(
+            "app.file_storage.FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH", new=tmp_path
+        )
         # 2. dump test data to the temp test file
         test_file_data = json.dumps(
             [
@@ -115,11 +116,15 @@ class TestWeightStorageProtocol:
         sample_storage.create_weight_entry(date, weight)
         assert len(sample_storage.get_weight_entries()) == count_before_create + 1
 
-        expected_entry_after_creation = WeightEntry.model_validate({
-            "date": date,
-            "weight": weight,
-        })
-        assert sample_storage.get_weight_entry(date=date) == expected_entry_after_creation
+        expected_entry_after_creation = WeightEntry.model_validate(
+            {
+                "date": date,
+                "weight": weight,
+            }
+        )
+        assert (
+            sample_storage.get_weight_entry(date=date) == expected_entry_after_creation
+        )
 
     def test_create_duplicate_weight_entry(self, sample_storage):
         existing_entries = sample_storage.get_weight_entries()
@@ -226,10 +231,12 @@ class TestWeightStorageProtocol:
         weight = 74.5
         empty_storage.create_weight_entry(date, weight)
         assert len(empty_storage.get_weight_entries()) == 1
-        expected_entry = WeightEntry.model_validate({
-            "date": date,
-            "weight": weight,
-        })
+        expected_entry = WeightEntry.model_validate(
+            {
+                "date": date,
+                "weight": weight,
+            }
+        )
         assert empty_storage.get_weight_entry(date=date) == expected_entry
 
     def test_update_weight_entry_empty_storage(self, empty_storage):

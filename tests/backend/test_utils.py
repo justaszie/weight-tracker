@@ -12,6 +12,7 @@ from app.utils import (
     get_latest_entry_date,
 )
 
+
 class TestDailyEntriesManipulation:
     @pytest.fixture
     def sample_daily_entries(self) -> list[WeightEntry]:
@@ -28,8 +29,8 @@ class TestDailyEntriesManipulation:
         "daily_entries, date_from, date_to, expected_count",
         [
             ([], None, None, 0),
-            ([], dt.date(2025,8,30), None, 0),
-            ([], None, dt.date(2025,8,30), 0),
+            ([], dt.date(2025, 8, 30), None, 0),
+            ([], None, dt.date(2025, 8, 30), 0),
         ],
     )
     def test_filter_empty_daily_entries(
@@ -98,5 +99,7 @@ class TestDailyEntriesManipulation:
     def test_get_latest_daily_entry(self, entries, expected_value):
         daily_entries = TypeAdapter(list[WeightEntry]).validate_python(entries)
         result = get_latest_daily_entry(daily_entries)
-        expected_latest_entry = WeightEntry.model_validate(expected_value) if expected_value else None
+        expected_latest_entry = (
+            WeightEntry.model_validate(expected_value) if expected_value else None
+        )
         assert result == expected_latest_entry

@@ -199,6 +199,7 @@ def test_convert_to_daily_entries(client_no_creds, sample_raw_dataset):
 def test_convert_to_daily_entries_empty_dataset(client_no_creds, empty_raw_dataset):
     assert client_no_creds.convert_to_daily_entries(empty_raw_dataset) == []
 
+
 def test_store_raw_data(mocker, client, sample_raw_dataset, tmp_path):
     test_file = tmp_path / "test_raw_data.json"
     mocker.patch("app.google_fit.RAW_DATA_FILE_PATH", new=test_file)
@@ -226,7 +227,9 @@ def test_load_valid_creds(mocker, auth_client, test_token_file_data, tmp_path):
 
     mocker.patch("app.google_fit.TOKEN_FILE_PATH", new=test_file)
 
-    mock_creds_load_fn = mocker.patch("app.google_fit.Credentials.from_authorized_user_info")
+    mock_creds_load_fn = mocker.patch(
+        "app.google_fit.Credentials.from_authorized_user_info"
+    )
     mock_creds = mock_creds_load_fn.return_value
     mock_creds.valid = True
 

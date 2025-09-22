@@ -3,13 +3,10 @@ import traceback
 from collections.abc import Iterable
 
 from .project_types import (
-    DataSourceName,
     FitnessGoal,
     WeightEntry,
 )
 
-DATA_SOURCES_SUPPORTED: list[DataSourceName] = ["gfit", "mfp"]
-GOALS_SUPPORTED: list[FitnessGoal] = ["lose", "gain", "maintain"]
 DEFAULT_GOAL: FitnessGoal = "lose"
 
 

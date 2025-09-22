@@ -1,6 +1,5 @@
-
-import secrets
 import os
+import secrets
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -14,11 +13,12 @@ from .google_fit import router as auth_router
 
 app = FastAPI(
     title="Weight Tracker API",
-    description="API for fetching weight from various sources and generating analytics data."
+    description="""API for fetching weight from
+various sources and generating analytics data.""",
 )
 
 load_dotenv()
-if (os.environ.get("DEMO_MODE", "false") == "true"):
+if os.environ.get("DEMO_MODE", "false") == "true":
     app.state.data_storage = DemoStorage()
 else:
     app.state.data_storage = FileStorage()

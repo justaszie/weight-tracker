@@ -271,10 +271,9 @@ def test_get_existing_weight_entries(mocker, service, sample_daily_entries):
 def test_filter_new_weight_entries(
     mocker, service, test_entries, sample_daily_entries, expected_filtered_entries
 ):
-
-    mocker.patch.object(service, "get_existing_weight_entries").return_value = (
-        sample_daily_entries
-    )
+    mocker.patch.object(
+        service, "get_existing_weight_entries"
+    ).return_value = sample_daily_entries
 
     test_entries = TypeAdapter(list[WeightEntry]).validate_python(test_entries)
     filtered_new_entries = service.filter_new_weight_entries(test_entries)
@@ -288,7 +287,7 @@ def test_filter_new_weight_entries(
 def test_store_new_weight_entries(mocker, service, sample_daily_entries):
     mock_storage_fn = mocker.patch.object(service.storage, "create_weight_entry")
     sample_entry = sample_daily_entries[0]
-    sample_entry_date, sample_entry_weight =  (sample_entry.date, sample_entry.weight)
+    sample_entry_date, sample_entry_weight = (sample_entry.date, sample_entry.weight)
 
     service.store_new_weight_entries(sample_daily_entries)
 

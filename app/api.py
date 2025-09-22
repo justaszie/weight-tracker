@@ -1,9 +1,11 @@
 import datetime as dt
-import traceback
 import os
+import traceback
 from collections.abc import Sequence
-from typing import Annotated
-
+from typing import (
+    Annotated,
+    cast,
+)
 
 from fastapi import (
     APIRouter,
@@ -53,6 +55,7 @@ class DataSyncSuccessResponse(BaseModel):
     message: str
     new_entries_count: int | None = None
 
+
 class DataSyncAuthNeededResponse(BaseModel):
     message: str
     auth_url: str | None = None
@@ -69,11 +72,11 @@ router = APIRouter()
 
 
 def get_data_storage(request: Request) -> DataStorage:
-    return request.app.state.data_storage
+    return cast(DataStorage, request.app.state.data_storage)
 
 
 def get_data_source_client(source_name: DataSourceName) -> DataSourceClient:
-    if (os.environ.get("DEMO_MODE", "false") == "true"):
+    if os.environ.get("DEMO_MODE", "false") == "true":
         return DemoDataSourceClient()
 
     if source_name == GFIT_SOURCE_NAME:
@@ -88,6 +91,9 @@ def get_data_source_client(source_name: DataSourceName) -> DataSourceClient:
 
     else:
         raise ValueError("Data Source not supported")
+
+
+DataStorageDependency = Annotated[DataStorage, Depends(get_data_storage)]
 
 
 def get_filtered_daily_entries(
@@ -139,9 +145,9 @@ def get_filtered_weekly_entries(
 
 @router.get("/daily-entries", response_model=list[WeightEntry])
 def get_daily_entries(
+    data_storage: DataStorageDependency,
     date_from: dt.date | None = None,
     date_to: dt.date | None = None,
-    data_storage: DataStorage = Depends(get_data_storage),
 ) -> list[WeightEntry]:
     if date_from and date_to and date_from > date_to:
         raise HTTPException(
@@ -160,11 +166,11 @@ def get_daily_entries(
 
 @router.get("/weekly-aggregates", response_model=WeeklyAggregateResponse)
 def get_weekly_aggregates(
+    data_storage: DataStorageDependency,
     date_from: dt.date | None = None,
     date_to: dt.date | None = None,
     weeks_limit: Annotated[int | None, Query(gt=0)] = None,
     goal: FitnessGoal | None = None,
-    data_storage: DataStorage = Depends(get_data_storage),
 ) -> WeeklyAggregateResponse:
     if date_from and date_to and date_from > date_to:
         raise HTTPException(
@@ -191,10 +197,10 @@ def get_weekly_aggregates(
 
 @router.get("/summary", response_model=ProgressSummary)
 def get_summary(
+    data_storage: DataStorageDependency,
     date_from: dt.date | None = None,
     date_to: dt.date | None = None,
     weeks_limit: Annotated[int | None, Query(gt=0)] = None,
-    data_storage: DataStorage = Depends(get_data_storage),
 ) -> ProgressSummary:
     if date_from and date_to and date_from > date_to:
         raise HTTPException(
@@ -220,7 +226,7 @@ def get_summary(
 
 @router.get("/latest-entry", response_model=(WeightEntry | None))
 def get_latest_entry(
-    data_storage: DataStorage = Depends(get_data_storage),
+    data_storage: DataStorageDependency,
 ) -> WeightEntry | None:
     try:
         daily_entries = data_storage.get_weight_entries()
@@ -248,7 +254,7 @@ def get_latest_entry(
 def sync_data(
     sync_request: DataSyncRequest,
     http_request: Request,
-    data_storage: DataStorage = Depends(get_data_storage),
+    data_storage: DataStorageDependency,
 ) -> DataSyncSuccessResponse | JSONResponse:
     if not data_storage.data_refresh_needed():
         return DataSyncSuccessResponse(
@@ -259,7 +265,7 @@ def sync_data(
 
     try:
         data_source_client = get_data_source_client(data_source)
-    except NoCredentialsError as e:
+    except NoCredentialsError:
         return JSONResponse(
             status_code=401,
             content={
