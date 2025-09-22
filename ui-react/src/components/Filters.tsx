@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { FiltersProps } from "@/types/props";
+import type { Filter } from "@/types/filter"
 
 import WeeksFilter from './WeeksFilter'
 import DatesFilter from './DatesFilter'
