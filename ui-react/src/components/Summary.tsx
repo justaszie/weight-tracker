@@ -11,7 +11,7 @@ const GOAL_LABELS: { [key in Goal]: string } = {
   maintain: "Maintaining",
   gain: "Gaining Muscle",
 };
-const SERVER_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Summary(props: SummaryProps) {
   const [summaryData, setSummaryData] = useState<SummaryData>({});
@@ -38,7 +38,7 @@ export default function Summary(props: SummaryProps) {
         urlParams["date_to"] = dateTo;
       }
 
-      const summaryURL = new URL(`${SERVER_BASE_URL}/api/summary`);
+      const summaryURL = new URL(`${API_BASE_URL}/api/summary`);
       summaryURL.search = new URLSearchParams(urlParams).toString();
       try {
         const response = await fetch(summaryURL);

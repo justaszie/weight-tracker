@@ -10,7 +10,7 @@ import { isDataSourceName, type DataSourceName } from "@/types/utils";
 
 const DEFAULT_GOAL = "maintain";
 const DEFAULT_DATA_SOURCE = "gfit";
-const SERVER_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function App() {
   const goalStored: Goal | null = localStorage.getItem("goalSelected") as Goal;
@@ -30,7 +30,7 @@ function App() {
 
   async function triggerDataSync(data_source?: DataSourceName) {
     try {
-      const response = await fetch(`${SERVER_BASE_URL}/api/sync-data`, {
+      const response = await fetch(`${API_BASE_URL}/api/sync-data`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -43,7 +43,7 @@ function App() {
         const body = await response.json();
         // If auth is needed, launch google auth flow
         if (response.status === 401) {
-          window.location.replace(`${SERVER_BASE_URL}${body.auth_url}`);
+          window.location.replace(`${API_BASE_URL}${body.auth_url}`);
           return;
         }
         const errorMessage =

@@ -7,7 +7,7 @@ import type {
   WeeklyDataEntry,
 } from "@/types/weekly-table";
 
-const SERVER_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function WeeklyDataTable(props: WeeklyDataTableProps) {
   const [weeklyData, setWeeklyData] = useState([]);
@@ -79,7 +79,7 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
       if (dateTo) {
         urlParams["date_to"] = dateTo;
       }
-      const weeklyDataURL = new URL(`${SERVER_BASE_URL}/api/weekly-aggregates`);
+      const weeklyDataURL = new URL(`${API_BASE_URL}/api/weekly-aggregates`);
       weeklyDataURL.search = new URLSearchParams(urlParams).toString();
       try {
         const response = await fetch(weeklyDataURL);

@@ -14,7 +14,8 @@ import { ReactComponent as GoogleIcon } from "@/assets/GoogleIcon.svg";
 import { ReactComponent as MFPIcon } from "@/assets/MFPIcon.svg";
 
 const DEFAULT_WEEKS_LIMIT = 4;
-const SERVER_BASE_URL = "http://localhost:8000"
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 export default function Main(props: MainProps) {
   const [latestEntry, setLatestEntry] = useState<WeightEntry | null>(null);
@@ -35,7 +36,7 @@ export default function Main(props: MainProps) {
   useEffect(() => {
     const fetchLatestEntry = async () => {
       try {
-        const response = await fetch(`${SERVER_BASE_URL}/api/latest-entry`);
+        const response = await fetch(`${API_BASE_URL}/api/latest-entry`);
         if (!response.ok) {
           const body = await response.json();
           const errorMessage =
