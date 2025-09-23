@@ -8,4 +8,4 @@ jobs:
 
     steps:
     - name: Announce Start
-    run: echo "Starting CI Flow..."
+      run: echo "Starting CI Flow..."
