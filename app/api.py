@@ -314,3 +314,8 @@ if you're logged in and try again."
             detail="We're having trouble syncing your data. \
 We're working on it",
         ) from e
+
+
+@router.get("/healthz")
+def health_check() -> dict[str, str]:
+    return {"status": "ok"}

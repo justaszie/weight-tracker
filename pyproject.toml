@@ -26,14 +26,13 @@ packages = ["app"]
 namespace_packages = true
 explicit_package_bases = true
 exclude = [
-    "app/throwaway/.*\\.py$",
-    "app/data/.*\\.py$",
-    "app/static/.*\\.py$",
-    "app/templates/.*\\.py$",
-    "app/_pycache__/.*\\.py$",
+    "app/throwaway/",
+    "app/auth/",
+    "app/data/",
+    "app/_pycache__/",
     "venv/",
     ".venv/",
-    "app/app.py",
+    "tests/",
 ]
 
 [tool.poetry.group.dev.dependencies]
