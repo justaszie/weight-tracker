@@ -3,9 +3,20 @@ name: CI Flow
 on: push
 
 jobs:
-  sample-job:
+  code-quality-check:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Set up environment
+      run: |
+        pip install poetry
+        poetry install
+        poetry shell
     - name: Announce Start
-      run: echo "Starting CI Flow..."
+      run: echo "Starting CI Flow"
+    - name: Run mypy strict
+      run: mypy --strict --config-file=pyproject.toml
+    - name: Run linter
+      run: ruff check --config-file=pyproject.toml
+    - name: Run formatter
+      run: ruff format --config-file=pyproject.toml
