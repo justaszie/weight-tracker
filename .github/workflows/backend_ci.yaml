@@ -20,7 +20,7 @@ jobs:
     - name: Announce Start
       run: echo "Starting CI Flow"
     - name: Run mypy strict
-      run: poetry run mypy app/**/*.py --strict
+      run: poetry run mypy app/ --strict
     - name: Run linter
       run: poetry run ruff check
     - name: Run formatter
