@@ -7,9 +7,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v4
     - name: Set up Python 3.12
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v4
       with:
         python-version: "3.12"
     - name: Set up environment
@@ -17,12 +17,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install poetry
         poetry install
-        poetry env activate
     - name: Announce Start
       run: echo "Starting CI Flow"
     - name: Run mypy strict
-      run: mypy --strict --config-file=pyproject.toml
+      run: poetry run mypy app/**/*.py --strict
     - name: Run linter
-      run: ruff check --config-file=pyproject.toml
+      run: poetry run ruff check
     - name: Run formatter
-      run: ruff format --config-file=pyproject.toml
+      run: poetry run ruff format --check
