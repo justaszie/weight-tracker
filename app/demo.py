@@ -17,8 +17,8 @@ class DemoStorage:
     DAILY_ENTRIES_MAIN_FILE_PATH: Path = BASE_DIR / DATA_DIR / MAIN_FILE_NAME
 
     def __init__(self) -> None:
-        print(f"DemoStorage initialized with {len(self._data)} entries")
         self._data: list[WeightEntry] = DemoStorage._load_weights_from_file()
+        print(f"DemoStorage initialized with {len(self._data)} entries")
 
     def get_weight_entries(self) -> list[WeightEntry]:
         return self._data
