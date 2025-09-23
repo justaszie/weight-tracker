@@ -20,4 +20,6 @@ jobs:
       - name: Announce Start
         run: echo "Starting Testing Flow"
       - name: Unit testing
-        run: pytest tests/backend/unit
+        run: poetry run pytest tests/backend/unit
+      - name: API Integration Testing
+        run: poetry run pytest tests/backend/integration
