@@ -111,12 +111,12 @@ def test_store_raw_data(mocker, client, sample_raw_data, tmp_path):
     mocker.patch("app.mfp.RAW_DATA_FILE_PATH", test_file)
 
     expected_stored_format = json.dumps(
-        [
-            {"2025-01-02": 72.562},
-            {"2025-02-15": 70.2},
-            {"2025-05-28": 80.1111},
-            {"2025-09-05": 75.4},
-        ]
+        {
+            "2025-01-02": 72.562,
+            "2025-02-15": 70.2,
+            "2025-05-28": 80.1111,
+            "2025-09-05": 75.4,
+        }
     )
 
     client.store_raw_data(sample_raw_data)
@@ -133,4 +133,4 @@ def test_store_raw_data_empty_dataset(mocker, client, tmp_path):
     client.store_raw_data(empty_dataset)
 
     assert test_file.exists()
-    assert test_file.read_text() == "[]"
+    assert test_file.read_text() == "{}"

@@ -45,7 +45,7 @@ class MyFitnessPalClient:
     def store_raw_data(self, raw_dataset: dict[dt.date, float]) -> None:
         RAW_DATA_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
         json_data = json.dumps(
-            [{entry[0].isoformat(): entry[1]} for entry in raw_dataset.items()]
+            {date.isoformat(): weight for date, weight in raw_dataset.items()}
         )
         RAW_DATA_FILE_PATH.write_text(json_data)
 
