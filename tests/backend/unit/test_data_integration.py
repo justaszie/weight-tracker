@@ -144,33 +144,10 @@ def test_refresh_with_store_raw_copy_on(mocker, service):
     mock_store_raw_copy_fn = mocker.patch(
         "app.data_integration.DataIntegrationService.store_raw_data"
     )
-    mock_store_csv_copy_fn = mocker.patch.object(service.storage, "export_to_csv")
 
-    service.refresh_weight_entries(store_csv_copy=False, store_raw_copy=True)
+    service.refresh_weight_entries(store_raw_copy=True)
 
     mock_store_raw_copy_fn.assert_called_once()
-    assert not mock_store_csv_copy_fn.called
-
-
-def test_refresh_with_store_csv_on(mocker, service):
-    mocker.patch("app.data_integration.DataIntegrationService.get_raw_data")
-    mocker.patch("app.data_integration.DataIntegrationService.convert_to_daily_entries")
-    mocker.patch(
-        "app.data_integration.DataIntegrationService.get_existing_weight_entries"
-    )
-    mocker.patch(
-        "app.data_integration.DataIntegrationService.filter_new_weight_entries"
-    )
-    mocker.patch("app.data_integration.DataIntegrationService.store_new_weight_entries")
-    mock_store_raw_copy_fn = mocker.patch(
-        "app.data_integration.DataIntegrationService.store_raw_data"
-    )
-    mock_store_csv_copy_fn = mocker.patch.object(service.storage, "export_to_csv")
-
-    service.refresh_weight_entries(store_csv_copy=True, store_raw_copy=False)
-
-    mock_store_csv_copy_fn.assert_called_once()
-    assert not mock_store_raw_copy_fn.called
 
 
 def test_get_raw_data(mocker, service, sample_raw_data):

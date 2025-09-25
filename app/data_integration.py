@@ -35,9 +35,7 @@ class DataIntegrationService:
         self.storage = data_storage
         self.source = data_source
 
-    def refresh_weight_entries(
-        self, store_raw_copy: bool = False, store_csv_copy: bool = False
-    ) -> list[WeightEntry]:
+    def refresh_weight_entries(self, store_raw_copy: bool = False) -> list[WeightEntry]:
         """
         Load data from source and insert only new weight entries in the storage
         Return value: list of inserted new weight entries
@@ -51,9 +49,6 @@ class DataIntegrationService:
         new_entries: list[WeightEntry] = self.filter_new_weight_entries(daily_entries)
 
         self.store_new_weight_entries(new_entries)
-
-        if store_csv_copy:
-            self.storage.export_to_csv()
 
         return new_entries
 

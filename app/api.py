@@ -277,9 +277,7 @@ def sync_data(
     data_integration = DataIntegrationService(data_storage, data_source_client)
 
     try:
-        new_entries = data_integration.refresh_weight_entries(
-            store_raw_copy=True, store_csv_copy=True
-        )
+        new_entries = data_integration.refresh_weight_entries(store_raw_copy=True)
         if new_entries:
             return DataSyncSuccessResponse(
                 status="sync_success",
