@@ -11,31 +11,38 @@ from .demo import DemoStorage
 from .file_storage import FileStorage
 from .google_fit import router as auth_router
 
-app = FastAPI(
-    title="Weight Tracker API",
-    description="""API for fetching weight from
-various sources and generating analytics data.""",
-)
 
-load_dotenv()
-if os.environ.get("DEMO_MODE", "false") == "true":
-    app.state.data_storage = DemoStorage()
-else:
-    app.state.data_storage = FileStorage()
+def create_app() -> FastAPI:
+    app = FastAPI(
+        title="Weight Tracker API",
+        description="""API for fetching weight from
+    various sources and generating analytics data.""",
+    )
 
-app.add_middleware(
-    SessionMiddleware,
-    secret_key=secrets.token_hex(32),
-    max_age=60 * 60,
-    https_only=False,  # In Dev, we need insecure transport via http
-)
+    load_dotenv()
+    if os.environ.get("DEMO_MODE", "false") == "true":
+        app.state.data_storage = DemoStorage()
+    else:
+        app.state.data_storage = FileStorage()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_credentials=False,
-)
+    app.add_middleware(
+        SessionMiddleware,
+        secret_key=secrets.token_hex(32),
+        max_age=60 * 60,
+        https_only=False,  # In Dev, we need insecure transport via http
+    )
 
-app.include_router(api_router, prefix="/api", tags=["weights"])
-app.include_router(auth_router, prefix="/auth", tags=["auth"])
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_credentials=False,
+    )
+
+    app.include_router(api_router, prefix="/api", tags=["weights"])
+    app.include_router(auth_router, prefix="/auth", tags=["auth"])
+
+    return app
+
+
+app = create_app()
