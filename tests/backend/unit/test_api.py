@@ -17,6 +17,7 @@ from app.main import app
 from app.project_types import (
     WeightEntry,
     WeeklyAggregateEntry,
+    ProgressMetrics,
 )
 from app.utils import DEFAULT_GOAL
 
@@ -353,7 +354,7 @@ class TestAPIEndpoints:
             dt.date.fromisoformat(date_to) if date_to else None,
         )
 
-    def _test_weekly_aggregate_params_usage(
+    def _test_weekly_aggregates_params_usage(
         self, client, mocker, endpoint_name, sample_daily_entries, goal, weeks_limit
     ):
         fetch_daily_fn = mocker.patch("app.api.get_filtered_daily_entries")
@@ -404,7 +405,7 @@ class TestAPIEndpoints:
     def test_weekly_aggregates_weekly_params_usage(
         self, client, mocker, sample_daily_entries, goal, weeks_limit
     ):
-        self._test_weekly_aggregate_params_usage(
+        self._test_weekly_aggregates_params_usage(
             client, mocker, "weekly-aggregates", sample_daily_entries, goal, weeks_limit
         )
 
@@ -412,7 +413,7 @@ class TestAPIEndpoints:
     def test_summary_weekly_params_usage(
         self, client, mocker, sample_daily_entries, weeks_limit
     ):
-        self._test_weekly_aggregate_params_usage(
+        self._test_weekly_aggregates_params_usage(
             client, mocker, "summary", sample_daily_entries, None, weeks_limit
         )
 
@@ -515,6 +516,25 @@ class TestAPIEndpoints:
 
         assert response.status_code == 500
         assert "detail" in response.json()
+
+    def test_summary_return_value(self, client, mocker):
+        mocker.patch("app.api.get_filtered_daily_entries")
+        mocker.patch("app.api.get_filtered_weekly_entries")
+        get_summary_fn = mocker.patch("app.api.analytics.get_summary")
+
+        test_metrics_data = {
+            "total_change": -1.21,
+            "avg_change": -0.23,
+            "avg_change_prc": -0.1,
+            "avg_net_calories": -235,
+        }
+
+        get_summary_fn.return_value = ProgressMetrics.model_validate(test_metrics_data)
+
+        response = client.get("/api/summary")
+
+        assert response.status_code == 200
+        assert response.json() == {"metrics": test_metrics_data}
 
     def test_summary_invalid_dates(self, client):
         params = {
