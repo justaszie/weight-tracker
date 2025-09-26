@@ -85,8 +85,10 @@ python_files = ["test_*.py"]
 [tool.coverage.run]
 omit = [
   "tests/*",
-  "project_types.py",
-  "main.py",
+  "app/project_types.py",
+  "app/main.py",
+  "app/throwaway/*",
+  "app/demo.py"
 ]
 
 [build-system]
