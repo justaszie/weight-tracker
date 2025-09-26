@@ -13,3 +13,12 @@ repos:
   hooks:
     - id: ruff-check
     - id: ruff-format
+
+- repo: local
+  hooks:
+  - id: integration-tests
+    name: integration-tests
+    entry: poetry run pytest tests/backend/integration
+    language: system
+    pass_filenames: false
+    always_run: true
