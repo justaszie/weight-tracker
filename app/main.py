@@ -7,8 +7,8 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from .api import router as api_router
+from .db_storage import DatabaseStorage
 from .demo import DemoStorage
-from .file_storage import FileStorage
 from .google_fit import router as auth_router
 
 
@@ -23,13 +23,13 @@ def create_app() -> FastAPI:
     if os.environ.get("DEMO_MODE", "false") == "true":
         app.state.data_storage = DemoStorage()
     else:
-        app.state.data_storage = FileStorage()
+        app.state.data_storage = DatabaseStorage()
 
     app.add_middleware(
         SessionMiddleware,
         secret_key=secrets.token_hex(32),
         max_age=60 * 60,
-        https_only=False,  # In Dev, we need insecure transport via http
+        https_only=False,  # In Dev we need insecure transport via http
     )
 
     app.add_middleware(
