@@ -86,13 +86,17 @@ class DataIntegrationService:
     def filter_new_weight_entries(
         self, source_entries: Sequence[WeightEntry]
     ) -> list[WeightEntry]:
-        existing_dates = {entry.date for entry in self.get_existing_weight_entries()}
-        return [entry for entry in source_entries if entry.date not in existing_dates]
+        existing_dates = {
+            entry.entry_date for entry in self.get_existing_weight_entries()
+        }
+        return [
+            entry for entry in source_entries if entry.entry_date not in existing_dates
+        ]
 
     @raises_sync_error
     def store_new_weight_entries(self, new_entries: list[WeightEntry]) -> None:
         for entry in new_entries:
-            self.storage.create_weight_entry(entry.date, entry.weight)
+            self.storage.create_weight_entry(entry.entry_date, entry.weight)
 
         # Only need this step to persist the data if we're using file storage
         if isinstance(self.storage, FileStorage):

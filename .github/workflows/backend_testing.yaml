@@ -6,6 +6,9 @@ jobs:
   testing:
     runs-on: ubuntu-latest
 
+    env:
+      DEMO_MODE: "true" # In production DEMO_MODE is always turned on
+
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python 3.12

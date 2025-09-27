@@ -2,18 +2,12 @@ import datetime as dt
 import json
 import traceback
 from pathlib import Path
-from typing import TypedDict
 
 import pandas as pd
 from pydantic import TypeAdapter
 
 from . import utils
 from .project_types import WeightEntry
-
-
-class JSONPersistedWeightEntry(TypedDict):
-    date: str
-    weight: float | int
 
 
 class FileStorage:
@@ -32,36 +26,38 @@ class FileStorage:
     def get_weight_entries(self) -> list[WeightEntry]:
         return self._data
 
-    def get_weight_entry(self, date: dt.date) -> WeightEntry | None:
+    def get_weight_entry(self, entry_date: dt.date) -> WeightEntry | None:
         filtered: list[WeightEntry] = [
-            entry for entry in self._data if entry.date == date
+            entry for entry in self._data if entry.entry_date == entry_date
         ]
         return filtered[0] if filtered else None
 
-    def create_weight_entry(self, date: dt.date, weight: float | int) -> None:
+    def create_weight_entry(self, entry_date: dt.date, weight: float | int) -> None:
         existing: list[WeightEntry] = [
-            entry for entry in self._data if entry.date == date
+            entry for entry in self._data if entry.entry_date == entry_date
         ]
         if existing:
             raise ValueError(
-                f"Weight entry already exists for date {date.strftime('%Y-%m-%d')}. "
+                f"Weight entry already exists for date"
+                f" {entry_date.strftime('%Y-%m-%d')}."
                 f"Use update method to replace it."
             )
 
-        self._data.append(WeightEntry(date=date, weight=float(weight)))
+        # Use the new field name entry_date
+        self._data.append(WeightEntry(entry_date=entry_date, weight=float(weight)))
 
-    def delete_weight_entry(self, date: dt.date) -> None:
+    def delete_weight_entry(self, entry_date: dt.date) -> None:
         existing: list[WeightEntry] = [
-            entry for entry in self._data if entry.date == date
+            entry for entry in self._data if entry.entry_date == entry_date
         ]
         if not existing:
             raise ValueError("Weight entry doesn't exist for this date.")
 
-        self._data = [entry for entry in self._data if entry.date != date]
+        self._data = [entry for entry in self._data if entry.entry_date != entry_date]
 
-    def update_weight_entry(self, date: dt.date, weight: float | int) -> None:
+    def update_weight_entry(self, entry_date: dt.date, weight: float | int) -> None:
         existing: list[WeightEntry] = [
-            entry for entry in self._data if entry.date == date
+            entry for entry in self._data if entry.entry_date == entry_date
         ]
         if not existing:
             raise ValueError(
@@ -84,7 +80,7 @@ class FileStorage:
         try:
             entries = [entry.model_dump() for entry in self._data]
             pd.DataFrame(entries).set_index(  # pyright: ignore[reportUnknownMemberType]
-                "date"
+                "entry_date"
             ).to_csv(FileStorage.DAILY_ENTRIES_CSV_FILE_PATH)
         except Exception:
             traceback.print_exc()

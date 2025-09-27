@@ -1,5 +1,6 @@
 import os
 import secrets
+from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -7,9 +8,20 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from .api import router as api_router
+from .db_storage import DatabaseStorage
 from .demo import DemoStorage
-from .file_storage import FileStorage
 from .google_fit import router as auth_router
+
+
+# Instantiating storage as part of app startup
+@asynccontextmanager
+async def lifespan(app: FastAPI):  # type: ignore
+    load_dotenv()
+    if os.environ.get("DEMO_MODE", "false") == "true":
+        app.state.data_storage = DemoStorage()
+    else:
+        app.state.data_storage = DatabaseStorage()
+    yield
 
 
 def create_app() -> FastAPI:
@@ -17,19 +29,14 @@ def create_app() -> FastAPI:
         title="Weight Tracker API",
         description="""API for fetching weight from
     various sources and generating analytics data.""",
+        lifespan=lifespan,
     )
-
-    load_dotenv()
-    if os.environ.get("DEMO_MODE", "false") == "true":
-        app.state.data_storage = DemoStorage()
-    else:
-        app.state.data_storage = FileStorage()
 
     app.add_middleware(
         SessionMiddleware,
         secret_key=secrets.token_hex(32),
         max_age=60 * 60,
-        https_only=False,  # In Dev, we need insecure transport via http
+        https_only=False,  # In Dev we need insecure transport via http
     )
 
     app.add_middleware(

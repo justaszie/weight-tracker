@@ -17,6 +17,7 @@ from app.main import app
 from app.project_types import (
     WeightEntry,
     WeeklyAggregateEntry,
+    ProgressMetrics,
 )
 from app.utils import DEFAULT_GOAL
 
@@ -38,13 +39,18 @@ WEEKLY_PARAMS_TEST_CASES = [
 
 
 @pytest.fixture
+def disable_demo_mode(monkeypatch):
+    monkeypatch.setenv("DEMO_MODE", "false")
+
+
+@pytest.fixture
 def sample_daily_entries():
     data = [
-        {"date": dt.date(2024, 10, 2), "weight": 73.81},
-        {"date": dt.date(2025, 1, 12), "weight": 72},
-        {"date": dt.date(2025, 8, 28), "weight": 71.12},
-        {"date": dt.date(2025, 8, 30), "weight": 73.5},
-        {"date": dt.date(2025, 9, 2), "weight": 72},
+        {"entry_date": dt.date(2024, 10, 2), "weight": 73.81},
+        {"entry_date": dt.date(2025, 1, 12), "weight": 72},
+        {"entry_date": dt.date(2025, 8, 28), "weight": 71.12},
+        {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
+        {"entry_date": dt.date(2025, 9, 2), "weight": 72},
     ]
     return TypeAdapter(list[WeightEntry]).validate_python(data)
 
@@ -52,20 +58,20 @@ def sample_daily_entries():
 @pytest.fixture
 def sample_daily_entries_extended():
     data = [
-        {"date": dt.date(2025, 8, 18), "weight": 73.0},
-        {"date": dt.date(2025, 8, 19), "weight": 72.9},
-        {"date": dt.date(2025, 8, 20), "weight": 72.3},
-        {"date": dt.date(2025, 8, 21), "weight": 72.7},
-        {"date": dt.date(2025, 8, 22), "weight": 72.5},
-        {"date": dt.date(2025, 8, 25), "weight": 73.0},
-        {"date": dt.date(2025, 8, 26), "weight": 73.6},
-        {"date": dt.date(2025, 8, 27), "weight": 73.0},
-        {"date": dt.date(2025, 8, 28), "weight": 73.6},
-        {"date": dt.date(2025, 8, 29), "weight": 73.6},
-        {"date": dt.date(2025, 8, 30), "weight": 73.5},
-        {"date": dt.date(2025, 9, 1), "weight": 73},
-        {"date": dt.date(2025, 9, 2), "weight": 72},
-        {"date": dt.date(2025, 9, 3), "weight": 72.5},
+        {"entry_date": dt.date(2025, 8, 18), "weight": 73.0},
+        {"entry_date": dt.date(2025, 8, 19), "weight": 72.9},
+        {"entry_date": dt.date(2025, 8, 20), "weight": 72.3},
+        {"entry_date": dt.date(2025, 8, 21), "weight": 72.7},
+        {"entry_date": dt.date(2025, 8, 22), "weight": 72.5},
+        {"entry_date": dt.date(2025, 8, 25), "weight": 73.0},
+        {"entry_date": dt.date(2025, 8, 26), "weight": 73.6},
+        {"entry_date": dt.date(2025, 8, 27), "weight": 73.0},
+        {"entry_date": dt.date(2025, 8, 28), "weight": 73.6},
+        {"entry_date": dt.date(2025, 8, 29), "weight": 73.6},
+        {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
+        {"entry_date": dt.date(2025, 9, 1), "weight": 73},
+        {"entry_date": dt.date(2025, 9, 2), "weight": 72},
+        {"entry_date": dt.date(2025, 9, 3), "weight": 72.5},
     ]
     return TypeAdapter(list[WeightEntry]).validate_python(data)
 
@@ -109,36 +115,36 @@ class TestHelperFunctions:
                 dt.date(2025, 8, 28),
                 None,
                 [
-                    {"date": dt.date(2025, 8, 28), "weight": 71.12},
-                    {"date": dt.date(2025, 8, 30), "weight": 73.5},
-                    {"date": dt.date(2025, 9, 2), "weight": 72},
+                    {"entry_date": dt.date(2025, 8, 28), "weight": 71.12},
+                    {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
+                    {"entry_date": dt.date(2025, 9, 2), "weight": 72},
                 ],
             ),
             (
                 "",
                 dt.date(2025, 2, 1),
                 [
-                    {"date": dt.date(2024, 10, 2), "weight": 73.81},
-                    {"date": dt.date(2025, 1, 12), "weight": 72},
+                    {"entry_date": dt.date(2024, 10, 2), "weight": 73.81},
+                    {"entry_date": dt.date(2025, 1, 12), "weight": 72},
                 ],
             ),
             (
                 dt.date(2025, 5, 1),
                 dt.date(2025, 9, 1),
                 [
-                    {"date": dt.date(2025, 8, 28), "weight": 71.12},
-                    {"date": dt.date(2025, 8, 30), "weight": 73.5},
+                    {"entry_date": dt.date(2025, 8, 28), "weight": 71.12},
+                    {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
                 ],
             ),
             (
                 None,
                 None,
                 [
-                    {"date": dt.date(2024, 10, 2), "weight": 73.81},
-                    {"date": dt.date(2025, 1, 12), "weight": 72},
-                    {"date": dt.date(2025, 8, 28), "weight": 71.12},
-                    {"date": dt.date(2025, 8, 30), "weight": 73.5},
-                    {"date": dt.date(2025, 9, 2), "weight": 72},
+                    {"entry_date": dt.date(2024, 10, 2), "weight": 73.81},
+                    {"entry_date": dt.date(2025, 1, 12), "weight": 72},
+                    {"entry_date": dt.date(2025, 8, 28), "weight": 71.12},
+                    {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
+                    {"entry_date": dt.date(2025, 9, 2), "weight": 72},
                 ],
             ),
             (
@@ -150,7 +156,7 @@ class TestHelperFunctions:
                 dt.date(2024, 10, 2),
                 dt.date(2024, 10, 2),
                 [
-                    {"date": dt.date(2024, 10, 2), "weight": 73.81},
+                    {"entry_date": dt.date(2024, 10, 2), "weight": 73.81},
                 ],
             ),
         ],
@@ -283,7 +289,8 @@ class TestAPIEndpoints:
 
     @pytest.fixture
     def client(self):
-        return TestClient(app)
+        with TestClient(app) as client:
+            yield client
 
     @pytest.fixture
     def mock_storage(self, mocker):
@@ -308,8 +315,8 @@ class TestAPIEndpoints:
         "latest_entry, expected_return",
         [
             (
-                WeightEntry(date=dt.date(2025, 9, 1), weight=72.56),
-                {"date": "2025-09-01", "weight": 72.56},
+                WeightEntry(entry_date=dt.date(2025, 9, 1), weight=72.56),
+                {"entry_date": "2025-09-01", "weight": 72.56},
             ),
             (None, None),
         ],
@@ -353,7 +360,7 @@ class TestAPIEndpoints:
             dt.date.fromisoformat(date_to) if date_to else None,
         )
 
-    def _test_weekly_aggregate_params_usage(
+    def _test_weekly_aggregates_params_usage(
         self, client, mocker, endpoint_name, sample_daily_entries, goal, weeks_limit
     ):
         fetch_daily_fn = mocker.patch("app.api.get_filtered_daily_entries")
@@ -404,7 +411,7 @@ class TestAPIEndpoints:
     def test_weekly_aggregates_weekly_params_usage(
         self, client, mocker, sample_daily_entries, goal, weeks_limit
     ):
-        self._test_weekly_aggregate_params_usage(
+        self._test_weekly_aggregates_params_usage(
             client, mocker, "weekly-aggregates", sample_daily_entries, goal, weeks_limit
         )
 
@@ -412,7 +419,7 @@ class TestAPIEndpoints:
     def test_summary_weekly_params_usage(
         self, client, mocker, sample_daily_entries, weeks_limit
     ):
-        self._test_weekly_aggregate_params_usage(
+        self._test_weekly_aggregates_params_usage(
             client, mocker, "summary", sample_daily_entries, None, weeks_limit
         )
 
@@ -516,6 +523,25 @@ class TestAPIEndpoints:
         assert response.status_code == 500
         assert "detail" in response.json()
 
+    def test_summary_return_value(self, client, mocker):
+        mocker.patch("app.api.get_filtered_daily_entries")
+        mocker.patch("app.api.get_filtered_weekly_entries")
+        get_summary_fn = mocker.patch("app.api.analytics.get_summary")
+
+        test_metrics_data = {
+            "total_change": -1.21,
+            "avg_change": -0.23,
+            "avg_change_prc": -0.1,
+            "avg_net_calories": -235,
+        }
+
+        get_summary_fn.return_value = ProgressMetrics.model_validate(test_metrics_data)
+
+        response = client.get("/api/summary")
+
+        assert response.status_code == 200
+        assert response.json() == {"metrics": test_metrics_data}
+
     def test_summary_invalid_dates(self, client):
         params = {
             "date_from": "2025-10-02",
@@ -539,7 +565,12 @@ class TestAPIEndpoints:
 
     @pytest.mark.parametrize("data_source_client_name", ["gfit", "mfp"])
     def test_sync_data_data_source_creation(
-        self, client, data_source_client_name, mocker, mock_storage_refresh_needed
+        self,
+        client,
+        data_source_client_name,
+        mocker,
+        mock_storage_refresh_needed,
+        disable_demo_mode,
     ):
         mocker.patch(
             "app.api.GoogleFitAuth"

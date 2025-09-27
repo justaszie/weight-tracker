@@ -223,13 +223,13 @@ class GoogleFitClient:
         df: pd.DataFrame = pd.DataFrame.from_records(data)  # pyright: ignore
 
         # Transform timestamp in nanoseconds to the date when weight was captured
-        df["date"] = (
+        df["entry_date"] = (
             df["endTimeNanos"].apply(nanos_ts_to_datetime).dt.date  # pyright: ignore
         )
 
         # For multiple weight entries on the same day, keep just the last entry
         df = df.sort_values(by="endTimeNanos").drop_duplicates(  # pyright: ignore
-            subset="date", keep="last"
+            subset="entry_date", keep="last"
         )
 
         df["weight"] = df["value"].apply(extract_weight_value)  # pyright: ignore

@@ -23,36 +23,37 @@ class DemoStorage:
     def get_weight_entries(self) -> list[WeightEntry]:
         return self._data
 
-    def get_weight_entry(self, date: dt.date) -> WeightEntry | None:
+    def get_weight_entry(self, entry_date: dt.date) -> WeightEntry | None:
         filtered: list[WeightEntry] = [
-            entry for entry in self._data if entry.date == date
+            entry for entry in self._data if entry.entry_date == entry_date
         ]
         return filtered[0] if filtered else None
 
-    def create_weight_entry(self, date: dt.date, weight: float | int) -> None:
+    def create_weight_entry(self, entry_date: dt.date, weight: float | int) -> None:
         existing: list[WeightEntry] = [
-            entry for entry in self._data if entry.date == date
+            entry for entry in self._data if entry.entry_date == entry_date
         ]
         if existing:
             raise ValueError(
-                f"Weight entry already exists for date {date.strftime('%Y-%m-%d')}. "
+                f"Weight entry already exists for date "
+                f"{entry_date.strftime('%Y-%m-%d')}. "
                 f"Use update method to replace it."
             )
 
-        self._data.append(WeightEntry(date=date, weight=float(weight)))
+        self._data.append(WeightEntry(entry_date=entry_date, weight=float(weight)))
 
-    def delete_weight_entry(self, date: dt.date) -> None:
+    def delete_weight_entry(self, entry_date: dt.date) -> None:
         existing: list[WeightEntry] = [
-            entry for entry in self._data if entry.date == date
+            entry for entry in self._data if entry.entry_date == entry_date
         ]
         if not existing:
             raise ValueError("Weight entry doesn't exist for this date.")
 
-        self._data = [entry for entry in self._data if entry.date != date]
+        self._data = [entry for entry in self._data if entry.entry_date != entry_date]
 
-    def update_weight_entry(self, date: dt.date, weight: float | int) -> None:
+    def update_weight_entry(self, entry_date: dt.date, weight: float | int) -> None:
         existing: list[WeightEntry] = [
-            entry for entry in self._data if entry.date == date
+            entry for entry in self._data if entry.entry_date == entry_date
         ]
         if not existing:
             raise ValueError(
@@ -114,30 +115,30 @@ class DemoDataSourceClient:
 
     def _dummy_daily_entries(self) -> list[dict[str, str | float]]:
         data: list[dict[str, str | float]] = [
-            {"date": "2025-04-11", "weight": 73.0},
-            {"date": "2025-04-12", "weight": 72.9},
-            {"date": "2025-04-13", "weight": 72.8},
-            {"date": "2025-04-14", "weight": 72.7},
-            {"date": "2025-04-15", "weight": 72.6},
-            {"date": "2025-04-16", "weight": 72.5},
-            {"date": "2025-04-17", "weight": 72.4},
-            {"date": "2025-04-18", "weight": 72.3},
-            {"date": "2025-04-19", "weight": 72.2},
-            {"date": "2025-04-20", "weight": 72.1},
-            {"date": "2025-04-21", "weight": 72.0},
-            {"date": "2025-04-22", "weight": 71.9},
-            {"date": "2025-04-23", "weight": 71.8},
-            {"date": "2025-04-24", "weight": 71.7},
-            {"date": "2025-04-25", "weight": 71.6},
-            {"date": "2025-04-26", "weight": 71.5},
-            {"date": "2025-04-27", "weight": 71.4},
-            {"date": "2025-04-28", "weight": 71.3},
-            {"date": "2025-04-29", "weight": 71.2},
-            {"date": "2025-04-30", "weight": 71.1},
-            {"date": "2025-05-01", "weight": 71.0},
-            {"date": "2025-05-02", "weight": 70.9},
-            {"date": "2025-05-03", "weight": 70.8},
-            {"date": "2025-05-04", "weight": 70.7},
-            {"date": "2025-05-05", "weight": 70.6},
+            {"entry_date": "2025-04-11", "weight": 73.0},
+            {"entry_date": "2025-04-12", "weight": 72.9},
+            {"entry_date": "2025-04-13", "weight": 72.8},
+            {"entry_date": "2025-04-14", "weight": 72.7},
+            {"entry_date": "2025-04-15", "weight": 72.6},
+            {"entry_date": "2025-04-16", "weight": 72.5},
+            {"entry_date": "2025-04-17", "weight": 72.4},
+            {"entry_date": "2025-04-18", "weight": 72.3},
+            {"entry_date": "2025-04-19", "weight": 72.2},
+            {"entry_date": "2025-04-20", "weight": 72.1},
+            {"entry_date": "2025-04-21", "weight": 72.0},
+            {"entry_date": "2025-04-22", "weight": 71.9},
+            {"entry_date": "2025-04-23", "weight": 71.8},
+            {"entry_date": "2025-04-24", "weight": 71.7},
+            {"entry_date": "2025-04-25", "weight": 71.6},
+            {"entry_date": "2025-04-26", "weight": 71.5},
+            {"entry_date": "2025-04-27", "weight": 71.4},
+            {"entry_date": "2025-04-28", "weight": 71.3},
+            {"entry_date": "2025-04-29", "weight": 71.2},
+            {"entry_date": "2025-04-30", "weight": 71.1},
+            {"entry_date": "2025-05-01", "weight": 71.0},
+            {"entry_date": "2025-05-02", "weight": 70.9},
+            {"entry_date": "2025-05-03", "weight": 70.8},
+            {"entry_date": "2025-05-04", "weight": 70.7},
+            {"entry_date": "2025-05-05", "weight": 70.6},
         ]
         return data

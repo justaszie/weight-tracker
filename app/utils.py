@@ -16,9 +16,13 @@ def filter_daily_entries(
     date_to: dt.date | None = None,
 ) -> list[WeightEntry]:
     if date_from:
-        daily_entries = [entry for entry in daily_entries if entry.date >= date_from]
+        daily_entries = [
+            entry for entry in daily_entries if entry.entry_date >= date_from
+        ]
     if date_to:
-        daily_entries = [entry for entry in daily_entries if entry.date <= date_to]
+        daily_entries = [
+            entry for entry in daily_entries if entry.entry_date <= date_to
+        ]
     return list(daily_entries)
 
 
@@ -29,7 +33,7 @@ def get_latest_entry_date(
         return None
 
     try:
-        return sorted(daily_entries, key=lambda x: x.date)[-1].date
+        return sorted(daily_entries, key=lambda x: x.entry_date)[-1].entry_date
     except Exception:
         traceback.print_exc()
         return None
@@ -42,7 +46,7 @@ def get_latest_daily_entry(
         return None
 
     try:
-        return sorted(daily_entries, key=lambda x: x.date)[-1]
+        return sorted(daily_entries, key=lambda x: x.entry_date)[-1]
     except Exception:
         traceback.print_exc()
         return None

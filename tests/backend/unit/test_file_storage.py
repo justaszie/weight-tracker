@@ -47,10 +47,10 @@ class TestWeightStorageUsingFile:
         # 2. dump test data to the temp test file
         test_file_data = json.dumps(
             [
-                {"date": "2025-08-28", "weight": 73.6},
-                {"date": "2025-08-29", "weight": 73.6},
-                {"date": "2025-08-30", "weight": 73.5},
-                {"date": "2025-09-01", "weight": 73.0},
+                {"entry_date": "2025-08-28", "weight": 73.6},
+                {"entry_date": "2025-08-29", "weight": 73.6},
+                {"entry_date": "2025-08-30", "weight": 73.5},
+                {"entry_date": "2025-09-01", "weight": 73.0},
             ]
         )
         tmp_path.write_text(test_file_data)
@@ -59,10 +59,10 @@ class TestWeightStorageUsingFile:
 
         expected_entries = TypeAdapter(list[WeightEntry]).validate_python(
             [
-                {"date": dt.date(2025, 8, 28), "weight": 73.6},
-                {"date": dt.date(2025, 8, 29), "weight": 73.6},
-                {"date": dt.date(2025, 8, 30), "weight": 73.5},
-                {"date": dt.date(2025, 9, 1), "weight": 73.0},
+                {"entry_date": dt.date(2025, 8, 28), "weight": 73.6},
+                {"entry_date": dt.date(2025, 8, 29), "weight": 73.6},
+                {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
+                {"entry_date": dt.date(2025, 9, 1), "weight": 73.0},
             ]
         )
         assert actual_entries == expected_entries
@@ -72,10 +72,10 @@ class TestWeightStorageProtocol:
     @pytest.fixture
     def sample_weight_entries(self):
         data = [
-            {"date": dt.date(2025, 8, 28), "weight": 73.6},
-            {"date": dt.date(2025, 8, 29), "weight": 73.6},
-            {"date": dt.date(2025, 8, 30), "weight": 73.5},
-            {"date": dt.date(2025, 9, 1), "weight": 73.0},
+            {"entry_date": dt.date(2025, 8, 28), "weight": 73.6},
+            {"entry_date": dt.date(2025, 8, 29), "weight": 73.6},
+            {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
+            {"entry_date": dt.date(2025, 9, 1), "weight": 73.0},
         ]
         return TypeAdapter(list[WeightEntry]).validate_python(data)
 
@@ -97,12 +97,14 @@ class TestWeightStorageProtocol:
         assert sample_storage.get_weight_entries() == sample_weight_entries
 
     def test_get_existing_weight_entry(self, sample_storage):
-        expected = {"date": dt.date(2025, 8, 28), "weight": 73.6}
+        expected = {"entry_date": dt.date(2025, 8, 28), "weight": 73.6}
         expected = WeightEntry.model_validate(expected)
-        assert sample_storage.get_weight_entry(date=dt.date(2025, 8, 28)) == expected
+        assert (
+            sample_storage.get_weight_entry(entry_date=dt.date(2025, 8, 28)) == expected
+        )
 
     def test_get_nonexistent_weight_entry(self, sample_storage):
-        assert sample_storage.get_weight_entry(date=dt.date(2027, 1, 28)) == None
+        assert sample_storage.get_weight_entry(entry_date=dt.date(2027, 1, 28)) == None
 
     @pytest.mark.parametrize(
         "date, weight",
@@ -118,12 +120,13 @@ class TestWeightStorageProtocol:
 
         expected_entry_after_creation = WeightEntry.model_validate(
             {
-                "date": date,
+                "entry_date": date,
                 "weight": weight,
             }
         )
         assert (
-            sample_storage.get_weight_entry(date=date) == expected_entry_after_creation
+            sample_storage.get_weight_entry(entry_date=date)
+            == expected_entry_after_creation
         )
 
     def test_create_duplicate_weight_entry(self, sample_storage):
@@ -131,7 +134,7 @@ class TestWeightStorageProtocol:
         assert len(existing_entries) > 0
 
         sample_entry = existing_entries[0]
-        date = sample_entry.date
+        date = sample_entry.entry_date
         weight = 99.9
 
         count_before_create = len(sample_storage.get_weight_entries())
@@ -149,7 +152,7 @@ class TestWeightStorageProtocol:
     )
     def test_update_valid_weight_entry(self, sample_storage, date, weight):
         sample_storage.update_weight_entry(date, weight)
-        updated_entry = sample_storage.get_weight_entry(date=date)
+        updated_entry = sample_storage.get_weight_entry(entry_date=date)
 
         new_weight = updated_entry.weight
         assert new_weight == weight
@@ -167,14 +170,14 @@ class TestWeightStorageProtocol:
         assert count_before > 0
 
         sample_entry = entries[0]
-        date = sample_entry.date
+        date = sample_entry.entry_date
 
-        sample_storage.delete_weight_entry(date=date)
+        sample_storage.delete_weight_entry(entry_date=date)
         assert len(sample_storage.get_weight_entries()) == count_before - 1
         assert sample_storage.get_weight_entry(date) == None
 
     def test_delete_all_weight_entries(self, sample_storage):
-        dates = [entry.date for entry in sample_storage.get_weight_entries()]
+        dates = [entry.entry_date for entry in sample_storage.get_weight_entries()]
         assert len(sample_storage.get_weight_entries()) == len(dates)
 
         for date in dates:
@@ -214,14 +217,14 @@ class TestWeightStorageProtocol:
     def test_data_refresh_needed(self, empty_storage, dates_in_db, expected_output):
         weight = 80.2
         for date in dates_in_db:
-            empty_storage.create_weight_entry(date=date, weight=weight)
+            empty_storage.create_weight_entry(entry_date=date, weight=weight)
         assert len(empty_storage.get_weight_entries()) == len(dates_in_db)
 
         assert empty_storage.data_refresh_needed() == expected_output
 
     # Empty Storage Cases
     def test_get_weight_entry_empty_storage(self, empty_storage):
-        assert empty_storage.get_weight_entry(date=dt.date(2027, 1, 28)) == None
+        assert empty_storage.get_weight_entry(entry_date=dt.date(2027, 1, 28)) == None
 
     def test_get_weight_entries_empty_storage(self, empty_storage):
         assert empty_storage.get_weight_entries() == []
@@ -233,11 +236,11 @@ class TestWeightStorageProtocol:
         assert len(empty_storage.get_weight_entries()) == 1
         expected_entry = WeightEntry.model_validate(
             {
-                "date": date,
+                "entry_date": date,
                 "weight": weight,
             }
         )
-        assert empty_storage.get_weight_entry(date=date) == expected_entry
+        assert empty_storage.get_weight_entry(entry_date=date) == expected_entry
 
     def test_update_weight_entry_empty_storage(self, empty_storage):
         date = dt.date(1990, 1, 1)
