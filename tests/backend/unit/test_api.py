@@ -39,6 +39,11 @@ WEEKLY_PARAMS_TEST_CASES = [
 
 
 @pytest.fixture
+def disable_demo_mode(monkeypatch):
+    monkeypatch.setenv("DEMO_MODE", "false")
+
+
+@pytest.fixture
 def sample_daily_entries():
     data = [
         {"entry_date": dt.date(2024, 10, 2), "weight": 73.81},
@@ -560,7 +565,12 @@ class TestAPIEndpoints:
 
     @pytest.mark.parametrize("data_source_client_name", ["gfit", "mfp"])
     def test_sync_data_data_source_creation(
-        self, client, data_source_client_name, mocker, mock_storage_refresh_needed
+        self,
+        client,
+        data_source_client_name,
+        mocker,
+        mock_storage_refresh_needed,
+        disable_demo_mode,
     ):
         mocker.patch(
             "app.api.GoogleFitAuth"
