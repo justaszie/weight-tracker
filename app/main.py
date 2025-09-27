@@ -15,7 +15,7 @@ from .google_fit import router as auth_router
 
 # Instantiating storage as part of app startup
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI):  # type: ignore
     load_dotenv()
     if os.environ.get("DEMO_MODE", "false") == "true":
         app.state.data_storage = DemoStorage()
