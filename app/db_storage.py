@@ -8,18 +8,19 @@ from sqlmodel import (
     select,
 )
 
+from . import utils
 from .project_types import WeightEntry
 
 
 class DBWeightEntry(SQLModel, table=True):
     __tablename__ = "weight_entries"
 
-    date: dt.date = Field(primary_key=True, default=None)
+    entry_date: dt.date = Field(primary_key=True, default=None)
     weight: float = Field(nullable=False, default=None)
 
 
 class DatabaseStorage:
-    def __init__(self):
+    def __init__(self) -> None:
         db_name = "weight_tracker"
         connection_string = f"postgresql+psycopg2://justas@localhost:5432/{db_name}"
         self._engine = create_engine(connection_string)
@@ -27,10 +28,10 @@ class DatabaseStorage:
         # Set up the database when initializing storage
         self._setup_database()
 
-    def _setup_database(self):
+    def _setup_database(self) -> None:
         SQLModel.metadata.create_all(self._engine)
 
-    def get_weight_entries(self):
+    def get_weight_entries(self) -> list[WeightEntry]:
         with Session(self._engine) as session:
             statement = select(DBWeightEntry)
             results = session.exec(statement)
@@ -39,16 +40,28 @@ class DatabaseStorage:
                 for row in results.all()
             ]
 
+    def create_weight_entry(self, entry_date: dt.date, weight: float | int) -> None:
+        with Session(self._engine) as session:
+            new_entry = DBWeightEntry(entry_date=entry_date, weight=weight)
+            session.add(new_entry)
+            session.commit()
+            return
+
+    def data_refresh_needed(self) -> bool:
+        existing_data = self.get_weight_entries()
+
+        latest_entry_date: dt.date | None = utils.get_latest_entry_date(existing_data)
+        return latest_entry_date < dt.date.today() if latest_entry_date else True
+
     """
-    def get_weight_entries(self) -> list[WeightEntry]: ...
 
-    def get_weight_entry(self, date: dt.date) -> WeightEntry | None: ...
+    def get_weight_entry(self, entry_date: dt.date) -> WeightEntry | None: ...
 
-    def create_weight_entry(self, date: dt.date, weight: float | int) -> None: ...
+    def create_weight_entry(self, entry_date: dt.date, weight: float | int) -> None: ...
 
-    def delete_weight_entry(self, date: dt.date) -> None: ...
+    def delete_weight_entry(self, entry_date: dt.date) -> None: ...
 
-    def update_weight_entry(self, date: dt.date, weight: float | int) -> None: ...
+    def update_weight_entry(self, entry_date: dt.date, weight: float | int) -> None: ...
 
     def export_to_csv(self) -> None: ...
 

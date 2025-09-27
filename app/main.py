@@ -1,5 +1,6 @@
 import os
 import secrets
+from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -12,18 +13,24 @@ from .demo import DemoStorage
 from .google_fit import router as auth_router
 
 
-def create_app() -> FastAPI:
-    app = FastAPI(
-        title="Weight Tracker API",
-        description="""API for fetching weight from
-    various sources and generating analytics data.""",
-    )
-
+# Instantiating storage as part of app startup
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     load_dotenv()
     if os.environ.get("DEMO_MODE", "false") == "true":
         app.state.data_storage = DemoStorage()
     else:
         app.state.data_storage = DatabaseStorage()
+    yield
+
+
+def create_app() -> FastAPI:
+    app = FastAPI(
+        title="Weight Tracker API",
+        description="""API for fetching weight from
+    various sources and generating analytics data.""",
+        lifespan=lifespan,
+    )
 
     app.add_middleware(
         SessionMiddleware,
