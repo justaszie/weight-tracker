@@ -20,20 +20,20 @@ from app.project_types import (
 @pytest.fixture
 def sample_daily_entries() -> Any:
     data = [
-        {"date": dt.date(2025, 8, 18), "weight": 73.0},
-        {"date": dt.date(2025, 8, 19), "weight": 72.9},
-        {"date": dt.date(2025, 8, 20), "weight": 72.3},
-        {"date": dt.date(2025, 8, 21), "weight": 72.7},
-        {"date": dt.date(2025, 8, 22), "weight": 72.5},
-        {"date": dt.date(2025, 8, 25), "weight": 73.0},
-        {"date": dt.date(2025, 8, 26), "weight": 73.6},
-        {"date": dt.date(2025, 8, 27), "weight": 73.0},
-        {"date": dt.date(2025, 8, 28), "weight": 73.6},
-        {"date": dt.date(2025, 8, 29), "weight": 73.6},
-        {"date": dt.date(2025, 8, 30), "weight": 73.5},
-        {"date": dt.date(2025, 9, 1), "weight": 73},
-        {"date": dt.date(2025, 9, 2), "weight": 72},
-        {"date": dt.date(2025, 9, 3), "weight": 72.5},
+        {"entry_date": dt.date(2025, 8, 18), "weight": 73.0},
+        {"entry_date": dt.date(2025, 8, 19), "weight": 72.9},
+        {"entry_date": dt.date(2025, 8, 20), "weight": 72.3},
+        {"entry_date": dt.date(2025, 8, 21), "weight": 72.7},
+        {"entry_date": dt.date(2025, 8, 22), "weight": 72.5},
+        {"entry_date": dt.date(2025, 8, 25), "weight": 73.0},
+        {"entry_date": dt.date(2025, 8, 26), "weight": 73.6},
+        {"entry_date": dt.date(2025, 8, 27), "weight": 73.0},
+        {"entry_date": dt.date(2025, 8, 28), "weight": 73.6},
+        {"entry_date": dt.date(2025, 8, 29), "weight": 73.6},
+        {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
+        {"entry_date": dt.date(2025, 9, 1), "weight": 73},
+        {"entry_date": dt.date(2025, 9, 2), "weight": 72},
+        {"entry_date": dt.date(2025, 9, 3), "weight": 72.5},
     ]
     return TypeAdapter(list[WeightEntry]).validate_python(data)
 
@@ -80,13 +80,13 @@ def test_weekly_aggregates_empty_dataset():
 def test_weekly_aggregates_single_week():
     daily_entries = TypeAdapter(list[WeightEntry]).validate_python(
         [
-            {"date": dt.date(2025, 8, 25), "weight": 73.0},
-            {"date": dt.date(2025, 8, 26), "weight": 73.6},
-            {"date": dt.date(2025, 8, 27), "weight": 73.0},
-            {"date": dt.date(2025, 8, 28), "weight": 73.6},
-            {"date": dt.date(2025, 8, 29), "weight": 73.6},
-            {"date": dt.date(2025, 8, 30), "weight": 73.5},
-            {"date": dt.date(2025, 8, 31), "weight": 72.5},
+            {"entry_date": dt.date(2025, 8, 25), "weight": 73.0},
+            {"entry_date": dt.date(2025, 8, 26), "weight": 73.6},
+            {"entry_date": dt.date(2025, 8, 27), "weight": 73.0},
+            {"entry_date": dt.date(2025, 8, 28), "weight": 73.6},
+            {"entry_date": dt.date(2025, 8, 29), "weight": 73.6},
+            {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
+            {"entry_date": dt.date(2025, 8, 31), "weight": 72.5},
         ]
     )
     expected = TypeAdapter(list[WeeklyAggregateEntry]).validate_python(
@@ -107,7 +107,7 @@ def test_weekly_aggregates_single_week():
 
 def test_weekly_aggregates_single_day():
     daily_entries = TypeAdapter(list[WeightEntry]).validate_python(
-        [{"date": dt.date(2025, 8, 27), "weight": 72.18}]
+        [{"entry_date": dt.date(2025, 8, 27), "weight": 72.18}]
     )
     expected = TypeAdapter(list[WeeklyAggregateEntry]).validate_python(
         [

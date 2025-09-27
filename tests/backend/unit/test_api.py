@@ -41,11 +41,11 @@ WEEKLY_PARAMS_TEST_CASES = [
 @pytest.fixture
 def sample_daily_entries():
     data = [
-        {"date": dt.date(2024, 10, 2), "weight": 73.81},
-        {"date": dt.date(2025, 1, 12), "weight": 72},
-        {"date": dt.date(2025, 8, 28), "weight": 71.12},
-        {"date": dt.date(2025, 8, 30), "weight": 73.5},
-        {"date": dt.date(2025, 9, 2), "weight": 72},
+        {"entry_date": dt.date(2024, 10, 2), "weight": 73.81},
+        {"entry_date": dt.date(2025, 1, 12), "weight": 72},
+        {"entry_date": dt.date(2025, 8, 28), "weight": 71.12},
+        {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
+        {"entry_date": dt.date(2025, 9, 2), "weight": 72},
     ]
     return TypeAdapter(list[WeightEntry]).validate_python(data)
 
@@ -53,20 +53,20 @@ def sample_daily_entries():
 @pytest.fixture
 def sample_daily_entries_extended():
     data = [
-        {"date": dt.date(2025, 8, 18), "weight": 73.0},
-        {"date": dt.date(2025, 8, 19), "weight": 72.9},
-        {"date": dt.date(2025, 8, 20), "weight": 72.3},
-        {"date": dt.date(2025, 8, 21), "weight": 72.7},
-        {"date": dt.date(2025, 8, 22), "weight": 72.5},
-        {"date": dt.date(2025, 8, 25), "weight": 73.0},
-        {"date": dt.date(2025, 8, 26), "weight": 73.6},
-        {"date": dt.date(2025, 8, 27), "weight": 73.0},
-        {"date": dt.date(2025, 8, 28), "weight": 73.6},
-        {"date": dt.date(2025, 8, 29), "weight": 73.6},
-        {"date": dt.date(2025, 8, 30), "weight": 73.5},
-        {"date": dt.date(2025, 9, 1), "weight": 73},
-        {"date": dt.date(2025, 9, 2), "weight": 72},
-        {"date": dt.date(2025, 9, 3), "weight": 72.5},
+        {"entry_date": dt.date(2025, 8, 18), "weight": 73.0},
+        {"entry_date": dt.date(2025, 8, 19), "weight": 72.9},
+        {"entry_date": dt.date(2025, 8, 20), "weight": 72.3},
+        {"entry_date": dt.date(2025, 8, 21), "weight": 72.7},
+        {"entry_date": dt.date(2025, 8, 22), "weight": 72.5},
+        {"entry_date": dt.date(2025, 8, 25), "weight": 73.0},
+        {"entry_date": dt.date(2025, 8, 26), "weight": 73.6},
+        {"entry_date": dt.date(2025, 8, 27), "weight": 73.0},
+        {"entry_date": dt.date(2025, 8, 28), "weight": 73.6},
+        {"entry_date": dt.date(2025, 8, 29), "weight": 73.6},
+        {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
+        {"entry_date": dt.date(2025, 9, 1), "weight": 73},
+        {"entry_date": dt.date(2025, 9, 2), "weight": 72},
+        {"entry_date": dt.date(2025, 9, 3), "weight": 72.5},
     ]
     return TypeAdapter(list[WeightEntry]).validate_python(data)
 
@@ -110,36 +110,36 @@ class TestHelperFunctions:
                 dt.date(2025, 8, 28),
                 None,
                 [
-                    {"date": dt.date(2025, 8, 28), "weight": 71.12},
-                    {"date": dt.date(2025, 8, 30), "weight": 73.5},
-                    {"date": dt.date(2025, 9, 2), "weight": 72},
+                    {"entry_date": dt.date(2025, 8, 28), "weight": 71.12},
+                    {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
+                    {"entry_date": dt.date(2025, 9, 2), "weight": 72},
                 ],
             ),
             (
                 "",
                 dt.date(2025, 2, 1),
                 [
-                    {"date": dt.date(2024, 10, 2), "weight": 73.81},
-                    {"date": dt.date(2025, 1, 12), "weight": 72},
+                    {"entry_date": dt.date(2024, 10, 2), "weight": 73.81},
+                    {"entry_date": dt.date(2025, 1, 12), "weight": 72},
                 ],
             ),
             (
                 dt.date(2025, 5, 1),
                 dt.date(2025, 9, 1),
                 [
-                    {"date": dt.date(2025, 8, 28), "weight": 71.12},
-                    {"date": dt.date(2025, 8, 30), "weight": 73.5},
+                    {"entry_date": dt.date(2025, 8, 28), "weight": 71.12},
+                    {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
                 ],
             ),
             (
                 None,
                 None,
                 [
-                    {"date": dt.date(2024, 10, 2), "weight": 73.81},
-                    {"date": dt.date(2025, 1, 12), "weight": 72},
-                    {"date": dt.date(2025, 8, 28), "weight": 71.12},
-                    {"date": dt.date(2025, 8, 30), "weight": 73.5},
-                    {"date": dt.date(2025, 9, 2), "weight": 72},
+                    {"entry_date": dt.date(2024, 10, 2), "weight": 73.81},
+                    {"entry_date": dt.date(2025, 1, 12), "weight": 72},
+                    {"entry_date": dt.date(2025, 8, 28), "weight": 71.12},
+                    {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
+                    {"entry_date": dt.date(2025, 9, 2), "weight": 72},
                 ],
             ),
             (
@@ -151,7 +151,7 @@ class TestHelperFunctions:
                 dt.date(2024, 10, 2),
                 dt.date(2024, 10, 2),
                 [
-                    {"date": dt.date(2024, 10, 2), "weight": 73.81},
+                    {"entry_date": dt.date(2024, 10, 2), "weight": 73.81},
                 ],
             ),
         ],
@@ -284,7 +284,8 @@ class TestAPIEndpoints:
 
     @pytest.fixture
     def client(self):
-        return TestClient(app)
+        with TestClient(app) as client:
+            yield client
 
     @pytest.fixture
     def mock_storage(self, mocker):
@@ -309,8 +310,8 @@ class TestAPIEndpoints:
         "latest_entry, expected_return",
         [
             (
-                WeightEntry(date=dt.date(2025, 9, 1), weight=72.56),
-                {"date": "2025-09-01", "weight": 72.56},
+                WeightEntry(entry_date=dt.date(2025, 9, 1), weight=72.56),
+                {"entry_date": "2025-09-01", "weight": 72.56},
             ),
             (None, None),
         ],

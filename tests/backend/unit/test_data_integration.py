@@ -26,9 +26,9 @@ def sample_raw_data():
 @pytest.fixture
 def sample_daily_entries():
     data = [
-        {"date": dt.date(2025, 8, 28), "weight": 73.6},
-        {"date": dt.date(2025, 8, 29), "weight": 73.6},
-        {"date": dt.date(2025, 9, 1), "weight": 73.0},
+        {"entry_date": dt.date(2025, 8, 28), "weight": 73.6},
+        {"entry_date": dt.date(2025, 8, 29), "weight": 73.6},
+        {"entry_date": dt.date(2025, 9, 1), "weight": 73.0},
     ]
     return TypeAdapter(list[WeightEntry]).validate_python(data)
 
@@ -49,16 +49,16 @@ def test_refresh_no_raw_data_found(mocker, service):
     "test_entries",
     [
         [
-            {"date": dt.date(2025, 8, 28), "weight": 73.6},
-            {"date": dt.date(2025, 8, 29), "weight": 73.6},
+            {"entry_date": dt.date(2025, 8, 28), "weight": 73.6},
+            {"entry_date": dt.date(2025, 8, 29), "weight": 73.6},
         ],
         [
-            {"date": dt.date(2025, 8, 28), "weight": 73.6},
+            {"entry_date": dt.date(2025, 8, 28), "weight": 73.6},
         ],
         [
-            {"date": dt.date(2025, 8, 28), "weight": 70.1},
-            {"date": dt.date(2025, 8, 29), "weight": 70.2},
-            {"date": dt.date(2025, 9, 1), "weight": 73.0},
+            {"entry_date": dt.date(2025, 8, 28), "weight": 70.1},
+            {"entry_date": dt.date(2025, 8, 29), "weight": 70.2},
+            {"entry_date": dt.date(2025, 9, 1), "weight": 73.0},
         ],
     ],
 )
@@ -85,24 +85,24 @@ def test_refresh_no_new_data(mocker, service, sample_daily_entries, test_entries
     [
         (
             [
-                {"date": dt.date(2025, 9, 20), "weight": 70.9},
+                {"entry_date": dt.date(2025, 9, 20), "weight": 70.9},
             ],
             [
-                {"date": dt.date(2025, 9, 20), "weight": 70.9},
+                {"entry_date": dt.date(2025, 9, 20), "weight": 70.9},
             ],
         ),
         (
             [
-                {"date": dt.date(2025, 1, 5), "weight": 70.9},
-                {"date": dt.date(2025, 8, 28), "weight": 70.9},
-                {"date": dt.date(2025, 8, 29), "weight": 70.9},
-                {"date": dt.date(2025, 8, 30), "weight": 72.9},
-                {"date": dt.date(2025, 9, 28), "weight": 71.9},
+                {"entry_date": dt.date(2025, 1, 5), "weight": 70.9},
+                {"entry_date": dt.date(2025, 8, 28), "weight": 70.9},
+                {"entry_date": dt.date(2025, 8, 29), "weight": 70.9},
+                {"entry_date": dt.date(2025, 8, 30), "weight": 72.9},
+                {"entry_date": dt.date(2025, 9, 28), "weight": 71.9},
             ],
             [
-                {"date": dt.date(2025, 1, 5), "weight": 70.9},
-                {"date": dt.date(2025, 8, 30), "weight": 72.9},
-                {"date": dt.date(2025, 9, 28), "weight": 71.9},
+                {"entry_date": dt.date(2025, 1, 5), "weight": 70.9},
+                {"entry_date": dt.date(2025, 8, 30), "weight": 72.9},
+                {"entry_date": dt.date(2025, 9, 28), "weight": 71.9},
             ],
         ),
     ],
@@ -216,31 +216,31 @@ def test_get_existing_weight_entries(mocker, service, sample_daily_entries):
     [
         (
             [
-                {"date": dt.date(2025, 9, 20), "weight": 70.9},
+                {"entry_date": dt.date(2025, 9, 20), "weight": 70.9},
             ],
             [
-                {"date": dt.date(2025, 9, 20), "weight": 70.9},
+                {"entry_date": dt.date(2025, 9, 20), "weight": 70.9},
             ],
         ),
         (
             [
-                {"date": dt.date(2025, 8, 28), "weight": 70.9},
-                {"date": dt.date(2025, 8, 29), "weight": 70.9},
+                {"entry_date": dt.date(2025, 8, 28), "weight": 70.9},
+                {"entry_date": dt.date(2025, 8, 29), "weight": 70.9},
             ],
             [],
         ),
         (
             [
-                {"date": dt.date(2025, 1, 5), "weight": 70.9},
-                {"date": dt.date(2025, 8, 28), "weight": 70.9},
-                {"date": dt.date(2025, 8, 29), "weight": 70.9},
-                {"date": dt.date(2025, 8, 30), "weight": 72.9},
-                {"date": dt.date(2025, 9, 28), "weight": 71.9},
+                {"entry_date": dt.date(2025, 1, 5), "weight": 70.9},
+                {"entry_date": dt.date(2025, 8, 28), "weight": 70.9},
+                {"entry_date": dt.date(2025, 8, 29), "weight": 70.9},
+                {"entry_date": dt.date(2025, 8, 30), "weight": 72.9},
+                {"entry_date": dt.date(2025, 9, 28), "weight": 71.9},
             ],
             [
-                {"date": dt.date(2025, 1, 5), "weight": 70.9},
-                {"date": dt.date(2025, 8, 30), "weight": 72.9},
-                {"date": dt.date(2025, 9, 28), "weight": 71.9},
+                {"entry_date": dt.date(2025, 1, 5), "weight": 70.9},
+                {"entry_date": dt.date(2025, 8, 30), "weight": 72.9},
+                {"entry_date": dt.date(2025, 9, 28), "weight": 71.9},
             ],
         ),
     ],
@@ -264,7 +264,10 @@ def test_filter_new_weight_entries(
 def test_store_new_weight_entries(mocker, service, sample_daily_entries):
     mock_storage_fn = mocker.patch.object(service.storage, "create_weight_entry")
     sample_entry = sample_daily_entries[0]
-    sample_entry_date, sample_entry_weight = (sample_entry.date, sample_entry.weight)
+    sample_entry_date, sample_entry_weight = (
+        sample_entry.entry_date,
+        sample_entry.weight,
+    )
 
     service.store_new_weight_entries(sample_daily_entries)
 

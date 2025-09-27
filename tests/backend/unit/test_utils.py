@@ -17,11 +17,11 @@ class TestDailyEntriesManipulation:
     @pytest.fixture
     def sample_daily_entries(self) -> list[WeightEntry]:
         data = [
-            {"date": dt.date(2025, 8, 30), "weight": 72.5},
-            {"date": dt.date(2025, 8, 29), "weight": 73.5},
-            {"date": dt.date(2025, 8, 25), "weight": 74.5},
-            {"date": dt.date(2025, 5, 29), "weight": 72.3},
-            {"date": dt.date(2025, 5, 27), "weight": 71.5},
+            {"entry_date": dt.date(2025, 8, 30), "weight": 72.5},
+            {"entry_date": dt.date(2025, 8, 29), "weight": 73.5},
+            {"entry_date": dt.date(2025, 8, 25), "weight": 74.5},
+            {"entry_date": dt.date(2025, 5, 29), "weight": 72.3},
+            {"entry_date": dt.date(2025, 5, 27), "weight": 71.5},
         ]
         return TypeAdapter(list[WeightEntry]).validate_python(data)
 
@@ -64,11 +64,14 @@ class TestDailyEntriesManipulation:
         "entries, expected_value",
         [
             ([], None),
-            ([{"date": dt.date(2025, 5, 20), "weight": 72.5}], dt.date(2025, 5, 20)),
+            (
+                [{"entry_date": dt.date(2025, 5, 20), "weight": 72.5}],
+                dt.date(2025, 5, 20),
+            ),
             (
                 [
-                    {"date": dt.date(2024, 5, 20), "weight": 72.5},
-                    {"date": dt.date(2025, 1, 15), "weight": 72.5},
+                    {"entry_date": dt.date(2024, 5, 20), "weight": 72.5},
+                    {"entry_date": dt.date(2025, 1, 15), "weight": 72.5},
                 ],
                 dt.date(2025, 1, 15),
             ),
@@ -84,15 +87,15 @@ class TestDailyEntriesManipulation:
         [
             ([], None),
             (
-                [{"date": dt.date(2025, 5, 20), "weight": 72.5}],
-                {"date": dt.date(2025, 5, 20), "weight": 72.5},
+                [{"entry_date": dt.date(2025, 5, 20), "weight": 72.5}],
+                {"entry_date": dt.date(2025, 5, 20), "weight": 72.5},
             ),
             (
                 [
-                    {"date": dt.date(2024, 5, 20), "weight": 75.5},
-                    {"date": dt.date(2025, 1, 15), "weight": 71.5},
+                    {"entry_date": dt.date(2024, 5, 20), "weight": 75.5},
+                    {"entry_date": dt.date(2025, 1, 15), "weight": 71.5},
                 ],
-                {"date": dt.date(2025, 1, 15), "weight": 71.5},
+                {"entry_date": dt.date(2025, 1, 15), "weight": 71.5},
             ),
         ],
     )

@@ -82,19 +82,19 @@ def test_convert_to_daily_entries(client, sample_raw_data):
     expected_return = TypeAdapter(list[WeightEntry]).validate_python(
         [
             {
-                "date": dt.date(2025, 1, 2),
+                "entry_date": dt.date(2025, 1, 2),
                 "weight": 72.56,
             },
             {
-                "date": dt.date(2025, 2, 15),
+                "entry_date": dt.date(2025, 2, 15),
                 "weight": 70.2,
             },
             {
-                "date": dt.date(2025, 5, 28),
+                "entry_date": dt.date(2025, 5, 28),
                 "weight": 80.11,
             },
             {
-                "date": dt.date(2025, 9, 5),
+                "entry_date": dt.date(2025, 9, 5),
                 "weight": 75.4,
             },
         ]

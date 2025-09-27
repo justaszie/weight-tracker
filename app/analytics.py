@@ -26,7 +26,7 @@ def get_weekly_aggregates(
     df = pd.DataFrame([entry.model_dump() for entry in daily_entries])
 
     # Set date index to aggregate by week
-    df["week_start"] = pd.to_datetime(df["date"])
+    df["week_start"] = pd.to_datetime(df["entry_date"])
     df.set_index("week_start", inplace=True)  # pyright: ignore[reportUnknownMemberType]
 
     # Calculate weekly averages (mean and median) using resample method
