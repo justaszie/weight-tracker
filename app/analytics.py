@@ -38,7 +38,9 @@ def get_weekly_aggregates(
     # After resampling, the date of the week is end of week
     # We set the index date to beginning the week
     # (resample results in end of week so we subtract 6 days from it)
-    weekly_averages.index -= pd.DateOffset(n=6)
+    weekly_averages.index = weekly_averages.index.map(
+        lambda day: day - pd.DateOffset(n=6)
+    )
 
     # Calculate the weight change between weeks
     weekly_entries: pd.DataFrame = weekly_averages.to_frame(name="avg_weight")
