@@ -96,7 +96,7 @@ export default function Main(props: MainProps) {
             ))}
 
             {latestEntry !== null && (
-              <p>Latest entry: {latestEntry.date ?? "No Data Yet"}</p>
+              <p>Latest entry: {latestEntry.entry_date ?? "No Data Yet"}</p>
             )}
           </div>
         </div>

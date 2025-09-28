@@ -28,7 +28,8 @@ def client():
     from app.main import create_app
 
     app = create_app()
-    return TestClient(app)
+    with TestClient(app) as client:
+        yield client
 
 
 class TestDemoGetData:
@@ -38,7 +39,7 @@ class TestDemoGetData:
     def test_get_latest_entry(self, client, demo_storage_entries):
         response = client.get("/api/latest-entry")
         expected_last_entry = sorted(
-            demo_storage_entries, key=lambda entry: entry.date
+            demo_storage_entries, key=lambda entry: entry.entry_date
         )[-1]
 
         assert response.status_code == 200
@@ -133,19 +134,21 @@ class TestDemoSyncData:
             - existing entries in DemoStorage were not changed
         """
         existing_entries = DemoStorage().get_weight_entries()
-        existing_dates = {entry.date for entry in existing_entries}
+        existing_dates = {entry.entry_date for entry in existing_entries}
         data_source_entries = DemoDataSourceClient().convert_to_daily_entries(None)
-        data_source_dates = {entry.date for entry in data_source_entries}
+        data_source_dates = {entry.entry_date for entry in data_source_entries}
 
         new_entries = [
-            entry for entry in data_source_entries if entry.date not in existing_dates
+            entry
+            for entry in data_source_entries
+            if entry.entry_date not in existing_dates
         ]
 
         expected_delta_count = len(new_entries)
         expected_new_entry = new_entries[0]
 
         expected_unchanged_entry = [
-            entry for entry in existing_entries if entry.date in data_source_dates
+            entry for entry in existing_entries if entry.entry_date in data_source_dates
         ][0]
 
         response = client.post("/api/sync-data", json={"data_source": "gfit"})
@@ -162,8 +165,8 @@ class TestDemoSyncData:
         response = client.get(
             "api/daily-entries",
             params={
-                "date_from": expected_new_entry.date.isoformat(),
-                "date_to": expected_new_entry.date.isoformat(),
+                "date_from": expected_new_entry.entry_date.isoformat(),
+                "date_to": expected_new_entry.entry_date.isoformat(),
             },
         )
         assert response.status_code == 200
@@ -172,8 +175,8 @@ class TestDemoSyncData:
         response = client.get(
             "api/daily-entries",
             params={
-                "date_from": expected_unchanged_entry.date.isoformat(),
-                "date_to": expected_unchanged_entry.date.isoformat(),
+                "date_from": expected_unchanged_entry.entry_date.isoformat(),
+                "date_to": expected_unchanged_entry.entry_date.isoformat(),
             },
         )
         assert response.status_code == 200

@@ -26,7 +26,7 @@ def get_weekly_aggregates(
     df = pd.DataFrame([entry.model_dump() for entry in daily_entries])
 
     # Set date index to aggregate by week
-    df["week_start"] = pd.to_datetime(df["date"])
+    df["week_start"] = pd.to_datetime(df["entry_date"])
     df.set_index("week_start", inplace=True)  # pyright: ignore[reportUnknownMemberType]
 
     # Calculate weekly averages (mean and median) using resample method
@@ -38,7 +38,9 @@ def get_weekly_aggregates(
     # After resampling, the date of the week is end of week
     # We set the index date to beginning the week
     # (resample results in end of week so we subtract 6 days from it)
-    weekly_averages.index -= pd.DateOffset(n=6)
+    weekly_averages.index = weekly_averages.index.map(
+        lambda day: day - pd.DateOffset(n=6)
+    )
 
     # Calculate the weight change between weeks
     weekly_entries: pd.DataFrame = weekly_averages.to_frame(name="avg_weight")

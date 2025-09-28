@@ -1,4 +1,4 @@
 export type WeightEntry = {
-    date: string;
+    entry_date: string;
     weight: number;
 }

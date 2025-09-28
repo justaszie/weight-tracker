@@ -112,7 +112,7 @@ export default function Summary(props: SummaryProps) {
               <span className="summary-card__subtitle">kg</span>
             </div>
             <p className="summary-card__header">
-              on <span>{props.latestEntry.date}</span>
+              on <span>{props.latestEntry.entry_date}</span>
             </p>
           </li>
         )}

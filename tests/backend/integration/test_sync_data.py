@@ -16,25 +16,24 @@ from app.project_types import WeightEntry
 @pytest.fixture
 def sample_daily_entries():
     return [
-        {"date": dt.date(2025, 2, 12), "weight": 73.0},
-        {"date": dt.date(2025, 3, 2), "weight": 73.0},
-        {"date": dt.date(2025, 8, 18), "weight": 73.0},
-        {"date": dt.date(2025, 8, 19), "weight": 72.9},
-        {"date": dt.date(2025, 8, 20), "weight": 72.3},
-        {"date": dt.date(2025, 8, 21), "weight": 72.7},
-        {"date": dt.date(2025, 8, 22), "weight": 72.5},
-        {"date": dt.date(2025, 8, 25), "weight": 73.0},
-        {"date": dt.date(2025, 8, 28), "weight": 73.6},
-        {"date": dt.date(2025, 8, 29), "weight": 73.6},
-        {"date": dt.date(2025, 8, 30), "weight": 73.5},
-        {"date": dt.date(2025, 9, 1), "weight": 73},
-        {"date": dt.date(2025, 9, 2), "weight": 72},
-        {"date": dt.date(2025, 9, 3), "weight": 72.5},
+        {"entry_date": dt.date(2025, 2, 12), "weight": 73.0},
+        {"entry_date": dt.date(2025, 3, 2), "weight": 73.0},
+        {"entry_date": dt.date(2025, 8, 18), "weight": 73.0},
+        {"entry_date": dt.date(2025, 8, 19), "weight": 72.9},
+        {"entry_date": dt.date(2025, 8, 20), "weight": 72.3},
+        {"entry_date": dt.date(2025, 8, 21), "weight": 72.7},
+        {"entry_date": dt.date(2025, 8, 22), "weight": 72.5},
+        {"entry_date": dt.date(2025, 8, 25), "weight": 73.0},
+        {"entry_date": dt.date(2025, 8, 28), "weight": 73.6},
+        {"entry_date": dt.date(2025, 8, 29), "weight": 73.6},
+        {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
+        {"entry_date": dt.date(2025, 9, 1), "weight": 73},
+        {"entry_date": dt.date(2025, 9, 2), "weight": 72},
+        {"entry_date": dt.date(2025, 9, 3), "weight": 72.5},
     ]
 
 
-@pytest.fixture
-def get_test_storage(mocker, sample_daily_entries, tmp_path):
+def _get_test_file_storage(mocker, sample_daily_entries, tmp_path):
     test_file_path = tmp_path / "test_storage.json"
 
     sample_data: list[WeightEntry] = TypeAdapter(list[WeightEntry]).validate_python(
@@ -49,12 +48,20 @@ def get_test_storage(mocker, sample_daily_entries, tmp_path):
     return FileStorage()
 
 
+# TODO: Create get_test_db_storage that returns test db
+
+
+@pytest.fixture
+def get_test_storage(mocker, sample_daily_entries, tmp_path) -> FileStorage:
+    return _get_test_file_storage(mocker, sample_daily_entries, tmp_path)
+
+
 @pytest.fixture
 def client_with_storage(get_test_storage):
     app.dependency_overrides[get_data_storage] = lambda: get_test_storage
-    client = TestClient(app)
     try:
-        yield client
+        with TestClient(app) as client:
+            yield client
     finally:
         app.dependency_overrides.clear()
 
@@ -162,7 +169,7 @@ def test_gfit_sync_new_entries(
     assert len(updated_daily_entries) == len(sample_daily_entries) + 5
     print(updated_daily_entries)
     new_entry = [
-        entry for entry in updated_daily_entries if entry["date"] == "2025-09-04"
+        entry for entry in updated_daily_entries if entry["entry_date"] == "2025-09-04"
     ][0]
     assert new_entry["weight"] == 72.4
 
@@ -209,7 +216,7 @@ def test_mfp_sync_new_entries(
     assert response.status_code == 200
     assert len(updated_daily_entries) == len(sample_daily_entries) + 5
     new_entry = [
-        entry for entry in updated_daily_entries if entry["date"] == "2025-09-04"
+        entry for entry in updated_daily_entries if entry["entry_date"] == "2025-09-04"
     ][0]
     assert new_entry["weight"] == 70.2
 

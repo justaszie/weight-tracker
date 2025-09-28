@@ -3,7 +3,7 @@ repos:
   hooks:
   - id: mypy
     name: mypy
-    entry: poetry run mypy
+    entry: poetry run mypy --strict
     language: system
     files: ^app/.*\.py$
     types: [python]
