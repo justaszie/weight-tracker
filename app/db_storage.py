@@ -1,5 +1,6 @@
 import datetime as dt
 
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import (
     Field,
     Session,
@@ -42,28 +43,19 @@ class DatabaseStorage:
 
     def create_weight_entry(self, entry_date: dt.date, weight: float | int) -> None:
         with Session(self._engine) as session:
-            new_entry = DBWeightEntry(entry_date=entry_date, weight=weight)
-            session.add(new_entry)
-            session.commit()
-            return
+            try:
+                new_entry = DBWeightEntry(entry_date=entry_date, weight=weight)
+                session.add(new_entry)
+                session.commit()
+            except IntegrityError as e:
+                raise ValueError(
+                    f"Weight entry already exists for date"
+                    f" {entry_date.strftime('%Y-%m-%d')}."
+                    f"Use update method to replace it."
+                ) from e
 
     def data_refresh_needed(self) -> bool:
         existing_data = self.get_weight_entries()
 
         latest_entry_date: dt.date | None = utils.get_latest_entry_date(existing_data)
         return latest_entry_date < dt.date.today() if latest_entry_date else True
-
-    """
-
-    def get_weight_entry(self, entry_date: dt.date) -> WeightEntry | None: ...
-
-    def create_weight_entry(self, entry_date: dt.date, weight: float | int) -> None: ...
-
-    def delete_weight_entry(self, entry_date: dt.date) -> None: ...
-
-    def update_weight_entry(self, entry_date: dt.date, weight: float | int) -> None: ...
-
-    def export_to_csv(self) -> None: ...
-
-    def data_refresh_needed(self) -> bool: ...
-    """
