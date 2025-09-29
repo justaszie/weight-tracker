@@ -70,38 +70,34 @@ class DatabaseStorage:
         latest_entry_date: dt.date | None = utils.get_latest_entry_date(existing_data)
         return latest_entry_date < dt.date.today() if latest_entry_date else True
 
-    def _find_db_weight_entry(self, entry_date: dt.date) -> DBWeightEntry | None:
+    def get_weight_entry(self, entry_date: dt.date) -> WeightEntry | None:
         with Session(self._engine) as session:
             result = session.get(DBWeightEntry, entry_date)
-            return result
+            if not result:
+                return None
 
-    def get_weight_entry(self, entry_date: dt.date) -> WeightEntry | None:
-        result = self._find_db_weight_entry(entry_date)
-        if not result:
-            return None
-
-        return WeightEntry.model_validate(result, from_attributes=True)
+            return WeightEntry.model_validate(result, from_attributes=True)
 
     def update_weight_entry(self, entry_date: dt.date, weight: float | int) -> None:
-        entry = self._find_db_weight_entry(entry_date)
-        if not entry:
-            raise ValueError(
-                "Weight entry doesn't exist for this date. ' \
-                'Use create method to create it."
-            )
-
         with Session(self._engine) as session:
+            entry = session.get(DBWeightEntry, entry_date)
+            if not entry:
+                raise ValueError(
+                    "Weight entry doesn't exist for this date. "
+                    "Use create method to create it."
+                )
+
             entry.weight = weight
             session.add(entry)
             session.commit()
             session.refresh(entry)
 
     def delete_weight_entry(self, entry_date: dt.date) -> None:
-        entry = self._find_db_weight_entry(entry_date)
-        if not entry:
-            raise ValueError("Weight entry doesn't exist for this date.")
-
         with Session(self._engine) as session:
+            entry = session.get(DBWeightEntry, entry_date)
+            if not entry:
+                raise ValueError("Weight entry doesn't exist for this date.")
+
             session.delete(entry)
             session.commit()
 
