@@ -1,6 +1,9 @@
 import datetime as dt
 import os
+import traceback
+from pathlib import Path
 
+import pandas as pd
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import (
     Field,
@@ -22,6 +25,11 @@ class DBWeightEntry(SQLModel, table=True):
 
 
 class DatabaseStorage:
+    BASE_DIR: Path = Path(__file__).resolve().parent
+    DATA_DIR = "data"
+    CSV_FILE_NAME = "daily_history.csv"
+    DAILY_ENTRIES_CSV_FILE_PATH: Path = Path.joinpath(BASE_DIR, DATA_DIR, CSV_FILE_NAME)
+
     def __init__(self) -> None:
         connection_string = os.environ.get("DB_CONNECTION_STRING")
         if not connection_string:
@@ -61,3 +69,47 @@ class DatabaseStorage:
 
         latest_entry_date: dt.date | None = utils.get_latest_entry_date(existing_data)
         return latest_entry_date < dt.date.today() if latest_entry_date else True
+
+    def _find_db_weight_entry(self, entry_date: dt.date) -> DBWeightEntry | None:
+        with Session(self._engine) as session:
+            result = session.get(DBWeightEntry, entry_date)
+            return result
+
+    def get_weight_entry(self, entry_date: dt.date) -> WeightEntry | None:
+        result = self._find_db_weight_entry(entry_date)
+        if not result:
+            return None
+
+        return WeightEntry.model_validate(result, from_attributes=True)
+
+    def update_weight_entry(self, entry_date: dt.date, weight: float | int) -> None:
+        entry = self._find_db_weight_entry(entry_date)
+        if not entry:
+            raise ValueError(
+                "Weight entry doesn't exist for this date. ' \
+                'Use create method to create it."
+            )
+
+        with Session(self._engine) as session:
+            entry.weight = weight
+            session.add(entry)
+            session.commit()
+            session.refresh(entry)
+
+    def delete_weight_entry(self, entry_date: dt.date) -> None:
+        entry = self._find_db_weight_entry(entry_date)
+        if not entry:
+            raise ValueError("Weight entry doesn't exist for this date.")
+
+        with Session(self._engine) as session:
+            session.delete(entry)
+            session.commit()
+
+    def export_to_csv(self) -> None:
+        try:
+            entries = [entry.model_dump() for entry in self.get_weight_entries()]
+            pd.DataFrame(entries).set_index(  # pyright: ignore[reportUnknownMemberType]
+                "entry_date"
+            ).to_csv(DatabaseStorage.DAILY_ENTRIES_CSV_FILE_PATH)
+        except Exception:
+            traceback.print_exc()
