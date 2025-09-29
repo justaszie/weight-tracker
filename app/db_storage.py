@@ -1,4 +1,5 @@
 import datetime as dt
+import os
 
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import (
@@ -22,8 +23,9 @@ class DBWeightEntry(SQLModel, table=True):
 
 class DatabaseStorage:
     def __init__(self) -> None:
-        db_name = "weight_tracker"
-        connection_string = f"postgresql+psycopg2://justas@localhost:5432/{db_name}"
+        connection_string = os.environ.get("DB_CONNECTION_STRING")
+        if not connection_string:
+            raise Exception("Missing database connection string in environment")
         self._engine = create_engine(connection_string)
 
         # Set up the database when initializing storage
