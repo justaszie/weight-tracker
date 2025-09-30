@@ -11,17 +11,26 @@ from .api import router as api_router
 from .db_storage import DatabaseStorage
 from .demo import DemoStorage
 from .google_fit import router as auth_router
+from .project_types import DataStorage
+
+
+def create_data_storage() -> DataStorage:
+    load_dotenv()
+    if os.environ.get("DEMO_MODE", "false") == "true":
+        return DemoStorage()
+    else:
+        return DatabaseStorage()
 
 
 # Instantiating storage as part of app startup
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # type: ignore
-    load_dotenv()
-    if os.environ.get("DEMO_MODE", "false") == "true":
-        app.state.data_storage = DemoStorage()
-    else:
-        app.state.data_storage = DatabaseStorage()
+    app.state.data_storage = create_data_storage()
+
     yield
+
+    if app.state.data_storage:
+        app.state.data_storage.close_connection()
 
 
 def create_app() -> FastAPI:

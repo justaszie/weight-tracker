@@ -92,6 +92,9 @@ class DemoStorage:
         except (json.JSONDecodeError, Exception):
             raise
 
+    def close_connection(self) -> None:
+        pass
+
 
 class DemoDataSourceClient:
     BASE_DIR: Path = Path(__file__).resolve().parent

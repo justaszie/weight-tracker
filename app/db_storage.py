@@ -109,3 +109,7 @@ class DatabaseStorage:
             ).to_csv(DatabaseStorage.DAILY_ENTRIES_CSV_FILE_PATH)
         except Exception:
             traceback.print_exc()
+
+    def close_connection(self) -> None:
+        if self._engine:
+            self._engine.dispose()

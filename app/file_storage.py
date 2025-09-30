@@ -109,3 +109,6 @@ class FileStorage:
 
         except (json.JSONDecodeError, Exception):
             raise
+
+    def close_connection(self) -> None:
+        pass
