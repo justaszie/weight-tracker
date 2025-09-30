@@ -48,6 +48,8 @@ class DataStorage(Protocol):
 
     def data_refresh_needed(self) -> bool: ...
 
+    def close_connection(self) -> None: ...
+
 
 class DataSourceClient(Protocol):
     def get_raw_data(

@@ -6,8 +6,25 @@ jobs:
   testing:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: test_weight_tracker
+          POSTGRES_HOST_AUTH_METHOD: trust
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     env:
       DEMO_MODE: "true" # In production DEMO_MODE is always turned on
+      DB_CONNECTION_STRING: "postgresql+psycopg2://postgres@localhost:5432/test_weight_tracker"
 
     steps:
       - uses: actions/checkout@v4
