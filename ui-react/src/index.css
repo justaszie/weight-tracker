@@ -7,11 +7,11 @@
     --clr-bg-inverse: #111827;
     --clr-bg-inverse-muted: #263040;
     --clr-surface: rgba(24, 24, 27, 0.1);
-    --clr-surface-muted:  rgba(24, 24, 27, 0.02);
+    --clr-surface-muted: rgba(24, 24, 27, 0.02);
     --clr-text-header: #FFF;
     --clr-text-primary: #18181B;
     --clr-text-inverse: #FAFAFA;
-    --clr-text-inverse-muted: rgba(250,250,250, 0.8);
+    --clr-text-inverse-muted: rgba(250, 250, 250, 0.8);
     --clr-text-inactive: rgb(113, 113, 122);
     /* TODO: find better naming for this color used in summary pannel */
     --clr-text-summary: rgb(75, 85, 99);
@@ -24,13 +24,22 @@
 
     /* FONTS */
     --fs-primary: 14px;
-    --fs-header-title: 2.25rem; /* 32px */
-    --fs-header-subtitle: 1.25rem; /* 18px */
-    --fs-control-label: 1.15rem; /* 16px */
-    --fs-insights-header: 1.5rem; /* 20px */
-    --fs-insights-value: 2rem; /* 30px */
-    --fs-insights-evaluation: 1.15rem; /* 16px */;
-    --fs-insights-subtitle: 1.15rem; /* 14px */;
+    --fs-header-title: 2.25rem;
+    /* 32px */
+    --fs-header-subtitle: 1.25rem;
+    /* 18px */
+    --fs-control-label: 1.15rem;
+    /* 16px */
+    --fs-insights-header: 1.5rem;
+    /* 20px */
+    --fs-insights-value: 2rem;
+    /* 30px */
+    --fs-insights-evaluation: 1.15rem;
+    /* 16px */
+    ;
+    --fs-insights-subtitle: 1.15rem;
+    /* 14px */
+    ;
 
     /* Rounded corners radius value */
     --rounded-corners-main: 0.75rem;
@@ -105,6 +114,7 @@ body {
     flex-shrink: 0;
     font-weight: 500;
 }
+
 .goal-selection__container {
     display: flex;
     gap: 7px;
@@ -134,23 +144,28 @@ body {
     width: 0.9em;
 }
 
-.filters-column {
+.data-controls {
+    display: flex;
+    justify-content: space-between;
+}
+
+.filters {
     display: flex;
     flex-direction: column;
 }
 
-.filter-selection{
+.filter-selection {
     display: flex;
     align-self: flex-start;
     background-color: var(--clr-surface);
-    border-radius: var( --rounded-corners-btn);
+    border-radius: var(--rounded-corners-btn);
     padding: 5px;
     align-items: center;
 }
 
 .filter-option {
     padding: 8px;
-    border-radius: var( --rounded-corners-btn);
+    border-radius: var(--rounded-corners-btn);
     color: var(--clr-text-inactive);
     text-decoration: none;
     font-weight: 500;
@@ -173,7 +188,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    padding-bottom:15px;
+    padding-bottom: 15px;
 }
 
 .get-data__cta {
@@ -362,7 +377,7 @@ body {
     border: none;
 }
 
-.data-table__cell{
+.data-table__cell {
     padding: 15px;
     text-align: start;
 }
@@ -370,6 +385,7 @@ body {
 .data-table__cell--positive {
     color: var(--clr-positive);
 }
+
 .data-table__cell--negative {
     color: var(--clr-negative);
 }
@@ -435,7 +451,8 @@ body {
 .toast__message--error {
     background-color: rgb(255, 230, 230);
     color: rgba(139, 0, 0, 0.8);
-    border: 1px solid  rgba(139, 0, 0, 0.3); /* optional: subtle border for separation */
+    border: 1px solid rgba(139, 0, 0, 0.3);
+    /* optional: subtle border for separation */
 }
 
 .toast__message--info {
@@ -455,11 +472,12 @@ body {
     }
 }
 
-@media screen and (max-width: 770px){
+@media screen and (max-width: 890px) {
     .goal-selection {
         flex-direction: column;
         text-wrap: nowrap;
     }
+
     .goal-selection__container {
         flex-direction: column;
     }
@@ -468,5 +486,26 @@ body {
 @media screen and (max-width: 555px) {
     .summary__cards-container {
         grid-template-columns: 1fr;
+    }
+
+    .data-controls {
+        flex-direction: column;
+    }
+
+    .get-data {
+        order: 1;
+        max-width: 210px;
+    }
+
+    .filters {
+        order: 2;
+    }
+
+    .data-table__cell {
+        padding: 15px 5px;
+    }
+
+    .main-content {
+        padding: 20px 15px;
     }
 }

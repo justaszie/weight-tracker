@@ -77,8 +77,8 @@ export default function Main(props: MainProps) {
   return (
     <main>
       <div className="main-content">
-        <div className="spaced-out">
-          <div className="filters-column">
+        <div className="data-controls">
+          <div className="filters">
             <Filters
               weeksFilterValues={weeksFilterValues}
               datesFilterValues={datesFilterValues}
