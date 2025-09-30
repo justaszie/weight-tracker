@@ -10,6 +10,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from .api import router as api_router
 from .db_storage import DatabaseStorage
 from .demo import DemoStorage
+from .file_storage import FileStorage
 from .google_fit import router as auth_router
 from .project_types import DataStorage
 
@@ -19,7 +20,14 @@ def create_data_storage() -> DataStorage:
     if os.environ.get("DEMO_MODE", "false") == "true":
         return DemoStorage()
     else:
-        return DatabaseStorage()
+        storage_type = os.environ.get("STORAGE_TYPE", "database")
+        match storage_type:
+            case "database":
+                return DatabaseStorage()
+            case "file":
+                return FileStorage()
+            case _:
+                raise ValueError(f"Unsupported storage type {storage_type}")
 
 
 # Instantiating storage as part of app startup
