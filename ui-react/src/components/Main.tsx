@@ -5,6 +5,8 @@ import type { WeightEntry } from "@/types/weight-entry";
 import type { DatesFilterValues, WeeksFilterValues } from "@/types/filter";
 import type { DataSourceCTA } from "@/types/utils";
 
+import { ReactComponent as Spinner } from "@/assets/spinner.svg";
+
 import Filters from "./Filters";
 import GetDataCTA from "./GetDataCTA";
 import Summary from "./Summary";
@@ -27,6 +29,7 @@ export default function Main(props: MainProps) {
   const [datesFilterValues, setDatesFilterValues] = useState<DatesFilterValues>(
     {}
   );
+  const [showSpinner, setShowSpinner] = useState(true);
 
   const dataSources: DataSourceCTA[] = [
     { srcName: "gfit", ctaText: "Get Google Fit Data", icon: GoogleIcon },
@@ -52,6 +55,7 @@ export default function Main(props: MainProps) {
           props.showToast("error", err.message);
         }
       }
+      setShowSpinner(false);
     };
 
     fetchLatestEntry();
@@ -95,9 +99,9 @@ export default function Main(props: MainProps) {
               />
             ))}
 
-            {latestEntry !== null && (
+            {showSpinner ? <Spinner className="spinner" /> : (latestEntry !== null && (
               <p>Latest entry: {latestEntry.entry_date ?? "No Data Yet"}</p>
-            )}
+            ))}
           </div>
         </div>
         <Summary
@@ -108,6 +112,7 @@ export default function Main(props: MainProps) {
           dataSyncComplete={props.dataSyncComplete}
           showToast={props.showToast}
         />
+
         <WeeklyDataTable
           goalSelected={props.goalSelected}
           weeksFilterValues={weeksFilterValues}

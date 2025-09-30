@@ -7,10 +7,14 @@ import type {
   WeeklyDataEntry,
 } from "@/types/weekly-table";
 
+import { ReactComponent as Spinner } from "@/assets/spinner.svg";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function WeeklyDataTable(props: WeeklyDataTableProps) {
   const [weeklyData, setWeeklyData] = useState([]);
+  const [showSpinner, setShowSpinner] = useState(true);
+
   function weekToRow(weekEntry: WeeklyDataEntry) {
     const { result } = weekEntry;
     return (
@@ -49,22 +53,6 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
 
   // Fetching data when filter values change
   useEffect(() => {
-    // const sortByWeekStart = function (
-    //   weekA: WeeklyDataEntry,
-    //   weekB: WeeklyDataEntry
-    // ): number {
-    //   const weekAStart = weekA["week_start"];
-    //   const weekBStart = weekB["week_start"];
-    //   console.log(weekAStart, weekBStart);
-    //   if (weekAStart < weekBStart) {
-    //     return 1;
-    //   } else if (weekAStart > weekBStart) {
-    //     return -1;
-    //   } else {
-    //     return 0;
-    //   }
-    // };
-
     const fetchDataWithFilters = async () => {
       const { weeksLimit } = props.weeksFilterValues ?? {};
       const { dateTo, dateFrom } = props.datesFilterValues ?? {};
@@ -102,9 +90,11 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
           props.showToast("error", err.message);
         }
       }
+      setShowSpinner(false);
     };
 
     fetchDataWithFilters();
+
   }, [
     props.datesFilterValues,
     props.weeksFilterValues,
@@ -114,18 +104,22 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
 
   return (
     <section>
-      <table className="data-table">
-        <thead>
-          <tr className="data-table__header">
-            <th className="data-table__cell">Week Starting</th>
-            <th className="data-table__cell">Avg. Weight</th>
-            <th className="data-table__cell">Change (kg)</th>
-            <th className="data-table__cell">Change (%)</th>
-            <th className="data-table__cell">Calorie Deficit / Surplus</th>
-          </tr>
-        </thead>
-        {weeklyData.length > 0 && <tbody>{weeklyData.map(weekToRow)}</tbody>}
-      </table>
+      {showSpinner ? (
+        <Spinner className="spinner" />
+      ) : (
+        <table className="data-table">
+          <thead>
+            <tr className="data-table__header">
+              <th className="data-table__cell">Week Starting</th>
+              <th className="data-table__cell">Avg. Weight</th>
+              <th className="data-table__cell">Change (kg)</th>
+              <th className="data-table__cell">Change (%)</th>
+              <th className="data-table__cell">Calorie Deficit / Surplus</th>
+            </tr>
+          </thead>
+          {weeklyData.length > 0 && <tbody>{weeklyData.map(weekToRow)}</tbody>}
+        </table>
+      )}
     </section>
   );
 }
