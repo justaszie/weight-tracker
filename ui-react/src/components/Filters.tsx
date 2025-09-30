@@ -18,7 +18,7 @@ export default function Filters(props: FiltersProps) {
     }
 
     return (
-        <div className="filters-column">
+        <>
             <section className="filter-selection">
                 <a href="#" onClick={handleFilterChoiceChange} data-filter='weeks' className={`filter-option ${filterChoice === 'weeks' ? 'filter-option--active' : ''}`}> Filter by Weeks</a>
                 <a href="#" onClick={handleFilterChoiceChange} data-filter='dates' className={`filter-option ${filterChoice === 'dates' ? 'filter-option--active' : ''}`}> Filter by Days</a>
@@ -39,6 +39,6 @@ export default function Filters(props: FiltersProps) {
                     showToast={props.showToast}
                     />
             }
-        </div>
+        </>
     );
 }
