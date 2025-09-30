@@ -25,6 +25,7 @@ jobs:
     env:
       DEMO_MODE: "true" # In production DEMO_MODE is always turned on
       DB_CONNECTION_STRING: "postgresql+psycopg2://postgres@localhost:5432/test_weight_tracker"
+      STORAGE_TYPE: "database"
 
     steps:
       - uses: actions/checkout@v4

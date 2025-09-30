@@ -8,7 +8,6 @@ from app.db_storage import (
     DatabaseStorage,
     DBWeightEntry,
 )
-from app.project_types import WeightEntry
 
 TEST_DB_CONN_STRING = (
     "postgresql+psycopg2://postgres@localhost:5432/test_weight_tracker"

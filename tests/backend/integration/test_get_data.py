@@ -1,14 +1,22 @@
 import datetime as dt
-import json
 import pytest
 
 from fastapi.testclient import TestClient
 from pydantic import TypeAdapter
+from sqlmodel import create_engine, Session, SQLModel
 
 from app.api import get_data_storage
+from app.db_storage import (
+    DatabaseStorage,
+    DBWeightEntry,
+)
 from app.file_storage import FileStorage
 from app.main import app
 from app.project_types import WeightEntry
+
+TEST_DB_CONN_STRING = (
+    "postgresql+psycopg2://postgres@localhost:5432/test_weight_tracker"
+)
 
 
 @pytest.fixture
@@ -31,8 +39,22 @@ def sample_daily_entries():
     ]
 
 
-@pytest.fixture
-def get_test_storage(mocker, sample_daily_entries, tmp_path):
+@pytest.fixture(autouse=True)
+def setup_env_variables(monkeypatch):
+    monkeypatch.setenv("DB_CONNECTION_STRING", TEST_DB_CONN_STRING)
+
+
+def _insert_daily_entries(engine, daily_entries):
+    entries_as_sqlmodels = [
+        DBWeightEntry.model_validate(entry, from_attributes=True)
+        for entry in daily_entries
+    ]
+    with Session(engine) as test_session:
+        test_session.add_all(entries_as_sqlmodels)
+        test_session.commit()
+
+
+def _get_test_file_storage(mocker, sample_daily_entries, tmp_path):
     test_file_path = tmp_path / "test_storage.json"
 
     sample_data: list[WeightEntry] = TypeAdapter(list[WeightEntry]).validate_python(
@@ -45,6 +67,22 @@ def get_test_storage(mocker, sample_daily_entries, tmp_path):
         "app.file_storage.FileStorage.DAILY_ENTRIES_MAIN_FILE_PATH", test_file_path
     )
     return FileStorage()
+
+
+@pytest.fixture(params=["file", "database"])
+def get_test_storage(request, mocker, sample_daily_entries, tmp_path):
+    storage_type = request.param
+
+    if storage_type == "file":
+        yield _get_test_file_storage(mocker, sample_daily_entries, tmp_path)
+    elif storage_type == "database":
+        engine = create_engine(TEST_DB_CONN_STRING)
+        SQLModel.metadata.create_all(engine)
+        try:
+            _insert_daily_entries(engine, sample_daily_entries)
+            yield DatabaseStorage()
+        finally:
+            SQLModel.metadata.drop_all(engine)
 
 
 @pytest.fixture
@@ -154,7 +192,7 @@ def test_get_weekly_entries_weekly_filter(client_with_storage):
 
 def test_summary_daily_filter(client_with_storage):
     response = client_with_storage.get(
-        "api/summary", params={"date_from": "2025-08-20", "date_to": "2025-09-01"}
+        "/api/summary", params={"date_from": "2025-08-20", "date_to": "2025-09-01"}
     )
 
     expected = {
@@ -171,7 +209,7 @@ def test_summary_daily_filter(client_with_storage):
 
 
 def test_summary_weekly_filter(client_with_storage):
-    response = client_with_storage.get("api/summary", params={"weeks_limit": "1"})
+    response = client_with_storage.get("/api/summary", params={"weeks_limit": "1"})
 
     expected = {
         "metrics": {
@@ -187,7 +225,7 @@ def test_summary_weekly_filter(client_with_storage):
 
 
 def test_latest_entry(client_with_storage):
-    response = client_with_storage.get("api/latest-entry")
+    response = client_with_storage.get("/api/latest-entry")
 
     assert response.status_code == 200
     assert response.json() == {"entry_date": "2025-09-03", "weight": 72.5}

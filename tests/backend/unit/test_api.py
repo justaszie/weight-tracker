@@ -38,7 +38,16 @@ WEEKLY_PARAMS_TEST_CASES = [
 ]
 
 
-@pytest.fixture
+# Storage access is not needed for these unit tests
+# So we disable storage creation to prevent any storage related issues
+@pytest.fixture(autouse=True)
+def mock_db_instantiation(mocker):
+    mocker.patch("app.main.create_data_storage")
+
+
+# We want to test real app features here.
+# The Demo mode is tested in separate integration tests
+@pytest.fixture(autouse=True)
 def disable_demo_mode(monkeypatch):
     monkeypatch.setenv("DEMO_MODE", "false")
 
@@ -570,7 +579,7 @@ class TestAPIEndpoints:
         data_source_client_name,
         mocker,
         mock_storage_refresh_needed,
-        disable_demo_mode,
+        # disable_demo_mode,
     ):
         mocker.patch(
             "app.api.GoogleFitAuth"
