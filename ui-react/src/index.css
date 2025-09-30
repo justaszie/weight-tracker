@@ -444,6 +444,11 @@ body {
     border: 1px solid #d1d9e6;
 }
 
+.spinner {
+    width: 4em;
+    color: #6b7280;
+}
+
 @media screen and (max-width: 945px) {
     .summary__cards-container {
         grid-template-columns: repeat(2, 1fr);

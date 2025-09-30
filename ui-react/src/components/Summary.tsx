@@ -4,6 +4,8 @@ import type { SummaryProps } from "@/types/props";
 import type { SummaryData, SummaryUrlParams } from "@/types/summary";
 import type { Goal } from "@/types/goal";
 
+import { ReactComponent as Spinner } from "@/assets/spinner.svg";
+
 import { toSignedString } from "@/utils";
 
 const GOAL_LABELS: { [key in Goal]: string } = {
@@ -15,6 +17,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Summary(props: SummaryProps) {
   const [summaryData, setSummaryData] = useState<SummaryData>({});
+  const [showSpinner, setShowSpinner] = useState(true);
 
   const { dateTo, dateFrom } = props.datesFilterValues ?? {};
   const { weeksLimit } = props.weeksFilterValues ?? {};
@@ -56,6 +59,7 @@ export default function Summary(props: SummaryProps) {
           props.showToast('error', err.message);
         }
       }
+      setShowSpinner(false);
     };
 
     fetchSummaryDataWithFilters();
@@ -82,8 +86,12 @@ export default function Summary(props: SummaryProps) {
         </p>
       </div>
 
-      {/* <!-- Cards --> */}
-      <ul className="summary__cards-container">
+
+      { showSpinner ? (
+        <Spinner className="spinner"/>
+      )
+        : (
+        <ul className="summary__cards-container">
         {props.latestEntry && props.latestEntry.weight && (
           <li className="summary-card">
             <p className="summary-card__header">
@@ -222,6 +230,9 @@ export default function Summary(props: SummaryProps) {
           </div>
         </li>
       </ul>
+      )}
+      {/* <!-- Cards --> */}
+
 
       {/* <!-- Goal Progress evaluation box --> */}
       {/* {props.goal_progress && (
