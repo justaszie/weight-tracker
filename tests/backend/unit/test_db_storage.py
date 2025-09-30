@@ -10,7 +10,9 @@ from app.db_storage import (
 )
 from app.project_types import WeightEntry
 
-TEST_DB_CONN_STRING = "postgresql+psycopg2://justas@localhost:5432/test_weight_tracker"
+TEST_DB_CONN_STRING = (
+    "postgresql+psycopg2://postgres@localhost:5432/test_weight_tracker"
+)
 
 
 @pytest.fixture
