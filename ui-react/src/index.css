@@ -194,6 +194,8 @@ body {
 .get-data__cta {
     display: flex;
     align-items: center;
+    justify-content: center;
+    width: 232px;
     padding: 10px 15px;
     gap: 6px;
     border-radius: var(--rounded-corners-btn);
@@ -203,9 +205,27 @@ body {
     font-weight: 500;
 }
 
-.get-data__cta:hover {
+
+
+.get-data__cta:hover,
+.get-data__cta:disabled {
     background-color: var(--clr-bg-inverse-muted);
+    cursor: pointer;
 }
+
+.get-data__cta:hover {
+    cursor: pointer;
+}
+
+.get-data__cta:disabled {
+    cursor: default;
+}
+
+
+.get-data__cta--loading {
+    justify-content: center;
+}
+
 
 .get-data__cta-icon,
 .weeks-filter__icon,
@@ -466,6 +486,11 @@ body {
     color: #6b7280;
 }
 
+.spinner--cta {
+    width: 21px;
+    color: white;
+}
+
 @media screen and (max-width: 945px) {
     .summary__cards-container {
         grid-template-columns: repeat(2, 1fr);
@@ -494,7 +519,6 @@ body {
 
     .get-data {
         order: 1;
-        max-width: 210px;
     }
 
     .filters {
