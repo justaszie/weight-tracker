@@ -88,11 +88,11 @@ body {
 .header__title {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 10px;
     font-size: var(--fs-header-title);
     font-weight: 700;
     color: var(--clr-text-header);
-    margin-bottom: 8px;
+    margin: 0 20px 8px 0;
     line-height: 2.25rem;
 }
 
@@ -103,6 +103,7 @@ body {
     color: #5a3d00;
     font-size: 0.85rem;
     font-weight: 600;
+    flex-shrink: 0;
 }
 
 .header__home-link {
