@@ -1,0 +1,1 @@
+[![Code Quality Check Flow](https://github.com/justaszie/weight-tracker/actions/workflows/backend_code_quality.yaml/badge.svg)](https://github.com/justaszie/weight-tracker/actions/workflows/backend_code_quality.yaml)
