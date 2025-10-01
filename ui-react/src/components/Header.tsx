@@ -11,7 +11,6 @@ export default function Header(props: HeaderProps) {
   }
 
   function isDemoMode() {
-    console.log(import.meta.env.VITE_DEMO_MODE)
     return (import.meta.env.VITE_DEMO_MODE == "true")
   }
 

@@ -14,10 +14,11 @@ const GOAL_LABELS: { [key in Goal]: string } = {
   gain: "Gaining Muscle",
 };
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_PREFIX = import.meta.env.VITE_API_PREFIX;
 
 export default function Summary(props: SummaryProps) {
   const [summaryData, setSummaryData] = useState<SummaryData>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [showSpinner, setShowSpinner] = useState(true);
 
   const { dateTo, dateFrom } = props.datesFilterValues ?? {};
   const { weeksLimit } = props.weeksFilterValues ?? {};
@@ -41,7 +42,7 @@ export default function Summary(props: SummaryProps) {
         urlParams["date_to"] = dateTo;
       }
 
-      const summaryURL = new URL(`${API_BASE_URL}/api/summary`);
+      const summaryURL = new URL(`${API_BASE_URL}/${API_PREFIX}/summary`);
       summaryURL.search = new URLSearchParams(urlParams).toString();
       try {
         const response = await fetch(summaryURL);
@@ -59,7 +60,7 @@ export default function Summary(props: SummaryProps) {
           props.showToast('error', err.message);
         }
       }
-      setIsLoading(false);
+      setShowSpinner(false);
     };
 
     fetchSummaryDataWithFilters();
@@ -87,7 +88,7 @@ export default function Summary(props: SummaryProps) {
       </div>
 
 
-      { isLoading ? (
+      { showSpinner ? (
         <Spinner className="spinner"/>
       )
         : (

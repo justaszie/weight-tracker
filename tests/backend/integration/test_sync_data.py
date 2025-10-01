@@ -186,7 +186,9 @@ def test_gfit_sync_new_entries(
         mock_gfit_client, "get_raw_data"
     ).return_value = test_raw_dataset
 
-    response = client_with_storage.post("/api/sync-data", json={"data_source": "gfit"})
+    response = client_with_storage.post(
+        "/api/v1/sync-data", json={"data_source": "gfit"}
+    )
     response_body = response.json()
 
     assert response.status_code == 200
@@ -194,7 +196,7 @@ def test_gfit_sync_new_entries(
     # In the test gfit raw data there are 5 new entries
     assert response_body["new_entries_count"] == 5
 
-    response = client_with_storage.get("/api/daily-entries")
+    response = client_with_storage.get("/api/v1/daily-entries")
     updated_daily_entries = response.json()
 
     assert response.status_code == 200
@@ -207,7 +209,7 @@ def test_gfit_sync_new_entries(
 
     # The sync-data should not update existing entries' weight value
     response = client_with_storage.get(
-        "/api/daily-entries",
+        "/api/v1/daily-entries",
         params={
             "date_from": "2025-08-25",
             "date_to": "2025-08-25",
@@ -234,7 +236,9 @@ def test_mfp_sync_new_entries(
     mocker.patch("app.api.get_data_source_client").return_value = mock_mfp_client
     mocker.patch.object(mock_mfp_client, "get_raw_data").return_value = test_raw_dataset
 
-    response = client_with_storage.post("/api/sync-data", json={"data_source": "gfit"})
+    response = client_with_storage.post(
+        "/api/v1/sync-data", json={"data_source": "gfit"}
+    )
     response_body = response.json()
 
     assert response.status_code == 200
@@ -242,7 +246,7 @@ def test_mfp_sync_new_entries(
     # In the test gfit raw data there are 5 new entries
     assert response_body["new_entries_count"] == 5
 
-    response = client_with_storage.get("/api/daily-entries")
+    response = client_with_storage.get("/api/v1/daily-entries")
     updated_daily_entries = response.json()
 
     assert response.status_code == 200
@@ -254,7 +258,7 @@ def test_mfp_sync_new_entries(
 
     # The sync-data should not update existing entries' weight value
     response = client_with_storage.get(
-        "/api/daily-entries",
+        "/api/v1/daily-entries",
         params={
             "date_from": "2025-08-25",
             "date_to": "2025-08-25",

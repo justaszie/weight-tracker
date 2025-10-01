@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from .api import router as api_router
+from .api import router_v1 as api_router
 from .db_storage import DatabaseStorage
 from .demo import DemoStorage
 from .file_storage import FileStorage
@@ -63,8 +63,8 @@ def create_app() -> FastAPI:
         allow_credentials=False,
     )
 
-    app.include_router(api_router, prefix="/api", tags=["weights"])
-    app.include_router(auth_router, prefix="/auth", tags=["auth"])
+    app.include_router(api_router)
+    app.include_router(auth_router, prefix="/auth")
 
     return app
 
