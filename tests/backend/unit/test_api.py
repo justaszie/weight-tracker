@@ -546,7 +546,7 @@ class TestAPIEndpoints:
 
         get_summary_fn.return_value = ProgressMetrics.model_validate(test_metrics_data)
 
-        response = client.get("/api/summary")
+        response = client.get("/api/v1/summary")
 
         assert response.status_code == 200
         assert response.json() == {"metrics": test_metrics_data}

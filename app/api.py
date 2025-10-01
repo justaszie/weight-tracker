@@ -68,7 +68,7 @@ class NoCredentialsError(Exception):
 MFP_SOURCE_NAME = "mfp"
 GFIT_SOURCE_NAME = "gfit"
 
-router = APIRouter()
+router_v1 = APIRouter(prefix="/api/v1", tags=["v1"])
 
 
 def get_data_storage(request: Request) -> DataStorage:
@@ -143,7 +143,7 @@ def get_filtered_weekly_entries(
     return weekly_entries
 
 
-@router.get("/daily-entries", response_model=list[WeightEntry])
+@router_v1.get("/daily-entries", response_model=list[WeightEntry])
 def get_daily_entries(
     data_storage: DataStorageDependency,
     date_from: dt.date | None = None,
@@ -164,7 +164,7 @@ def get_daily_entries(
         ) from e
 
 
-@router.get("/weekly-aggregates", response_model=WeeklyAggregateResponse)
+@router_v1.get("/weekly-aggregates", response_model=WeeklyAggregateResponse)
 def get_weekly_aggregates(
     data_storage: DataStorageDependency,
     date_from: dt.date | None = None,
@@ -195,7 +195,7 @@ def get_weekly_aggregates(
         ) from e
 
 
-@router.get("/summary", response_model=ProgressSummary)
+@router_v1.get("/summary", response_model=ProgressSummary)
 def get_summary(
     data_storage: DataStorageDependency,
     date_from: dt.date | None = None,
@@ -224,7 +224,7 @@ def get_summary(
         ) from e
 
 
-@router.get("/latest-entry", response_model=(WeightEntry | None))
+@router_v1.get("/latest-entry", response_model=(WeightEntry | None))
 def get_latest_entry(
     data_storage: DataStorageDependency,
 ) -> WeightEntry | None:
@@ -240,7 +240,7 @@ def get_latest_entry(
         ) from e
 
 
-@router.post(
+@router_v1.post(
     "/sync-data",
     response_model=DataSyncSuccessResponse,
     response_model_exclude_unset=True,
@@ -314,6 +314,6 @@ We're working on it",
         ) from e
 
 
-@router.get("/healthz")
+@router_v1.get("/healthz")
 def health_check() -> dict[str, str]:
     return {"status": "ok"}

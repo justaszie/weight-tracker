@@ -18,6 +18,7 @@ import { ReactComponent as MFPIcon } from "@/assets/MFPIcon.svg";
 const DEFAULT_WEEKS_LIMIT = 4;
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+const API_PREFIX = import.meta.env.VITE_API_PREFIX
 
 export default function Main(props: MainProps) {
   const [latestEntry, setLatestEntry] = useState<WeightEntry | null>(null);
@@ -39,7 +40,7 @@ export default function Main(props: MainProps) {
   useEffect(() => {
     const fetchLatestEntry = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/latest-entry`);
+        const response = await fetch(`${API_BASE_URL}/${API_PREFIX}/latest-entry`);
         if (!response.ok) {
           const body = await response.json();
           const errorMessage =

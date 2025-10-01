@@ -97,7 +97,7 @@ def client_with_storage(get_test_storage):
 
 def test_get_daily_entries(client_with_storage):
     response = client_with_storage.get(
-        "/api/daily-entries",
+        "/api/v1/daily-entries",
         params={"date_from": "2025-08-20", "date_to": "2025-09-01"},
     )
 
@@ -120,7 +120,7 @@ def test_get_daily_entries(client_with_storage):
 
 def test_get_weekly_entries_daily_filters(client_with_storage):
     response = client_with_storage.get(
-        "/api/weekly-aggregates",
+        "/api/v1/weekly-aggregates",
         params={"date_from": "2025-08-20", "date_to": "2025-09-01", "goal": "lose"},
     )
 
@@ -160,7 +160,7 @@ def test_get_weekly_entries_daily_filters(client_with_storage):
 
 def test_get_weekly_entries_weekly_filter(client_with_storage):
     response = client_with_storage.get(
-        "/api/weekly-aggregates",
+        "/api/v1/weekly-aggregates",
         params={"weeks_limit": "1", "goal": "gain"},
     )
 
@@ -192,7 +192,7 @@ def test_get_weekly_entries_weekly_filter(client_with_storage):
 
 def test_summary_daily_filter(client_with_storage):
     response = client_with_storage.get(
-        "/api/summary", params={"date_from": "2025-08-20", "date_to": "2025-09-01"}
+        "/api/v1/summary", params={"date_from": "2025-08-20", "date_to": "2025-09-01"}
     )
 
     expected = {
@@ -209,7 +209,7 @@ def test_summary_daily_filter(client_with_storage):
 
 
 def test_summary_weekly_filter(client_with_storage):
-    response = client_with_storage.get("/api/summary", params={"weeks_limit": "1"})
+    response = client_with_storage.get("/api/v1/summary", params={"weeks_limit": "1"})
 
     expected = {
         "metrics": {
@@ -225,7 +225,7 @@ def test_summary_weekly_filter(client_with_storage):
 
 
 def test_latest_entry(client_with_storage):
-    response = client_with_storage.get("/api/latest-entry")
+    response = client_with_storage.get("/api/v1/latest-entry")
 
     assert response.status_code == 200
     assert response.json() == {"entry_date": "2025-09-03", "weight": 72.5}

@@ -11,6 +11,7 @@ import { isDataSourceName, type DataSourceName } from "@/types/utils";
 const DEFAULT_GOAL = "maintain";
 const DEFAULT_DATA_SOURCE = "gfit";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_PREFIX = import.meta.env.VITE_API_PREFIX;
 
 function App() {
   const goalStored: Goal | null = localStorage.getItem("goalSelected") as Goal;
@@ -30,7 +31,7 @@ function App() {
 
   async function triggerDataSync(data_source?: DataSourceName) {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/sync-data`, {
+      const response = await fetch(`${API_BASE_URL}/${API_PREFIX}/sync-data`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

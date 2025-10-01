@@ -10,6 +10,7 @@ import type {
 import { ReactComponent as Spinner } from "@/assets/spinner.svg";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_PREFIX = import.meta.env.VITE_API_PREFIX;
 
 export default function WeeklyDataTable(props: WeeklyDataTableProps) {
   const [weeklyData, setWeeklyData] = useState([]);
@@ -67,7 +68,7 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
       if (dateTo) {
         urlParams["date_to"] = dateTo;
       }
-      const weeklyDataURL = new URL(`${API_BASE_URL}/api/weekly-aggregates`);
+      const weeklyDataURL = new URL(`${API_BASE_URL}/${API_PREFIX}/weekly-aggregates`);
       weeklyDataURL.search = new URLSearchParams(urlParams).toString();
       try {
         const response = await fetch(weeklyDataURL);

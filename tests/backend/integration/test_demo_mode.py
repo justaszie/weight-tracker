@@ -37,7 +37,7 @@ class TestDemoGetData:
     # when DEMO_MODE is set to true, and the data will be fetched using DemoStorage
 
     def test_get_latest_entry(self, client, demo_storage_entries):
-        response = client.get("/api/latest-entry")
+        response = client.get("/api/v1/latest-entry")
         expected_last_entry = sorted(
             demo_storage_entries, key=lambda entry: entry.entry_date
         )[-1]
@@ -46,7 +46,7 @@ class TestDemoGetData:
         assert response.json() == expected_last_entry.model_dump(mode="json")
 
     def test_get_daily_entries(self, client, demo_storage_entries):
-        response = client.get("/api/daily-entries")
+        response = client.get("/api/v1/daily-entries")
 
         expected = TypeAdapter(list[WeightEntry]).validate_python(demo_storage_entries)
         expected_json = TypeAdapter(list[WeightEntry]).dump_python(
@@ -60,7 +60,7 @@ class TestDemoGetData:
         # Given: demo storage daily entries, weeks_limit param, and goal param
         # Expected: one entry for each week, sorted from the latest, with one additional reference week
         response = client.get(
-            "/api/weekly-aggregates",
+            "/api/v1/weekly-aggregates",
             params={
                 "weeks_limit": "1",
                 "goal": "lose",
@@ -95,7 +95,7 @@ class TestDemoGetData:
         # the metrics calculated over N weeks using analytics module
 
         response = client.get(
-            "/api/summary",
+            "/api/v1/summary",
             params={
                 "weeks_limit": "2",
             },
@@ -151,19 +151,19 @@ class TestDemoSyncData:
             entry for entry in existing_entries if entry.entry_date in data_source_dates
         ][0]
 
-        response = client.post("/api/sync-data", json={"data_source": "gfit"})
+        response = client.post("/api/v1/sync-data", json={"data_source": "gfit"})
 
         assert response.status_code == 200
         assert response.json()["status"] == "sync_success"
         assert response.json()["new_entries_count"] == expected_delta_count
 
-        response = client.get("/api/daily-entries")
+        response = client.get("/api/v1/daily-entries")
 
         assert response.status_code == 200
         assert len(response.json()) == len(existing_entries) + expected_delta_count
 
         response = client.get(
-            "api/daily-entries",
+            "/api/v1/daily-entries",
             params={
                 "date_from": expected_new_entry.entry_date.isoformat(),
                 "date_to": expected_new_entry.entry_date.isoformat(),
@@ -173,7 +173,7 @@ class TestDemoSyncData:
         assert response.json()[0]["weight"] == expected_new_entry.weight
 
         response = client.get(
-            "api/daily-entries",
+            "/api/v1/daily-entries",
             params={
                 "date_from": expected_unchanged_entry.entry_date.isoformat(),
                 "date_to": expected_unchanged_entry.entry_date.isoformat(),
