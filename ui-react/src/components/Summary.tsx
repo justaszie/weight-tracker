@@ -17,7 +17,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Summary(props: SummaryProps) {
   const [summaryData, setSummaryData] = useState<SummaryData>({});
-  const [showSpinner, setShowSpinner] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   const { dateTo, dateFrom } = props.datesFilterValues ?? {};
   const { weeksLimit } = props.weeksFilterValues ?? {};
@@ -59,7 +59,7 @@ export default function Summary(props: SummaryProps) {
           props.showToast('error', err.message);
         }
       }
-      setShowSpinner(false);
+      setIsLoading(false);
     };
 
     fetchSummaryDataWithFilters();
@@ -87,7 +87,7 @@ export default function Summary(props: SummaryProps) {
       </div>
 
 
-      { showSpinner ? (
+      { isLoading ? (
         <Spinner className="spinner"/>
       )
         : (

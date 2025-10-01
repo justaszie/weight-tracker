@@ -13,7 +13,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function WeeklyDataTable(props: WeeklyDataTableProps) {
   const [weeklyData, setWeeklyData] = useState([]);
-  const [showSpinner, setShowSpinner] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   function weekToRow(weekEntry: WeeklyDataEntry) {
     const { result } = weekEntry;
@@ -90,7 +90,7 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
           props.showToast("error", err.message);
         }
       }
-      setShowSpinner(false);
+      setIsLoading(false);
     };
 
     fetchDataWithFilters();
@@ -104,7 +104,7 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
 
   return (
     <section>
-      {showSpinner ? (
+      {isLoading ? (
         <Spinner className="spinner" />
       ) : (
         <table className="data-table">

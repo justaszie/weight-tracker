@@ -29,7 +29,7 @@ export default function Main(props: MainProps) {
   const [datesFilterValues, setDatesFilterValues] = useState<DatesFilterValues>(
     {}
   );
-  const [showSpinner, setShowSpinner] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   const dataSources: DataSourceCTA[] = [
     { srcName: "gfit", ctaText: "Get Google Fit Data", icon: GoogleIcon },
@@ -55,7 +55,7 @@ export default function Main(props: MainProps) {
           props.showToast("error", err.message);
         }
       }
-      setShowSpinner(false);
+      setIsLoading(false);
     };
 
     fetchLatestEntry();
@@ -99,7 +99,7 @@ export default function Main(props: MainProps) {
               />
             ))}
 
-            {showSpinner ? <Spinner className="spinner" /> : (latestEntry !== null && (
+            {isLoading ? <Spinner className="spinner" /> : (latestEntry !== null && (
               <p>Latest entry: {latestEntry.entry_date ?? "No Data Yet"}</p>
             ))}
           </div>
