@@ -1,3 +1,4 @@
+import logging
 import os
 import secrets
 from contextlib import asynccontextmanager
@@ -13,6 +14,14 @@ from .demo import DemoStorage
 from .file_storage import FileStorage
 from .google_fit import router as auth_router
 from .project_types import DataStorage
+
+logging.basicConfig(
+    format="[{levelname}] - {asctime} - {name}: {message}",
+    style="{",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    level=logging.INFO,
+)
+logger = logging.getLogger(__name__)
 
 
 def create_data_storage() -> DataStorage:
@@ -30,15 +39,20 @@ def create_data_storage() -> DataStorage:
                 raise ValueError(f"Unsupported storage type {storage_type}")
 
 
-# Instantiating storage as part of app startup
+# Instantiating storage and logging config as part of app startup
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # type: ignore
-    app.state.data_storage = create_data_storage()
+    data_storage = create_data_storage()
+    app.state.data_storage = data_storage
+    logger.info(
+        f"App started with {data_storage.__class__.__name__} as Storage Backend"
+    )
 
     yield
 
     if app.state.data_storage:
         app.state.data_storage.close_connection()
+        logger.info(f"{data_storage.__class__.__name__} closed")
 
 
 def create_app() -> FastAPI:

@@ -1,4 +1,4 @@
-import traceback
+import logging
 from collections.abc import Callable, Sequence
 from functools import wraps
 from typing import Any, ParamSpec, TypeVar
@@ -10,6 +10,8 @@ from .project_types import (
     DataStorage,
     WeightEntry,
 )
+
+logger = logging.getLogger(__name__)
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -68,7 +70,13 @@ class DataIntegrationService:
         try:
             self.source.store_raw_data(raw_data)
         except Exception:
-            traceback.print_exc()
+            logger.warning(
+                "Failed to store a copy of raw data",
+                exc_info=True,
+                extra={
+                    "data_source": self.source.__class__.__name__,
+                },
+            )
 
     @raises_sync_error
     def convert_to_daily_entries(self, raw_data: Any) -> list[WeightEntry]:

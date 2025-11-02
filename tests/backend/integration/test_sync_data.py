@@ -201,7 +201,6 @@ def test_gfit_sync_new_entries(
 
     assert response.status_code == 200
     assert len(updated_daily_entries) == len(sample_daily_entries) + 5
-    print(updated_daily_entries)
     new_entry = [
         entry for entry in updated_daily_entries if entry["entry_date"] == "2025-09-04"
     ][0]
