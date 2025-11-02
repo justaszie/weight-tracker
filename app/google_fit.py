@@ -1,7 +1,7 @@
 import datetime as dt
 import json
+import logging
 import os
-import traceback
 from pathlib import Path
 from typing import Any, cast
 
@@ -15,6 +15,8 @@ from googleapiclient.discovery import build  # pyright: ignore
 from googleapiclient.errors import HttpError
 
 from .project_types import WeightEntry
+
+logger = logging.getLogger(__name__)
 
 ### CONFIGS ###
 SCOPES = [
@@ -141,7 +143,9 @@ class GoogleFitAuth:
                 self.save_auth_token_to_file(creds)
                 return creds
             except Exception:
-                traceback.print_exc()
+                logger.warning(
+                    "Failed to refresh expired credentials. Re-auth is required"
+                )
 
         return None
 
@@ -159,13 +163,15 @@ class GoogleFitClient:
         self, date_from: str | None = None, date_to: str | None = None
     ) -> Any:
         if not self.creds:
-            print("Cannot get data from Google Fit API without valid credentials")
+            logger.error(
+                "Cannot get data from Google Fit API without valid credentials"
+            )
             raise NoCredentialsError
 
         try:
             fitness_service = build("fitness", "v1", credentials=self.creds)
         except Exception:
-            traceback.print_exc()
+            logger.exception("Error while building Google Fit API service")
             raise
 
         # Get all available data
@@ -189,14 +195,26 @@ class GoogleFitClient:
         try:
             dataset = request.execute()  # pyright: ignore
         except HttpError as e:
-            print(
-                f"Error response status code : \
-                    {e.resp.status}, reason : {e.error_details}"
+            logger.exception(
+                "Google Fit API request failed",
+                extra={
+                    "data_source": DATA_SOURCE,
+                    "data_set": DATA_SET,
+                    "user_id": "me",
+                    "resp_status_code": e.resp.status,
+                    "resp_error_details": e.error_details,
+                },
             )
-            traceback.print_exc()
             raise
         except Exception:
-            traceback.print_exc()
+            logger.exception(
+                "Google Fit API request failed",
+                extra={
+                    "data_source": DATA_SOURCE,
+                    "data_set": DATA_SET,
+                    "user_id": "me",
+                },
+            )
             raise
         finally:
             fitness_service.close()

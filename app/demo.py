@@ -1,6 +1,6 @@
 import datetime as dt
 import json
-import traceback
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -8,6 +8,8 @@ from pydantic import TypeAdapter
 
 from . import utils
 from .project_types import WeightEntry
+
+logger = logging.getLogger(__name__)
 
 
 class DemoStorage:
@@ -18,7 +20,7 @@ class DemoStorage:
 
     def __init__(self) -> None:
         self._data: list[WeightEntry] = DemoStorage._load_weights_from_file()
-        print(f"DemoStorage initialized with {len(self._data)} entries")
+        logger.info(f"DemoStorage created with {len(self._data)} demo weight entries")
 
     def get_weight_entries(self) -> list[WeightEntry]:
         return self._data
@@ -82,8 +84,12 @@ class DemoStorage:
 
             return weight_entries
         except FileNotFoundError:
-            traceback.print_exc()
-            print("Data file missing. Creating empty file")
+            logger.warning(
+                "Demo data file missing. Creating empty file",
+                extra={
+                    "filepath": cls.DAILY_ENTRIES_MAIN_FILE_PATH,
+                },
+            )
             cls.DAILY_ENTRIES_MAIN_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
             cls.DAILY_ENTRIES_MAIN_FILE_PATH.write_text(json.dumps([]))
 

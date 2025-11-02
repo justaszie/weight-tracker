@@ -1,6 +1,6 @@
 import datetime as dt
+import logging
 import os
-import traceback
 from pathlib import Path
 
 import pandas as pd
@@ -15,6 +15,8 @@ from sqlmodel import (
 
 from . import utils
 from .project_types import WeightEntry
+
+logger = logging.getLogger(__name__)
 
 
 class DBWeightEntry(SQLModel, table=True):
@@ -106,9 +108,15 @@ class DatabaseStorage:
             entries = [entry.model_dump() for entry in self.get_weight_entries()]
             pd.DataFrame(entries).set_index(  # pyright: ignore[reportUnknownMemberType]
                 "entry_date"
-            ).to_csv(DatabaseStorage.DAILY_ENTRIES_CSV_FILE_PATH)
+            ).to_csv(self.DAILY_ENTRIES_CSV_FILE_PATH)
         except Exception:
-            traceback.print_exc()
+            logger.warning(
+                "Failed to export weight entries to csv",
+                exc_info=True,
+                extra={
+                    "filepath": self.DAILY_ENTRIES_CSV_FILE_PATH,
+                },
+            )
 
     def close_connection(self) -> None:
         if self._engine:

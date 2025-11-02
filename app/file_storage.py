@@ -1,6 +1,6 @@
 import datetime as dt
 import json
-import traceback
+import logging
 from pathlib import Path
 
 import pandas as pd
@@ -8,6 +8,8 @@ from pydantic import TypeAdapter
 
 from . import utils
 from .project_types import WeightEntry
+
+logger = logging.getLogger(__name__)
 
 
 class FileStorage:
@@ -81,9 +83,15 @@ class FileStorage:
             entries = [entry.model_dump() for entry in self._data]
             pd.DataFrame(entries).set_index(  # pyright: ignore[reportUnknownMemberType]
                 "entry_date"
-            ).to_csv(FileStorage.DAILY_ENTRIES_CSV_FILE_PATH)
+            ).to_csv(self.DAILY_ENTRIES_CSV_FILE_PATH)
         except Exception:
-            traceback.print_exc()
+            logger.warning(
+                "Failed to export weight entries to csv",
+                exc_info=True,
+                extra={
+                    "filepath": self.DAILY_ENTRIES_CSV_FILE_PATH,
+                },
+            )
 
     def data_refresh_needed(self) -> bool:
         if not self._data:
@@ -100,8 +108,7 @@ class FileStorage:
 
             return weight_entries
         except FileNotFoundError:
-            traceback.print_exc()
-            print("Data file missing. Creating empty file")
+            logger.warning("Data file missing. Creating empty file")
             cls.DAILY_ENTRIES_MAIN_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
             cls.DAILY_ENTRIES_MAIN_FILE_PATH.write_text(json.dumps([]))
 
