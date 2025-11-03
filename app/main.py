@@ -27,6 +27,13 @@ def configure_logging() -> None:
     logging.getLogger("googleapiclient").setLevel(logging.ERROR)
 
 
+def log_dotenv_configuration() -> None:
+    logger.info("=== Application Configuration ===")
+    logger.info(f"DEMO_MODE: {os.environ.get('DEMO_MODE', 'false')}")
+    logger.info(f"STORAGE_TYPE: {os.environ.get('STORAGE_TYPE', 'database')}")
+    logger.info("=================================")
+
+
 def create_data_storage() -> DataStorage:
     if os.environ.get("DEMO_MODE", "false") == "true":
         return DemoStorage()
@@ -88,7 +95,8 @@ def create_app() -> FastAPI:
 load_dotenv()
 
 configure_logging()
-
 logger = logging.getLogger(__name__)
+
+log_dotenv_configuration()
 
 app = create_app()
