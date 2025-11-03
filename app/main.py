@@ -15,17 +15,19 @@ from .file_storage import FileStorage
 from .google_fit import router as auth_router
 from .project_types import DataStorage
 
-logging.basicConfig(
-    format="[{levelname}] - {asctime} - {name}: {message}",
-    style="{",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    level=logging.INFO,
-)
-logger = logging.getLogger(__name__)
+
+def configure_logging() -> None:
+    logging.basicConfig(
+        format="[{levelname}] - {asctime} - {name}: {message}",
+        style="{",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        level=logging.INFO,
+    )
+
+    logging.getLogger("googleapiclient").setLevel(logging.ERROR)
 
 
 def create_data_storage() -> DataStorage:
-    load_dotenv()
     if os.environ.get("DEMO_MODE", "false") == "true":
         return DemoStorage()
     else:
@@ -82,5 +84,11 @@ def create_app() -> FastAPI:
 
     return app
 
+
+load_dotenv()
+
+configure_logging()
+
+logger = logging.getLogger(__name__)
 
 app = create_app()
