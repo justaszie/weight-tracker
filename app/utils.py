@@ -38,11 +38,9 @@ def get_latest_entry_date(
         return sorted(daily_entries, key=lambda x: x.entry_date)[-1].entry_date
     except Exception:
         logger.warning(
-            "Failed to get the date of the latest weight entry",
+            "Failed to get the date of the latest weight entry"
+            f"Entries count: {len(daily_entries)}",
             exc_info=True,
-            extra={
-                "entries_count": len(daily_entries),
-            },
         )
         return None
 
@@ -57,10 +55,7 @@ def get_latest_daily_entry(
         return sorted(daily_entries, key=lambda x: x.entry_date)[-1]
     except Exception:
         logger.warning(
-            "Failed to get the latest weight entry",
+            f"Failed to get the latest weight entryEntries count: {len(daily_entries)}",
             exc_info=True,
-            extra={
-                "entries_count": len(daily_entries),
-            },
         )
         return None

@@ -196,24 +196,13 @@ class GoogleFitClient:
             dataset = request.execute()  # pyright: ignore
         except HttpError as e:
             logger.exception(
-                "Google Fit API request failed",
-                extra={
-                    "data_source": DATA_SOURCE,
-                    "data_set": DATA_SET,
-                    "user_id": "me",
-                    "resp_status_code": e.resp.status,
-                    "resp_error_details": e.error_details,
-                },
+                f"Google Fit API request failed. Dataset Requested: {DATA_SET} \n"
+                f"Status: {e.resp.status}, Error: {e.error_details}"
             )
             raise
         except Exception:
             logger.exception(
-                "Google Fit API request failed",
-                extra={
-                    "data_source": DATA_SOURCE,
-                    "data_set": DATA_SET,
-                    "user_id": "me",
-                },
+                f"Google Fit API request failed. Dataset Requested: {DATA_SET} \n"
             )
             raise
         finally:

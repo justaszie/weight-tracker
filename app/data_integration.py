@@ -71,11 +71,9 @@ class DataIntegrationService:
             self.source.store_raw_data(raw_data)
         except Exception:
             logger.warning(
-                "Failed to store a copy of raw data",
+                "Failed to store a copy of raw data\n"
+                f"Data Source: {self.source.__class__.__name__}",
                 exc_info=True,
-                extra={
-                    "data_source": self.source.__class__.__name__,
-                },
             )
 
     @raises_sync_error

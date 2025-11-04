@@ -86,9 +86,7 @@ class DemoStorage:
         except FileNotFoundError:
             logger.warning(
                 "Demo data file missing. Creating empty file",
-                extra={
-                    "filepath": cls.DAILY_ENTRIES_MAIN_FILE_PATH,
-                },
+                f"Filepath: {cls.DAILY_ENTRIES_MAIN_FILE_PATH}",
             )
             cls.DAILY_ENTRIES_MAIN_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
             cls.DAILY_ENTRIES_MAIN_FILE_PATH.write_text(json.dumps([]))

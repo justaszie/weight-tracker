@@ -35,6 +35,7 @@ class DatabaseStorage:
     def __init__(self) -> None:
         connection_string = os.environ.get("DB_CONNECTION_STRING")
         if not connection_string:
+            logger.error("Missing database connection string in environment")
             raise Exception("Missing database connection string in environment")
         self._engine = create_engine(connection_string)
 
@@ -60,6 +61,10 @@ class DatabaseStorage:
                 session.add(new_entry)
                 session.commit()
             except IntegrityError as e:
+                logger.warning(
+                    f"Duplicate weight entry creation attempted. Date: {entry_date}",
+                    exc_info=True,
+                )
                 raise ValueError(
                     f"Weight entry already exists for date"
                     f" {entry_date.strftime('%Y-%m-%d')}."
@@ -84,6 +89,9 @@ class DatabaseStorage:
         with Session(self._engine) as session:
             entry = session.get(DBWeightEntry, entry_date)
             if not entry:
+                logger.warning(
+                    f"Update on non-existing weight entry attempted. date: {entry_date}"
+                )
                 raise ValueError(
                     "Weight entry doesn't exist for this date. "
                     "Use create method to create it."
@@ -98,6 +106,9 @@ class DatabaseStorage:
         with Session(self._engine) as session:
             entry = session.get(DBWeightEntry, entry_date)
             if not entry:
+                logger.warning(
+                    f"Delete on non-existing weight entry attempted. date: {entry_date}"
+                )
                 raise ValueError("Weight entry doesn't exist for this date.")
 
             session.delete(entry)
@@ -111,11 +122,9 @@ class DatabaseStorage:
             ).to_csv(self.DAILY_ENTRIES_CSV_FILE_PATH)
         except Exception:
             logger.warning(
-                "Failed to export weight entries to csv",
+                "Failed to export weight entries to csv"
+                f"Filepath: {self.DAILY_ENTRIES_CSV_FILE_PATH}",
                 exc_info=True,
-                extra={
-                    "filepath": self.DAILY_ENTRIES_CSV_FILE_PATH,
-                },
             )
 
     def close_connection(self) -> None:
