@@ -1,6 +1,6 @@
 import datetime as dt
+import logging
 import os
-import traceback
 from collections.abc import Sequence
 from typing import (
     Annotated,
@@ -69,6 +69,8 @@ MFP_SOURCE_NAME = "mfp"
 GFIT_SOURCE_NAME = "gfit"
 
 router_v1 = APIRouter(prefix="/api/v1", tags=["v1"])
+
+logger = logging.getLogger(__name__)
 
 
 def get_data_storage(request: Request) -> DataStorage:
@@ -156,11 +158,12 @@ def get_daily_entries(
 
     try:
         body = get_filtered_daily_entries(data_storage, date_from, date_to)
+        logger.info(f"Fetched {len(body)} daily weight entries")
         return body
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Error while getting daily weight data")
         raise HTTPException(
-            status_code=500, detail="Error while getting weight data"
+            status_code=500, detail="Error while getting daily weight data"
         ) from e
 
 
@@ -184,12 +187,14 @@ def get_weekly_aggregates(
         weekly_entries: list[WeeklyAggregateEntry] = get_filtered_weekly_entries(
             daily_entries, goal, weeks_limit
         )
+        logger.info(
+            f"Calculated weekly weight aggregates for {len(weekly_entries)} + 1 weeks"
+        )
 
         body = WeeklyAggregateResponse(weekly_data=weekly_entries, goal=goal)
-
         return body
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Calculating weekly aggregates failed")
         raise HTTPException(
             status_code=500, detail="Error while getting analytics data"
         ) from e
@@ -214,11 +219,14 @@ def get_summary(
             daily_entries, utils.DEFAULT_GOAL, weeks_limit
         )
         progress_metrics = analytics.get_summary(weekly_entries)
-        body = ProgressSummary(metrics=progress_metrics)
+        logger.info(
+            f"Weight progress metrics calculated for {len(weekly_entries)} + 1 weeks"
+        )
 
+        body = ProgressSummary(metrics=progress_metrics)
         return body
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Fetching weight progress summary failed")
         raise HTTPException(
             status_code=500, detail="Error while getting analytics data"
         ) from e
@@ -231,10 +239,15 @@ def get_latest_entry(
     try:
         daily_entries = data_storage.get_weight_entries()
         latest_daily_entry = utils.get_latest_daily_entry(daily_entries)
-
+        if latest_daily_entry:
+            logger.info(
+                f"Latest weight entry fetched: {latest_daily_entry.model_dump()}"
+            )
+        else:
+            logger.warning("No latest weight entry found")
         return latest_daily_entry
     except Exception as e:
-        traceback.print_exc()
+        logger.exception("Fetching latest daily weight entry failed")
         raise HTTPException(
             status_code=500, detail="Error while getting weight data"
         ) from e
@@ -257,15 +270,22 @@ def sync_data(
     data_storage: DataStorageDependency,
 ) -> DataSyncSuccessResponse | JSONResponse:
     if not data_storage.data_refresh_needed():
+        logger.info("Data sync skipped - already up to date")
         return DataSyncSuccessResponse(
             status="data_up_to_date", message="Your data is already up to date"
         )
 
+    logger.info(f"Starting weights data sync for source: {sync_request.data_source}")
     data_source = sync_request.data_source
 
     try:
         data_source_client = get_data_source_client(data_source)
+        logger.info(
+            "Data Source client for syncing initialized:"
+            f" {data_source_client.__class__.__name__}"
+        )
     except NoCredentialsError:
+        logger.warning("Google Fit credentials missing or expired")
         return JSONResponse(
             status_code=401,
             content={
@@ -279,21 +299,24 @@ def sync_data(
     try:
         new_entries = data_integration.refresh_weight_entries(store_raw_copy=True)
         if new_entries:
+            logger.info(f"Weight data synced with {len(new_entries)} new entry(ies)")
             return DataSyncSuccessResponse(
                 status="sync_success",
                 message="Data updated successfully",
                 new_entries_count=len(new_entries),
             )
         else:
+            logger.info("No new data found when syncing weight entries")
             return DataSyncSuccessResponse(
                 status="no_new_data", message="No new data was found"
             )
     except SourceNoDataError:
+        logger.info("No weights data was received from source")
         return DataSyncSuccessResponse(
             status="no_data_received", message="No data received"
         )
     except SourceFetchError as e:
-        traceback.print_exc()
+        logger.exception("Fetching weight data from source failed")
         if data_source == MFP_SOURCE_NAME:
             error_message = "We couldn't connect to MyFitnessPal. Please check \
 if you're logged in and try again."
@@ -306,7 +329,7 @@ if you're logged in and try again."
 
         raise HTTPException(status_code=500, detail=error_message) from e
     except DataSyncError as e:
-        traceback.print_exc()
+        logger.exception("Syncing weight data failed")
         raise HTTPException(
             status_code=500,
             detail="We're having trouble syncing your data. \

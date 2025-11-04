@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import pandas as pd
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from google.auth.transport.requests import Request as GoogleRequest
 from google.oauth2.credentials import Credentials
@@ -42,7 +42,6 @@ RAW_DATA_FILE_PATH: Path = Path.joinpath(
     BASE_DIR, DATA_DIR, "raw", "gfit", RAW_DATA_FILE_NAME
 )
 
-FRONTEND_REDIRECT_URL = "http://localhost:5173/"
 
 # FOR DEVELOPMENT ONLY: allow google to send authorization to HTTP (insecure)
 # endpoint of this app. For testing.
@@ -74,6 +73,8 @@ def google_signin(request: Request) -> RedirectResponse:
     request.session["state"] = state
 
     authorization_url = cast(str, authorization_url)
+    logger.info("Redirecting user to Google API consent URL")
+
     return RedirectResponse(authorization_url)
 
 
@@ -96,12 +97,24 @@ def handle_google_auth_callback(request: Request) -> RedirectResponse:
     )
 
     creds: Credentials = flow.credentials  # pyright: ignore
+    logger.info("Google Fit access token received")
     # Save access token for future API usage without auth flow
     GoogleFitAuth().save_auth_token_to_file(creds)  # pyright: ignore
 
     initiator_query_str = "initiator=data_source_auth_success&source=gfit"
 
-    return RedirectResponse(FRONTEND_REDIRECT_URL + "?" + initiator_query_str)
+    frontend_url = os.environ.get("FRONTEND_REDIRECT_URL")
+    if not frontend_url:
+        error_message = (
+            "Auth success but frontend URL config for redirection is missing"
+        )
+        logger.error(error_message)
+        raise HTTPException(status_code=500, detail=error_message)
+
+    redirect_url = f"{frontend_url}?{initiator_query_str}"
+    logger.info("Redirecting user back to frontend after gfit auth")
+
+    return RedirectResponse(redirect_url)
 
 
 #################################
@@ -140,6 +153,7 @@ class GoogleFitAuth:
             try:
                 creds.refresh(GoogleRequest())  # type: ignore
                 # Save the credentials for future runs
+                logger.info("Gfit access token refreshed successfully")
                 self.save_auth_token_to_file(creds)
                 return creds
             except Exception:
@@ -194,26 +208,16 @@ class GoogleFitClient:
         dataset = None
         try:
             dataset = request.execute()  # pyright: ignore
+            logger.info("Fetched raw data from gfit API successfully")
         except HttpError as e:
             logger.exception(
-                "Google Fit API request failed",
-                extra={
-                    "data_source": DATA_SOURCE,
-                    "data_set": DATA_SET,
-                    "user_id": "me",
-                    "resp_status_code": e.resp.status,
-                    "resp_error_details": e.error_details,
-                },
+                f"Google Fit API request failed. Dataset Requested: {DATA_SET} \n"
+                f"Status: {e.resp.status}, Error: {e.error_details}"
             )
             raise
         except Exception:
             logger.exception(
-                "Google Fit API request failed",
-                extra={
-                    "data_source": DATA_SOURCE,
-                    "data_set": DATA_SET,
-                    "user_id": "me",
-                },
+                f"Google Fit API request failed. Dataset Requested: {DATA_SET} \n"
             )
             raise
         finally:
@@ -236,7 +240,10 @@ class GoogleFitClient:
 
         data = self._extract_datapoints(raw_dataset)
         if not data:
+            logger.info("Skipping raw data conversion - raw dataset empty")
             return []
+
+        logger.info(f"Converting {len(data)} raw datapoints to daily entries")
 
         df: pd.DataFrame = pd.DataFrame.from_records(data)  # pyright: ignore
 
@@ -268,9 +275,17 @@ class GoogleFitClient:
         filtered_df = df[(df["weight"] > 50) & (df["weight"] < 100)]
 
         records = filtered_df.to_dict(orient="records")  # pyright: ignore
-        return [WeightEntry.model_validate(record) for record in records]
+        daily_entries = [WeightEntry.model_validate(record) for record in records]
+        logger.info(
+            f"Converted {len(data)} datapoints to {len(daily_entries)} daily entries"
+        )
+        return daily_entries
 
     def _extract_datapoints(self, raw_dataset: Any) -> list[Any]:
+        if "point" not in raw_dataset:
+            logger.warning("Google Fit response missing 'point' data")
+            return []
+
         return cast(list[dict[str, Any]], raw_dataset["point"])
 
 

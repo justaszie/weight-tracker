@@ -39,6 +39,9 @@ class FileStorage:
             entry for entry in self._data if entry.entry_date == entry_date
         ]
         if existing:
+            logger.warning(
+                f"Duplicate weight entry creation attempted. Date: {entry_date}"
+            )
             raise ValueError(
                 f"Weight entry already exists for date"
                 f" {entry_date.strftime('%Y-%m-%d')}."
@@ -53,6 +56,9 @@ class FileStorage:
             entry for entry in self._data if entry.entry_date == entry_date
         ]
         if not existing:
+            logger.warning(
+                f"Delete on non-existing weight entry attempted. date: {entry_date}"
+            )
             raise ValueError("Weight entry doesn't exist for this date.")
 
         self._data = [entry for entry in self._data if entry.entry_date != entry_date]
@@ -62,6 +68,9 @@ class FileStorage:
             entry for entry in self._data if entry.entry_date == entry_date
         ]
         if not existing:
+            logger.warning(
+                f"Update on non-existing weight entry attempted. date: {entry_date}"
+            )
             raise ValueError(
                 "Weight entry doesn't exist for this date. ' \
             'Use create method to create it."
@@ -86,11 +95,9 @@ class FileStorage:
             ).to_csv(self.DAILY_ENTRIES_CSV_FILE_PATH)
         except Exception:
             logger.warning(
-                "Failed to export weight entries to csv",
+                "Failed to export weight entries to csv"
+                f"Filepath: {self.DAILY_ENTRIES_CSV_FILE_PATH}",
                 exc_info=True,
-                extra={
-                    "filepath": self.DAILY_ENTRIES_CSV_FILE_PATH,
-                },
             )
 
     def data_refresh_needed(self) -> bool:
