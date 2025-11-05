@@ -103,7 +103,7 @@ def handle_google_auth_callback(request: Request) -> RedirectResponse:
 
     initiator_query_str = "initiator=data_source_auth_success&source=gfit"
 
-    frontend_url = os.environ.get("FRONTEND_REDIRECT_URL")
+    frontend_url = os.environ.get("FRONTEND_URL")
     if not frontend_url:
         error_message = (
             "Auth success but frontend URL config for redirection is missing"
