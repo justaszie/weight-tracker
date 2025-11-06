@@ -3,7 +3,12 @@ import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Main from "@/components/Main";
 import Toast from "@/components/Toast";
+import Login from "@/components/Login";
+import { ReactComponent as Spinner } from "@/assets/spinner.svg";
 
+import { supabase } from "./supabaseClient";
+
+import type { Session } from "@supabase/supabase-js";
 import type { Goal } from "@/types/goal";
 import type { ToastMessageCategory, ToastMessage } from "@/types/toast";
 import { isDataSourceName, type DataSourceName } from "@/types/utils";
@@ -14,8 +19,10 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const API_PREFIX = import.meta.env.VITE_API_PREFIX;
 
 function App() {
-  const goalStored: Goal | null = localStorage.getItem("goalSelected") as Goal;
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState<Boolean>(true);
 
+  const goalStored: Goal | null = localStorage.getItem("goalSelected") as Goal;
   const [goalSelected, setGoalSelected] = useState<Goal>(
     goalStored ?? DEFAULT_GOAL
   );
@@ -72,10 +79,21 @@ function App() {
   }
 
   useEffect(() => {
-    // 1) persist the goal value from the state to local storage
+    // 1) Set up callbacks that will get and update
+    // the authenticated user session (if logged in)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setIsLoading(false);
+    });
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setIsLoading(false);
+    });
+
+    // 2) persist the goal value from the state to local storage
     localStorage.setItem("goalSelected", goalSelected);
 
-    // 2) if we come from successful data source authentication, trigger data sync
+    // 3) if we come from successful data source authentication, trigger data sync
     const queryParams = new URLSearchParams(window.location.search);
     if (queryParams.get("initiator") === "data_source_auth_success") {
       const dataSource = queryParams.get("source");
@@ -95,16 +113,29 @@ function App() {
     setDataSyncComplete(true);
   }
 
+  if (isLoading) {
+    return <Spinner className="spinner" />;
+  }
+
   return (
     <div className="page">
-      <Header handleGoalChange={handleGoalChange} goalSelected={goalSelected} />
-      <Main
-        goalSelected={goalSelected}
-        handleDataSyncComplete={markDataSyncComplete}
-        dataSyncComplete={dataSyncComplete}
-        onDataSyncRequest={triggerDataSync}
-        showToast={showToast}
-      />
+      {session == null ? (
+        <Login />
+      ) : (
+        <>
+          <Header
+            handleGoalChange={handleGoalChange}
+            goalSelected={goalSelected}
+          />
+          <Main
+            goalSelected={goalSelected}
+            handleDataSyncComplete={markDataSyncComplete}
+            dataSyncComplete={dataSyncComplete}
+            onDataSyncRequest={triggerDataSync}
+            showToast={showToast}
+          />
+        </>
+      )}
       {toast && <Toast message={toast.message} category={toast.category} />}
     </div>
   );
