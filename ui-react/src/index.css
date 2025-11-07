@@ -117,6 +117,26 @@ body {
 }
 
 
+.profile {
+    padding-top: 15px;
+}
+
+.profile__header {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--clr-text-inverse-muted);
+}
+
+.profile__signout {
+    color: var(--clr-text-header);
+}
+
+.profile__icon {
+    width: 16px;
+    fill: var(--clr-text-inverse-muted);
+}
+
 
 .goal-selection {
     display: flex;
@@ -246,7 +266,6 @@ body {
 .weeks-filter__icon,
 .dates-filter__icon {
     width: 18px;
-    height: 18px;
 }
 
 .weeks-filter,
@@ -297,6 +316,7 @@ body {
     text-wrap: nowrap;
 }
 
+/* TODO: Review if submit has been removed from the page */
 .weeks-filter__submit:hover,
 .dates-filter__submit:hover {
     background-color: var(--clr-bg-inverse-muted);
@@ -504,6 +524,56 @@ body {
 .spinner--cta {
     width: 21px;
     color: white;
+}
+
+.signin {
+    display: flex;
+    flex-direction: column;
+    /* max-width: 300pxx; */
+    gap: 10px;
+    border: 0.5px solid var(--clr-border) ;
+    border-radius: var(--rounded-corners-main);
+    background-color: var(--clr-surface-muted);
+    padding: 15px;
+}
+
+.signin__header {
+    font-size: var(--fs-header-subtitle);
+    font-weight: 600;
+}
+
+.signin__row {
+    display: flex;
+    flex-direction: column;
+    color: var(--clr-text-main);
+    gap: 5px;
+    max-width: 210px;
+}
+
+.signin__input {
+    padding: var(--padding-btn);
+    min-width: 0;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--rounded-corners-btn);
+}
+
+.signin__label {
+    font-weight: 500;
+}
+
+.signin__cta {
+    margin-top: 15px;
+    padding: 10px 15px;
+    border-radius: var(--rounded-corners-btn);
+    background-color: var(--clr-bg-inverse);
+    color: var(--clr-text-inverse);
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.signin__cta:hover {
+    background-color: var(--clr-bg-inverse-muted);
 }
 
 @media screen and (max-width: 945px) {

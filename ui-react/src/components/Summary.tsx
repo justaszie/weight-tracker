@@ -45,7 +45,11 @@ export default function Summary(props: SummaryProps) {
       const summaryURL = new URL(`${API_BASE_URL}/${API_PREFIX}/summary`);
       summaryURL.search = new URLSearchParams(urlParams).toString();
       try {
-        const response = await fetch(summaryURL);
+        const response = await fetch(summaryURL, {
+          headers: {
+            Authorization: `Bearer ${props.session.access_token}`,
+          },
+        });
         if(!response.ok) {
           const body = await response.json();
           const errorMessage = ('error_message' in body) ? body['error_message'] : 'Error while getting summary data';

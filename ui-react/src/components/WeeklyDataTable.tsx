@@ -71,7 +71,11 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
       const weeklyDataURL = new URL(`${API_BASE_URL}/${API_PREFIX}/weekly-aggregates`);
       weeklyDataURL.search = new URLSearchParams(urlParams).toString();
       try {
-        const response = await fetch(weeklyDataURL);
+        const response = await fetch(weeklyDataURL, {
+          headers: {
+            Authorization: `Bearer ${props.session.access_token}`,
+          },
+        });
         if (!response.ok) {
           const body = await response.json();
           const errorMessage =

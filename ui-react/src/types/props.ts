@@ -1,16 +1,23 @@
 import type { Goal } from "@/types/goal";
+import type { User } from "@/types/user";
 import type { DatesFilterValues, WeeksFilterValues } from "@/types/filter";
 import type { WeightEntry } from "@/types/weight-entry";
 import type { ToastMessageCategory, ShowToastFn } from "@/types/toast";
 import type { DataSourceName } from "./utils";
+import type { Session } from "@supabase/supabase-js";
 
 export type MainProps = {
   goalSelected: Goal;
+  session: Session;
   handleDataSyncComplete: () => void;
   dataSyncComplete: boolean;
   onDataSyncRequest: (data_source?: DataSourceName) => void;
   showToast: ShowToastFn;
 };
+
+export type LoginProps = {
+  showToast: ShowToastFn;
+}
 
 export type SummaryProps = {
   latestEntry?: WeightEntry | null;
@@ -18,6 +25,7 @@ export type SummaryProps = {
   weeksFilterValues?: WeeksFilterValues;
   datesFilterValues?: DatesFilterValues;
   dataSyncComplete: boolean;
+  session: Session;
   showToast: ShowToastFn;
 };
 
@@ -33,6 +41,7 @@ export type WeeklyDataTableProps = {
   weeksFilterValues?: WeeksFilterValues;
   datesFilterValues?: DatesFilterValues;
   dataSyncComplete: boolean;
+  session: Session;
   showToast: ShowToastFn;
 };
 
@@ -65,4 +74,5 @@ export type ToastProps = {
 export type HeaderProps = {
   handleGoalChange: (goal: Goal) => void;
   goalSelected: Goal;
+  user: User;
 };

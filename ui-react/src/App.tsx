@@ -6,7 +6,7 @@ import Toast from "@/components/Toast";
 import Login from "@/components/Login";
 import { ReactComponent as Spinner } from "@/assets/spinner.svg";
 
-import { supabase } from "./supabaseClient";
+import { supabase } from "./supabaseClient.ts";
 
 import type { Session } from "@supabase/supabase-js";
 import type { Goal } from "@/types/goal";
@@ -20,7 +20,6 @@ const API_PREFIX = import.meta.env.VITE_API_PREFIX;
 
 function App() {
   const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState<Boolean>(true);
 
   const goalStored: Goal | null = localStorage.getItem("goalSelected") as Goal;
   const [goalSelected, setGoalSelected] = useState<Goal>(
@@ -79,21 +78,23 @@ function App() {
   }
 
   useEffect(() => {
-    // 1) Set up callbacks that will get and update
+    // 1. Auth checks
+    // Set up check if user is logged in (session exist) and update
     // the authenticated user session (if logged in)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setIsLoading(false);
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
     });
+    // Set up a listener that will get auth state updates
+    // and update client session accordinly
     supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      setIsLoading(false);
     });
 
-    // 2) persist the goal value from the state to local storage
+    // 2) persist the user's goal value from the state to local storage
     localStorage.setItem("goalSelected", goalSelected);
 
-    // 3) if we come from successful data source authentication, trigger data sync
+    // 3) if we come from the flow of getting authorization
+    // from the data source to get data (e.g. gfit), trigger data sync flow
     const queryParams = new URLSearchParams(window.location.search);
     if (queryParams.get("initiator") === "data_source_auth_success") {
       const dataSource = queryParams.get("source");
@@ -113,22 +114,23 @@ function App() {
     setDataSyncComplete(true);
   }
 
-  if (isLoading) {
-    return <Spinner className="spinner" />;
-  }
-
   return (
     <div className="page">
       {session == null ? (
-        <Login />
+        <Login showToast={showToast} />
       ) : (
         <>
           <Header
             handleGoalChange={handleGoalChange}
             goalSelected={goalSelected}
+            user={{
+              userId: session.user.id,
+              email: session.user.email || null,
+            }}
           />
           <Main
             goalSelected={goalSelected}
+            session={session}
             handleDataSyncComplete={markDataSyncComplete}
             dataSyncComplete={dataSyncComplete}
             onDataSyncRequest={triggerDataSync}
