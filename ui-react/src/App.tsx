@@ -4,7 +4,6 @@ import Header from "@/components/Header";
 import Main from "@/components/Main";
 import Toast from "@/components/Toast";
 import Login from "@/components/Login";
-import { ReactComponent as Spinner } from "@/assets/spinner.svg";
 
 import { supabase } from "./supabaseClient.ts";
 
@@ -35,11 +34,16 @@ function App() {
     }, 2000);
   }
 
-  async function triggerDataSync(data_source?: DataSourceName) {
+  async function triggerDataSync(data_source?: DataSourceName, ) {
     try {
+      if (!session) {
+        console.log(`Session value: ${session}`);
+        throw new Error("Must be signed in to get data");
+      }
       const response = await fetch(`${API_BASE_URL}/${API_PREFIX}/sync-data`, {
         method: "POST",
         headers: {
+          Authorization: `Bearer ${session.access_token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -77,23 +81,26 @@ function App() {
     }
   }
 
-  useEffect(() => {
-    // 1. Auth checks
-    // Set up check if user is logged in (session exist) and update
-    // the authenticated user session (if logged in)
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-    });
+  // Auth checks: using supabase, check if the user is signed in or not
+  async function authenticate() {
+    let { data } = await supabase.auth.getSession();
+    return data.session;
+  }
+
+  async function initializeApp() {
+    let session = await authenticate();
+    setSession(session);
+
     // Set up a listener that will get auth state updates
-    // and update client session accordinly
+    // and update client session accordingly
     supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
 
-    // 2) persist the user's goal value from the state to local storage
+    // Persist the user's goal value from the state to local storage
     localStorage.setItem("goalSelected", goalSelected);
 
-    // 3) if we come from the flow of getting authorization
+    // If the request comes from the flow of getting authorization
     // from the data source to get data (e.g. gfit), trigger data sync flow
     const queryParams = new URLSearchParams(window.location.search);
     if (queryParams.get("initiator") === "data_source_auth_success") {
@@ -102,6 +109,10 @@ function App() {
         triggerDataSync(dataSource);
       }
     }
+  }
+
+  useEffect(() => {
+    initializeApp();
   }, []);
 
   function handleGoalChange(goalSelection: Goal) {
