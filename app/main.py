@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
+from supabase import create_client, Client
 
 from .api import router_v1 as api_router
 from .db_storage import DatabaseStorage
@@ -49,7 +50,7 @@ def create_data_storage() -> DataStorage:
                 raise ValueError(f"Unsupported storage type {storage_type}")
 
 
-# Instantiating storage and logging config as part of app startup
+# Instantiating auth service, storage and logging config as part of app startup
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # type: ignore
     data_storage = create_data_storage()
@@ -57,6 +58,12 @@ async def lifespan(app: FastAPI):  # type: ignore
     logger.info(
         f"App started with {data_storage.__class__.__name__} as Storage Backend"
     )
+
+    url: str = os.environ.get("SUPABASE_URL")
+    key: str = os.environ.get("SUPABASE_KEY")
+    supabase: Client = create_client(url, key)
+    app.state.supabase = supabase
+    logger.info("Supabase client initialized for auth")
 
     yield
 
@@ -84,6 +91,7 @@ def create_app() -> FastAPI:
         CORSMiddleware,
         allow_origins=["*"],
         allow_methods=["*"],
+        allow_headers=["*"],
         allow_credentials=False,
     )
 

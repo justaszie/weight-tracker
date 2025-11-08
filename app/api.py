@@ -95,7 +95,28 @@ def get_data_source_client(source_name: DataSourceName) -> DataSourceClient:
         raise ValueError("Data Source not supported")
 
 
+def get_user(request: Request):
+    auth_header = request.headers.get("Authorization")
+    jwt_token = auth_header.removeprefix("Bearer ").strip()
+    if not jwt_token:
+        raise HTTPException(401, "Missing or invalid authorization header")
+
+    supabase = request.app.state.supabase
+
+    try:
+        result = supabase.auth.get_user(jwt_token)
+        user = result.user
+        if not user:
+            raise HTTPException(401, "User provided in token does not exist")
+        logger.info(f"Request from user: {user.id}")
+        return user.id
+    except Exception as e:
+        logger.exception("Failed to authenticate user")
+        raise HTTPException(401, "Failed to authenticate user") from e
+
+
 DataStorageDependency = Annotated[DataStorage, Depends(get_data_storage)]
+UserDependency = Annotated[str, Depends(get_user)]
 
 
 def get_filtered_daily_entries(
@@ -147,6 +168,7 @@ def get_filtered_weekly_entries(
 
 @router_v1.get("/daily-entries", response_model=list[WeightEntry])
 def get_daily_entries(
+    user_id: UserDependency,
     data_storage: DataStorageDependency,
     date_from: dt.date | None = None,
     date_to: dt.date | None = None,
@@ -170,6 +192,7 @@ def get_daily_entries(
 @router_v1.get("/weekly-aggregates", response_model=WeeklyAggregateResponse)
 def get_weekly_aggregates(
     data_storage: DataStorageDependency,
+    user_id: UserDependency,
     date_from: dt.date | None = None,
     date_to: dt.date | None = None,
     weeks_limit: Annotated[int | None, Query(gt=0)] = None,
@@ -202,6 +225,7 @@ def get_weekly_aggregates(
 
 @router_v1.get("/summary", response_model=ProgressSummary)
 def get_summary(
+    user_id: UserDependency,
     data_storage: DataStorageDependency,
     date_from: dt.date | None = None,
     date_to: dt.date | None = None,
@@ -234,6 +258,7 @@ def get_summary(
 
 @router_v1.get("/latest-entry", response_model=(WeightEntry | None))
 def get_latest_entry(
+    user_id: UserDependency,
     data_storage: DataStorageDependency,
 ) -> WeightEntry | None:
     try:
@@ -265,6 +290,7 @@ def get_latest_entry(
     },
 )
 def sync_data(
+    user_id: UserDependency,
     sync_request: DataSyncRequest,
     http_request: Request,
     data_storage: DataStorageDependency,
