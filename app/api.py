@@ -15,6 +15,7 @@ from fastapi import (
     Request,
 )
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from google.oauth2.credentials import Credentials
 from pydantic import (
     BaseModel,
@@ -72,6 +73,8 @@ router_v1 = APIRouter(prefix="/api/v1", tags=["v1"])
 
 logger = logging.getLogger(__name__)
 
+jwt_authentication = HTTPBearer(auto_error=False)
+
 
 def get_data_storage(request: Request) -> DataStorage:
     return cast(DataStorage, request.app.state.data_storage)
@@ -95,28 +98,31 @@ def get_data_source_client(source_name: DataSourceName) -> DataSourceClient:
         raise ValueError("Data Source not supported")
 
 
-def get_user(request: Request):
-    auth_header = request.headers.get("Authorization")
-    jwt_token = auth_header.removeprefix("Bearer ").strip()
-    if not jwt_token:
-        raise HTTPException(401, "Missing or invalid authorization header")
+def get_current_user(
+    request: Request,
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(jwt_authentication)]
+):
+    if credentials is None:
+        raise HTTPException(401, "Missing or invalid Authorization header")
 
-    supabase = request.app.state.supabase
+    jwt_token = credentials.credentials
+    supabase_client = request.app.state.supabase
 
     try:
-        result = supabase.auth.get_user(jwt_token)
+        result = supabase_client.auth.get_user(jwt_token)
         user = result.user
         if not user:
-            raise HTTPException(401, "User provided in token does not exist")
-        logger.info(f"Request from user: {user.id}")
+            logger.error("No valid user matching access token")
+            raise HTTPException(401, "Authentication failed")
+        logger.info(f"Authenticated Request from user: {user.id}")
         return user.id
     except Exception as e:
-        logger.exception("Failed to authenticate user")
-        raise HTTPException(401, "Failed to authenticate user") from e
+        logger.exception("User Authentication Failed")
+        raise HTTPException(401, "Authentication failed") from e
 
 
 DataStorageDependency = Annotated[DataStorage, Depends(get_data_storage)]
-UserDependency = Annotated[str, Depends(get_user)]
+UserDependency = Annotated[str, Depends(get_current_user)]
 
 
 def get_filtered_daily_entries(
