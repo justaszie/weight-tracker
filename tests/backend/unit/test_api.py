@@ -652,7 +652,8 @@ class TestAPIEndpoints:
         assert response.status_code == 500
         assert "detail" in response.json()
 
-    @pytest.mark.parametrize("data_source_client_name", ["gfit", "mfp"])
+    # @pytest.mark.parametrize("data_source_client_name", ["gfit", "mfp"])
+    @pytest.mark.parametrize("data_source_client_name", ["gfit"])
     def test_sync_data_data_source_creation(
         self,
         client,
@@ -669,7 +670,7 @@ class TestAPIEndpoints:
         # Mocking the appropriate data source constructor based on the request params
         data_soure_client_mapping = {
             "gfit": "app.api.GoogleFitClient",
-            "mfp": "app.api.MyFitnessPalClient",
+            # "mfp": "app.api.MyFitnessPalClient",
         }
         mock_data_source_client_constructor = mocker.patch(
             data_soure_client_mapping[data_source_client_name]

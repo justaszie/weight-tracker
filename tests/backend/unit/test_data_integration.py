@@ -51,7 +51,7 @@ def test_refresh_no_raw_data_found(mocker, service):
     with pytest.raises(SourceNoDataError):
         service.refresh_weight_entries(TEST_USER_ID)
 
-    service.source.get_raw_data.assert_called_once_with(TEST_USER_ID)
+    service.source.get_raw_data.assert_called_once_with()
 
 
 @pytest.mark.parametrize(
@@ -247,7 +247,7 @@ def test_refresh_new_data(
 def test_get_raw_data(mocker, service, sample_raw_data):
     mock_source_fetch_fn = mocker.patch.object(service.source, "get_raw_data")
     mock_source_fetch_fn.return_value = sample_raw_data
-    assert service.get_raw_data(TEST_USER_ID) == sample_raw_data
+    assert service.get_raw_data() == sample_raw_data
 
 
 def test_get_raw_data_credentials_error(mocker, service):
@@ -255,7 +255,7 @@ def test_get_raw_data_credentials_error(mocker, service):
     mock_source_fetch_fn.side_effect = NoCredentialsError()
 
     with pytest.raises(SourceFetchError):
-        raw_data = service.get_raw_data(TEST_USER_ID)
+        raw_data = service.get_raw_data()
 
 
 def test_get_raw_data_other_errors(mocker, service):
@@ -263,7 +263,7 @@ def test_get_raw_data_other_errors(mocker, service):
     mock_source_fetch_fn.side_effect = Exception()
 
     with pytest.raises(SourceFetchError):
-        raw_data = service.get_raw_data(TEST_USER_ID)
+        raw_data = service.get_raw_data()
 
 
 # Disabled for now - it makes no sense to store data in temporary files on a cloud service

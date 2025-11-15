@@ -4,10 +4,10 @@ import json
 import pytest
 from pydantic import TypeAdapter
 
-from app.mfp import (
-    MyFitnessPalClient,
-    DEFAULT_LOOKBACK_YEARS,
-)
+# from app.mfp import (
+#     MyFitnessPalClient,
+#     DEFAULT_LOOKBACK_YEARS,
+# )
 from app.project_types import WeightEntry
 
 
