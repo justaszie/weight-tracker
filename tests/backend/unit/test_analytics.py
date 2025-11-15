@@ -3,6 +3,7 @@ import datetime as dt
 import pytest
 from pydantic import TypeAdapter
 from typing import Any
+from uuid import UUID
 
 from app.analytics import (
     get_weekly_aggregates,
@@ -16,24 +17,26 @@ from app.project_types import (
     ProgressSummary,
 )
 
+TEST_USER_ID = UUID("3760183f-61fa-4ee1-badf-2668fbec152d")
+
 
 @pytest.fixture
 def sample_daily_entries() -> Any:
     data = [
-        {"entry_date": dt.date(2025, 8, 18), "weight": 73.0},
-        {"entry_date": dt.date(2025, 8, 19), "weight": 72.9},
-        {"entry_date": dt.date(2025, 8, 20), "weight": 72.3},
-        {"entry_date": dt.date(2025, 8, 21), "weight": 72.7},
-        {"entry_date": dt.date(2025, 8, 22), "weight": 72.5},
-        {"entry_date": dt.date(2025, 8, 25), "weight": 73.0},
-        {"entry_date": dt.date(2025, 8, 26), "weight": 73.6},
-        {"entry_date": dt.date(2025, 8, 27), "weight": 73.0},
-        {"entry_date": dt.date(2025, 8, 28), "weight": 73.6},
-        {"entry_date": dt.date(2025, 8, 29), "weight": 73.6},
-        {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
-        {"entry_date": dt.date(2025, 9, 1), "weight": 73},
-        {"entry_date": dt.date(2025, 9, 2), "weight": 72},
-        {"entry_date": dt.date(2025, 9, 3), "weight": 72.5},
+        {"entry_date": dt.date(2025, 8, 18), "weight": 73.0, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 19), "weight": 72.9, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 20), "weight": 72.3, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 21), "weight": 72.7, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 22), "weight": 72.5, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 25), "weight": 73.0, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 26), "weight": 73.6, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 27), "weight": 73.0, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 28), "weight": 73.6, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 29), "weight": 73.6, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 30), "weight": 73.5, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 9, 1), "weight": 73, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 9, 2), "weight": 72, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 9, 3), "weight": 72.5, "user_id": TEST_USER_ID},
     ]
     return TypeAdapter(list[WeightEntry]).validate_python(data)
 
@@ -80,13 +83,41 @@ def test_weekly_aggregates_empty_dataset():
 def test_weekly_aggregates_single_week():
     daily_entries = TypeAdapter(list[WeightEntry]).validate_python(
         [
-            {"entry_date": dt.date(2025, 8, 25), "weight": 73.0},
-            {"entry_date": dt.date(2025, 8, 26), "weight": 73.6},
-            {"entry_date": dt.date(2025, 8, 27), "weight": 73.0},
-            {"entry_date": dt.date(2025, 8, 28), "weight": 73.6},
-            {"entry_date": dt.date(2025, 8, 29), "weight": 73.6},
-            {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
-            {"entry_date": dt.date(2025, 8, 31), "weight": 72.5},
+            {
+                "entry_date": dt.date(2025, 8, 25),
+                "weight": 73.0,
+                "user_id": TEST_USER_ID,
+            },
+            {
+                "entry_date": dt.date(2025, 8, 26),
+                "weight": 73.6,
+                "user_id": TEST_USER_ID,
+            },
+            {
+                "entry_date": dt.date(2025, 8, 27),
+                "weight": 73.0,
+                "user_id": TEST_USER_ID,
+            },
+            {
+                "entry_date": dt.date(2025, 8, 28),
+                "weight": 73.6,
+                "user_id": TEST_USER_ID,
+            },
+            {
+                "entry_date": dt.date(2025, 8, 29),
+                "weight": 73.6,
+                "user_id": TEST_USER_ID,
+            },
+            {
+                "entry_date": dt.date(2025, 8, 30),
+                "weight": 73.5,
+                "user_id": TEST_USER_ID,
+            },
+            {
+                "entry_date": dt.date(2025, 8, 31),
+                "weight": 72.5,
+                "user_id": TEST_USER_ID,
+            },
         ]
     )
     expected = TypeAdapter(list[WeeklyAggregateEntry]).validate_python(
@@ -107,7 +138,7 @@ def test_weekly_aggregates_single_week():
 
 def test_weekly_aggregates_single_day():
     daily_entries = TypeAdapter(list[WeightEntry]).validate_python(
-        [{"entry_date": dt.date(2025, 8, 27), "weight": 72.18}]
+        [{"entry_date": dt.date(2025, 8, 27), "weight": 72.18, "user_id": TEST_USER_ID}]
     )
     expected = TypeAdapter(list[WeeklyAggregateEntry]).validate_python(
         [

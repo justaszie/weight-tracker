@@ -3,18 +3,20 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Any, cast
+from typing import Annotated, Any, cast
+from uuid import UUID
 
 import pandas as pd
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from google.auth.transport.requests import Request as GoogleRequest
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow  # type: ignore
 from googleapiclient.discovery import build  # pyright: ignore
 from googleapiclient.errors import HttpError
 
-from .project_types import WeightEntry
+from .project_types import DataStorage, WeightEntry
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +29,6 @@ REDIRECT_URI = "http://localhost:8000/auth/google-auth"
 
 BASE_DIR: Path = Path(__file__).resolve().parent
 AUTH_DIR = "auth"
-
-TOKEN_FILE_NAME = "token.json"
-TOKEN_FILE_PATH: Path = Path.joinpath(BASE_DIR, AUTH_DIR, TOKEN_FILE_NAME)
 
 CLIENT_SECRETS_FILE_NAME = "credentials.json"
 CLIENT_SECRETS_FILE_PATH: Path = Path.joinpath(
@@ -45,9 +44,35 @@ RAW_DATA_FILE_PATH: Path = Path.joinpath(
 
 # FOR DEVELOPMENT ONLY: allow google to send authorization to HTTP (insecure)
 # endpoint of this app. For testing.
-os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+if os.environ.get("APP_ENV") == "dev":
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 router = APIRouter()
+
+jwt_authentication = HTTPBearer(auto_error=False)
+
+
+def get_current_user(
+    request: Request,
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(jwt_authentication)],
+) -> UUID:
+    jwt_token = credentials.credentials
+    supabase_client = request.app.state.supabase
+
+    try:
+        result = supabase_client.auth.get_user(jwt_token)
+        user = result.user
+        if not user:
+            logger.error("No valid user matching access token")
+            raise HTTPException(401, "Authentication failed")
+        logger.info(f"Authenticated Request from user: {user.id}")
+        return UUID(user.id)
+    except Exception as e:
+        logger.exception("User Authentication Failed")
+        raise HTTPException(401, "Authentication failed") from e
+
+
+UserDependency = Annotated[str, Depends(get_current_user)]
 
 ###############
 
@@ -56,10 +81,17 @@ router = APIRouter()
 
 # This route initiates the google auth flow
 @router.get("/google-signin", include_in_schema=False)
-def google_signin(request: Request) -> RedirectResponse:
+def google_signin(request: Request, user_id: UUID) -> RedirectResponse:
     # Create flow instance to manage the OAuth 2.0 Authorization Grant Flow steps
-    flow: Flow = Flow.from_client_secrets_file(  # pyright: ignore[reportUnknownMemberType]
-        CLIENT_SECRETS_FILE_PATH, scopes=SCOPES
+    gfit_auth = GoogleFitAuth()
+
+    try:
+        google_client_config = gfit_auth.create_client_config()
+    except GoogleClientConfigError as e:
+        raise HTTPException(500, "Google authentication failed") from e
+
+    flow: Flow = Flow.from_client_config(  # pyright: ignore[reportUnknownMemberType]
+        client_config=google_client_config, scopes=SCOPES
     )
     flow.redirect_uri = REDIRECT_URI
 
@@ -71,6 +103,7 @@ def google_signin(request: Request) -> RedirectResponse:
 
     # Store the state in the session so you can verify the callback request
     request.session["state"] = state
+    request.session["user_id"] = str(user_id)
 
     authorization_url = cast(str, authorization_url)
     logger.info("Redirecting user to Google API consent URL")
@@ -82,10 +115,13 @@ def google_signin(request: Request) -> RedirectResponse:
 # After successfully getting token, we transfer the user back to frontend
 @router.get("/google-auth", include_in_schema=False)
 def handle_google_auth_callback(request: Request) -> RedirectResponse:
-    state = request.session["state"]
+    state = request.session.get("state", None)
+    user_id = request.session.get("user_id", None)
 
-    flow: Flow = Flow.from_client_secrets_file(  # pyright: ignore[reportUnknownMemberType]
-        CLIENT_SECRETS_FILE_PATH, scopes=SCOPES, state=state
+    gfit_auth = GoogleFitAuth()
+
+    flow: Flow = Flow.from_client_config(  # pyright: ignore[reportUnknownMemberType]
+        client_config=gfit_auth.create_client_config(), scopes=SCOPES, state=state
     )
 
     flow.redirect_uri = REDIRECT_URI
@@ -98,8 +134,21 @@ def handle_google_auth_callback(request: Request) -> RedirectResponse:
 
     creds: Credentials = flow.credentials  # pyright: ignore
     logger.info("Google Fit access token received")
-    # Save access token for future API usage without auth flow
-    GoogleFitAuth().save_auth_token_to_file(creds)  # pyright: ignore
+
+    # Save access token for future API usage without going through auth flow
+    storage = request.app.state.data_storage
+    if not storage:
+        logger.error("Data storage not initialized in app state")
+        raise HTTPException(500, detail="Google authentication failed")
+
+    try:
+        gfit_auth.save_credentials(storage, UUID(user_id), creds)  # pyright: ignore
+    except Exception as e:
+        logger.exception("Failed to store the credentials")
+        raise HTTPException(500, detail="Google authentication failed") from e
+
+    request.session.pop("state", None)
+    request.session.pop("user_id", None)
 
     initiator_query_str = "initiator=data_source_auth_success&source=gfit"
 
@@ -109,7 +158,7 @@ def handle_google_auth_callback(request: Request) -> RedirectResponse:
             "Auth success but frontend URL config for redirection is missing"
         )
         logger.error(error_message)
-        raise HTTPException(status_code=500, detail=error_message)
+        raise HTTPException(status_code=500, detail="Google authentication failed")
 
     redirect_url = f"{frontend_url}?{initiator_query_str}"
     logger.info("Redirecting user back to frontend after gfit auth")
@@ -121,28 +170,33 @@ def handle_google_auth_callback(request: Request) -> RedirectResponse:
 
 
 class GoogleFitAuth:
-    def load_auth_token(self) -> Credentials | None:
-        # Get credentials for API access
+    def create_client_config(self) -> dict[str, Any]:
+        try:
+            return {
+                "web": {
+                    "client_id": os.environ["GOOGLE_CLIENT_ID"],
+                    "client_secret": os.environ["GOOGLE_CLIENT_SECRET"],
+                    "project_id": os.environ["GOOGLE_PROJECT_ID"],
+                    "auth_uri": os.environ["GOOGLE_AUTH_URI"],
+                    "token_uri": os.environ["GOOGLE_TOKEN_URI"],
+                    "redirect_uris": os.environ["GOOGLE_REDIRECT_URIS"].split(","),
+                }
+            }
+        except KeyError as e:
+            logger.error("Google client initializing failed - missing config values")
+            raise GoogleClientConfigError(
+                "Missing or invalid Google Client config value(s)"
+            ) from e
+
+    # Get credentials for API access
+    def load_credentials(
+        self, storage: DataStorage, user_id: UUID
+    ) -> Credentials | None:
         creds: Credentials | None = None
 
-        # The file token.json stores the user's access and refresh tokens
-        # It is created automatically when the authorization flow
-        # completes for the first time
-        if not os.path.exists(TOKEN_FILE_PATH):
-            return None
+        creds = storage.load_google_credentials(user_id)
 
-        try:
-            with open(TOKEN_FILE_PATH) as token_file:
-                creds = cast(
-                    Credentials,
-                    Credentials.from_authorized_user_info(  # type: ignore
-                        json.load(token_file)
-                    ),
-                )
-        except Exception:
-            return None
-
-        if creds.valid:  # pyright: ignore[reportUnknownMemberType]
+        if creds and creds.valid:  # pyright: ignore[reportUnknownMemberType]
             return creds
         elif (
             creds
@@ -154,7 +208,7 @@ class GoogleFitAuth:
                 creds.refresh(GoogleRequest())  # type: ignore
                 # Save the credentials for future runs
                 logger.info("Gfit access token refreshed successfully")
-                self.save_auth_token_to_file(creds)
+                self.save_credentials(storage, user_id, creds)
                 return creds
             except Exception:
                 logger.warning(
@@ -163,14 +217,16 @@ class GoogleFitAuth:
 
         return None
 
-    def save_auth_token_to_file(self, creds: Credentials) -> None:
-        TOKEN_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
-        TOKEN_FILE_PATH.write_text(creds.to_json())  # type: ignore
+    def save_credentials(
+        self, storage: DataStorage, user_id: UUID, creds: Credentials
+    ) -> None:
+        storage.store_google_credentials(user_id, creds)
 
 
 class GoogleFitClient:
-    def __init__(self, creds: Credentials | None = None) -> None:
+    def __init__(self, user_id: UUID, creds: Credentials | None = None) -> None:
         self.creds = creds
+        self.user_id = user_id
         self._source = "google_fit"
 
     def get_raw_data(
@@ -226,6 +282,7 @@ class GoogleFitClient:
         return dataset  # pyright: ignore[reportUnknownVariableType]
 
     def store_raw_data(self, raw_dataset: Any) -> None:
+        # TODO: use self.user_id to store data separate for each user
         RAW_DATA_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
         json_data = json.dumps(raw_dataset)
         RAW_DATA_FILE_PATH.write_text(json_data)
@@ -259,6 +316,8 @@ class GoogleFitClient:
 
         df["weight"] = df["value"].apply(extract_weight_value)  # pyright: ignore
 
+        df["user_id"] = self.user_id
+
         df.drop(
             columns=[
                 "startTimeNanos",
@@ -290,4 +349,8 @@ class GoogleFitClient:
 
 
 class NoCredentialsError(Exception):
+    pass
+
+
+class GoogleClientConfigError(Exception):
     pass

@@ -1,39 +1,43 @@
 import datetime as dt
 import json
 import pytest
+from uuid import UUID
 
 from fastapi.testclient import TestClient
 from pydantic import TypeAdapter
 
-from app.api import get_data_storage
+from app.api import get_current_user, get_data_storage
 from app.file_storage import FileStorage
 from app.google_fit import GoogleFitClient
 from app.main import app
-from app.mfp import MyFitnessPalClient
 from app.project_types import WeightEntry
 
 TEST_DB_CONN_STRING = (
     "postgresql+psycopg2://postgres@localhost:5432/test_weight_tracker"
 )
+TEST_USER_ID = UUID("3760183f-61fa-4ee1-badf-2668fbec152d")
+RANDOM_UUID = UUID("5ebcce4b-e597-406e-9d93-8de7072bbc34")
 
 
 @pytest.fixture
 def sample_daily_entries():
     return [
-        {"entry_date": dt.date(2025, 2, 12), "weight": 73.0},
-        {"entry_date": dt.date(2025, 3, 2), "weight": 73.0},
-        {"entry_date": dt.date(2025, 8, 18), "weight": 73.0},
-        {"entry_date": dt.date(2025, 8, 19), "weight": 72.9},
-        {"entry_date": dt.date(2025, 8, 20), "weight": 72.3},
-        {"entry_date": dt.date(2025, 8, 21), "weight": 72.7},
-        {"entry_date": dt.date(2025, 8, 22), "weight": 72.5},
-        {"entry_date": dt.date(2025, 8, 25), "weight": 73.0},
-        {"entry_date": dt.date(2025, 8, 28), "weight": 73.6},
-        {"entry_date": dt.date(2025, 8, 29), "weight": 73.6},
-        {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
-        {"entry_date": dt.date(2025, 9, 1), "weight": 73},
-        {"entry_date": dt.date(2025, 9, 2), "weight": 72},
-        {"entry_date": dt.date(2025, 9, 3), "weight": 72.5},
+        {"entry_date": dt.date(2025, 2, 12), "weight": 73.0, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 3, 2), "weight": 73.0, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 18), "weight": 73.0, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 19), "weight": 72.9, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 20), "weight": 72.3, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 21), "weight": 72.7, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 22), "weight": 72.5, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 22), "weight": 72.5, "user_id": RANDOM_UUID},
+        {"entry_date": dt.date(2025, 8, 25), "weight": 73.0, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 28), "weight": 73.6, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 29), "weight": 73.6, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 30), "weight": 73.5, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 9, 1), "weight": 73, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 9, 1), "weight": 73, "user_id": RANDOM_UUID},
+        {"entry_date": dt.date(2025, 9, 2), "weight": 72, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 9, 3), "weight": 72.5, "user_id": TEST_USER_ID},
     ]
 
 
@@ -91,6 +95,7 @@ def get_test_storage(mocker, sample_daily_entries, tmp_path) -> FileStorage:
 @pytest.fixture
 def client_with_storage(get_test_storage):
     app.dependency_overrides[get_data_storage] = lambda: get_test_storage
+    app.dependency_overrides[get_current_user] = lambda: TEST_USER_ID
     try:
         with TestClient(app) as client:
             yield client
@@ -102,16 +107,17 @@ def client_with_storage(get_test_storage):
 def mock_gfit_client(mocker, tmp_path):
     raw_data_file_path = tmp_path / "test_raw_data.json"
     mocker.patch("app.google_fit.RAW_DATA_FILE_PATH", raw_data_file_path)
-    client = GoogleFitClient()
+    client = GoogleFitClient(TEST_USER_ID)
     return client
 
 
-@pytest.fixture
-def mock_mfp_client(mocker, tmp_path):
-    raw_data_file_path = tmp_path / "test_raw_data.json"
-    mocker.patch("app.mfp.RAW_DATA_FILE_PATH", raw_data_file_path)
-    client = MyFitnessPalClient()
-    return client
+# MFP Integration disabled due to package dependency conflicts
+# @pytest.fixture
+# def mock_mfp_client(mocker, tmp_path):
+#     raw_data_file_path = tmp_path / "test_raw_data.json"
+#     mocker.patch("app.mfp.RAW_DATA_FILE_PATH", raw_data_file_path)
+#     client = MyFitnessPalClient(TEST_USER_ID)
+#     return client
 
 
 def test_gfit_sync_new_entries(
@@ -185,6 +191,9 @@ def test_gfit_sync_new_entries(
     mocker.patch.object(
         mock_gfit_client, "get_raw_data"
     ).return_value = test_raw_dataset
+    existing_entries = [
+        entry for entry in sample_daily_entries if entry["user_id"] == TEST_USER_ID
+    ]
 
     response = client_with_storage.post(
         "/api/v1/sync-data", json={"data_source": "gfit"}
@@ -200,7 +209,7 @@ def test_gfit_sync_new_entries(
     updated_daily_entries = response.json()
 
     assert response.status_code == 200
-    assert len(updated_daily_entries) == len(sample_daily_entries) + 5
+    assert len(updated_daily_entries) == len(existing_entries) + 5
     new_entry = [
         entry for entry in updated_daily_entries if entry["entry_date"] == "2025-09-04"
     ][0]
@@ -219,6 +228,7 @@ def test_gfit_sync_new_entries(
     assert response.json()[0]["weight"] == 73.0
 
 
+@pytest.mark.skip
 def test_mfp_sync_new_entries(
     mocker, client_with_storage, sample_daily_entries, mock_mfp_client
 ):
@@ -234,6 +244,9 @@ def test_mfp_sync_new_entries(
 
     mocker.patch("app.api.get_data_source_client").return_value = mock_mfp_client
     mocker.patch.object(mock_mfp_client, "get_raw_data").return_value = test_raw_dataset
+    existing_entries = [
+        entry for entry in sample_daily_entries if entry["user_id"] == TEST_USER_ID
+    ]
 
     response = client_with_storage.post(
         "/api/v1/sync-data", json={"data_source": "gfit"}
@@ -249,9 +262,11 @@ def test_mfp_sync_new_entries(
     updated_daily_entries = response.json()
 
     assert response.status_code == 200
-    assert len(updated_daily_entries) == len(sample_daily_entries) + 5
+    assert len(updated_daily_entries) == len(existing_entries) + 5
     new_entry = [
-        entry for entry in updated_daily_entries if entry["entry_date"] == "2025-09-04"
+        entry
+        for entry in updated_daily_entries
+        if entry["user_id"] == TEST_USER_ID and entry["entry_date"] == "2025-09-04"
     ][0]
     assert new_entry["weight"] == 70.2
 

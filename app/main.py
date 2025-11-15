@@ -7,11 +7,10 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-from supabase import create_client, Client
+from supabase import Client, create_client
 
 from .api import router_v1 as api_router
 from .db_storage import DatabaseStorage
-from .demo import DemoStorage
 from .file_storage import FileStorage
 from .google_fit import router as auth_router
 from .project_types import DataStorage
@@ -37,17 +36,14 @@ def log_dotenv_configuration() -> None:
 
 
 def create_data_storage() -> DataStorage:
-    if os.environ.get("DEMO_MODE", "false") == "true":
-        return DemoStorage()
-    else:
-        storage_type = os.environ.get("STORAGE_TYPE", "database")
-        match storage_type:
-            case "database":
-                return DatabaseStorage()
-            case "file":
-                return FileStorage()
-            case _:
-                raise ValueError(f"Unsupported storage type {storage_type}")
+    storage_type = os.environ.get("STORAGE_TYPE", "database")
+    match storage_type:
+        case "database":
+            return DatabaseStorage()
+        case "file":
+            return FileStorage()
+        case _:
+            raise ValueError(f"Unsupported storage type {storage_type}")
 
 
 # Instantiating auth service, storage and logging config as part of app startup
@@ -59,11 +55,15 @@ async def lifespan(app: FastAPI):  # type: ignore
         f"App started with {data_storage.__class__.__name__} as Storage Backend"
     )
 
-    url: str = os.environ.get("SUPABASE_URL")
-    key: str = os.environ.get("SUPABASE_KEY")
-    supabase: Client = create_client(url, key)
-    app.state.supabase = supabase
-    logger.info("Supabase client initialized for auth")
+    # TODO: exception handling if config vars are missing or supabase init fails
+    url: str | None = os.environ.get("SUPABASE_URL")
+    key: str | None = os.environ.get("SUPABASE_KEY")
+    if url and key:
+        supabase: Client = create_client(url, key)
+        app.state.supabase = supabase
+        logger.info("Supabase client initialized for auth")
+    else:
+        logger.error("Missing config to initialize Supabase client")
 
     yield
 

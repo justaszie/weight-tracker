@@ -2,6 +2,7 @@ import datetime as dt
 import json
 from http.cookiejar import CookieJar
 from pathlib import Path
+from uuid import UUID
 
 import browser_cookie3  # type: ignore
 import myfitnesspal  # type: ignore
@@ -23,8 +24,9 @@ DEFAULT_DATE_FROM = (
 
 
 class MyFitnessPalClient:
-    def __init__(self) -> None:
+    def __init__(self, user_id: UUID) -> None:
         self._source = "myfitnesspal"
+        self.user_id = user_id
 
     def get_raw_data(
         self, date_from: str | None = None, date_to: str | None = None
@@ -53,6 +55,10 @@ class MyFitnessPalClient:
         self, raw_dataset: dict[dt.date, float]
     ) -> list[WeightEntry]:
         return [
-            WeightEntry(entry_date=entry[0], weight=round(float(entry[1]), 2))
+            WeightEntry(
+                user_id=self.user_id,
+                entry_date=entry[0],
+                weight=round(float(entry[1]), 2),
+            )
             for entry in raw_dataset.items()
         ]

@@ -19,6 +19,7 @@ fastapi-backend/testing.ipynb
 fastapi-backend/throwaway
 fastapi-backend/throwaway/*
 .coverage
+supabase/
 
 **/__pycache__/*
 

@@ -54,7 +54,8 @@ function App() {
         const body = await response.json();
         // If auth is needed, launch google auth flow
         if (response.status === 401) {
-          window.location.replace(`${API_BASE_URL}${body.auth_url}`);
+          let authUrl = `${API_BASE_URL}${body.auth_url}`;
+          window.location.replace(authUrl);
           return;
         }
         const errorMessage =

@@ -6,6 +6,7 @@ from typing import (
     Annotated,
     cast,
 )
+from uuid import UUID
 
 from fastapi import (
     APIRouter,
@@ -30,7 +31,6 @@ from .data_integration import (
 )
 from .demo import DemoDataSourceClient
 from .google_fit import GoogleFitAuth, GoogleFitClient
-from .mfp import MyFitnessPalClient
 from .project_types import (
     DataSourceClient,
     DataSourceName,
@@ -80,19 +80,24 @@ def get_data_storage(request: Request) -> DataStorage:
     return cast(DataStorage, request.app.state.data_storage)
 
 
-def get_data_source_client(source_name: DataSourceName) -> DataSourceClient:
+def get_data_source_client(
+    request: Request, source_name: DataSourceName, user_id: UUID
+) -> DataSourceClient:
     if os.environ.get("DEMO_MODE", "false") == "true":
         return DemoDataSourceClient()
 
     if source_name == GFIT_SOURCE_NAME:
-        oauth_credentials: Credentials | None = GoogleFitAuth().load_auth_token()
+        data_storage = get_data_storage(request)
+        oauth_credentials: Credentials | None = GoogleFitAuth().load_credentials(
+            data_storage, user_id
+        )
         if not oauth_credentials:
             raise NoCredentialsError("Google API credentials required")
 
-        return GoogleFitClient(oauth_credentials)
+        return GoogleFitClient(user_id, oauth_credentials)
 
-    elif source_name == MFP_SOURCE_NAME:
-        return MyFitnessPalClient()
+    # elif source_name == MFP_SOURCE_NAME:
+    #     return MyFitnessPalClient(user_id)
 
     else:
         raise ValueError("Data Source not supported")
@@ -100,11 +105,8 @@ def get_data_source_client(source_name: DataSourceName) -> DataSourceClient:
 
 def get_current_user(
     request: Request,
-    credentials: Annotated[HTTPAuthorizationCredentials, Depends(jwt_authentication)]
-):
-    if credentials is None:
-        raise HTTPException(401, "Missing or invalid Authorization header")
-
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(jwt_authentication)],
+) -> UUID:
     jwt_token = credentials.credentials
     supabase_client = request.app.state.supabase
 
@@ -115,22 +117,23 @@ def get_current_user(
             logger.error("No valid user matching access token")
             raise HTTPException(401, "Authentication failed")
         logger.info(f"Authenticated Request from user: {user.id}")
-        return user.id
+        return UUID(user.id)
     except Exception as e:
         logger.exception("User Authentication Failed")
         raise HTTPException(401, "Authentication failed") from e
 
 
 DataStorageDependency = Annotated[DataStorage, Depends(get_data_storage)]
-UserDependency = Annotated[str, Depends(get_current_user)]
+UserDependency = Annotated[UUID, Depends(get_current_user)]
 
 
 def get_filtered_daily_entries(
     data_storage: DataStorage,
+    user_id: UUID,
     date_from: dt.date | None = None,
     date_to: dt.date | None = None,
 ) -> list[WeightEntry]:
-    filtered_daily_entries = daily_entries = data_storage.get_weight_entries()
+    filtered_daily_entries = daily_entries = data_storage.get_weight_entries(user_id)
 
     if date_from is not None or date_to is not None:
         filtered_daily_entries = utils.filter_daily_entries(
@@ -185,7 +188,7 @@ def get_daily_entries(
         )
 
     try:
-        body = get_filtered_daily_entries(data_storage, date_from, date_to)
+        body = get_filtered_daily_entries(data_storage, user_id, date_from, date_to)
         logger.info(f"Fetched {len(body)} daily weight entries")
         return body
     except Exception as e:
@@ -209,7 +212,9 @@ def get_weekly_aggregates(
             status_code=422, detail="'Date To' must be after 'Date From'"
         )
     try:
-        daily_entries = get_filtered_daily_entries(data_storage, date_from, date_to)
+        daily_entries = get_filtered_daily_entries(
+            data_storage, user_id, date_from, date_to
+        )
         if not goal:
             goal = utils.DEFAULT_GOAL
 
@@ -243,7 +248,9 @@ def get_summary(
         )
 
     try:
-        daily_entries = get_filtered_daily_entries(data_storage, date_from, date_to)
+        daily_entries = get_filtered_daily_entries(
+            data_storage, user_id, date_from, date_to
+        )
 
         weekly_entries = get_filtered_weekly_entries(
             daily_entries, utils.DEFAULT_GOAL, weeks_limit
@@ -268,7 +275,7 @@ def get_latest_entry(
     data_storage: DataStorageDependency,
 ) -> WeightEntry | None:
     try:
-        daily_entries = data_storage.get_weight_entries()
+        daily_entries = data_storage.get_weight_entries(user_id)
         latest_daily_entry = utils.get_latest_daily_entry(daily_entries)
         if latest_daily_entry:
             logger.info(
@@ -301,7 +308,7 @@ def sync_data(
     http_request: Request,
     data_storage: DataStorageDependency,
 ) -> DataSyncSuccessResponse | JSONResponse:
-    if not data_storage.data_refresh_needed():
+    if not data_storage.data_refresh_needed(user_id):
         logger.info("Data sync skipped - already up to date")
         return DataSyncSuccessResponse(
             status="data_up_to_date", message="Your data is already up to date"
@@ -311,7 +318,7 @@ def sync_data(
     data_source = sync_request.data_source
 
     try:
-        data_source_client = get_data_source_client(data_source)
+        data_source_client = get_data_source_client(http_request, data_source, user_id)
         logger.info(
             "Data Source client for syncing initialized:"
             f" {data_source_client.__class__.__name__}"
@@ -322,14 +329,18 @@ def sync_data(
             status_code=401,
             content={
                 "message": "Google Fit authentication needed",
-                "auth_url": http_request.app.url_path_for("google_signin"),
+                "auth_url": (
+                    f"{http_request.app.url_path_for('google_signin')}?user_id={user_id}"
+                ),
             },
         )
 
     data_integration = DataIntegrationService(data_storage, data_source_client)
 
     try:
-        new_entries = data_integration.refresh_weight_entries(store_raw_copy=True)
+        new_entries = data_integration.refresh_weight_entries(
+            user_id, store_raw_copy=False
+        )
         if new_entries:
             logger.info(f"Weight data synced with {len(new_entries)} new entry(ies)")
             return DataSyncSuccessResponse(

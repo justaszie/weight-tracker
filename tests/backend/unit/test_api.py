@@ -1,12 +1,14 @@
 # pyright: reportMissingTypeStubs=false, reportUnknownVariableType=false, reportUnknownParameterType=false, reportUnknownArgumentType=false, reportMissingParameterType=false, reportUnknownMemberType=false
 
 import datetime as dt
+from uuid import UUID
 
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import TypeAdapter
 
 from app.api import (
+    get_current_user,
     get_filtered_daily_entries,
     get_filtered_weekly_entries,
     get_data_storage,
@@ -37,6 +39,9 @@ WEEKLY_PARAMS_TEST_CASES = [
     ("gain", None),
 ]
 
+TEST_USER_ID = UUID("3760183f-61fa-4ee1-badf-2668fbec152d")
+RANDOM_UUID = UUID("5ebcce4b-e597-406e-9d93-8de7072bbc34")
+
 
 # Storage access is not needed for these unit tests
 # So we disable storage creation to prevent any storage related issues
@@ -55,11 +60,11 @@ def disable_demo_mode(monkeypatch):
 @pytest.fixture
 def sample_daily_entries():
     data = [
-        {"entry_date": dt.date(2024, 10, 2), "weight": 73.81},
-        {"entry_date": dt.date(2025, 1, 12), "weight": 72},
-        {"entry_date": dt.date(2025, 8, 28), "weight": 71.12},
-        {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
-        {"entry_date": dt.date(2025, 9, 2), "weight": 72},
+        {"entry_date": dt.date(2024, 10, 2), "weight": 73.81, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 1, 12), "weight": 72, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 28), "weight": 71.12, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 30), "weight": 73.5, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 9, 2), "weight": 72, "user_id": TEST_USER_ID},
     ]
     return TypeAdapter(list[WeightEntry]).validate_python(data)
 
@@ -67,20 +72,20 @@ def sample_daily_entries():
 @pytest.fixture
 def sample_daily_entries_extended():
     data = [
-        {"entry_date": dt.date(2025, 8, 18), "weight": 73.0},
-        {"entry_date": dt.date(2025, 8, 19), "weight": 72.9},
-        {"entry_date": dt.date(2025, 8, 20), "weight": 72.3},
-        {"entry_date": dt.date(2025, 8, 21), "weight": 72.7},
-        {"entry_date": dt.date(2025, 8, 22), "weight": 72.5},
-        {"entry_date": dt.date(2025, 8, 25), "weight": 73.0},
-        {"entry_date": dt.date(2025, 8, 26), "weight": 73.6},
-        {"entry_date": dt.date(2025, 8, 27), "weight": 73.0},
-        {"entry_date": dt.date(2025, 8, 28), "weight": 73.6},
-        {"entry_date": dt.date(2025, 8, 29), "weight": 73.6},
-        {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
-        {"entry_date": dt.date(2025, 9, 1), "weight": 73},
-        {"entry_date": dt.date(2025, 9, 2), "weight": 72},
-        {"entry_date": dt.date(2025, 9, 3), "weight": 72.5},
+        {"entry_date": dt.date(2025, 8, 18), "weight": 73.0, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 19), "weight": 72.9, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 20), "weight": 72.3, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 21), "weight": 72.7, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 22), "weight": 72.5, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 25), "weight": 73.0, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 26), "weight": 73.6, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 27), "weight": 73.0, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 28), "weight": 73.6, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 29), "weight": 73.6, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 30), "weight": 73.5, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 9, 1), "weight": 73, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 9, 2), "weight": 72, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 9, 3), "weight": 72.5, "user_id": TEST_USER_ID},
     ]
     return TypeAdapter(list[WeightEntry]).validate_python(data)
 
@@ -124,36 +129,84 @@ class TestHelperFunctions:
                 dt.date(2025, 8, 28),
                 None,
                 [
-                    {"entry_date": dt.date(2025, 8, 28), "weight": 71.12},
-                    {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
-                    {"entry_date": dt.date(2025, 9, 2), "weight": 72},
+                    {
+                        "entry_date": dt.date(2025, 8, 28),
+                        "weight": 71.12,
+                        "user_id": TEST_USER_ID,
+                    },
+                    {
+                        "entry_date": dt.date(2025, 8, 30),
+                        "weight": 73.5,
+                        "user_id": TEST_USER_ID,
+                    },
+                    {
+                        "entry_date": dt.date(2025, 9, 2),
+                        "weight": 72,
+                        "user_id": TEST_USER_ID,
+                    },
                 ],
             ),
             (
                 "",
                 dt.date(2025, 2, 1),
                 [
-                    {"entry_date": dt.date(2024, 10, 2), "weight": 73.81},
-                    {"entry_date": dt.date(2025, 1, 12), "weight": 72},
+                    {
+                        "entry_date": dt.date(2024, 10, 2),
+                        "weight": 73.81,
+                        "user_id": TEST_USER_ID,
+                    },
+                    {
+                        "entry_date": dt.date(2025, 1, 12),
+                        "weight": 72,
+                        "user_id": TEST_USER_ID,
+                    },
                 ],
             ),
             (
                 dt.date(2025, 5, 1),
                 dt.date(2025, 9, 1),
                 [
-                    {"entry_date": dt.date(2025, 8, 28), "weight": 71.12},
-                    {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
+                    {
+                        "entry_date": dt.date(2025, 8, 28),
+                        "weight": 71.12,
+                        "user_id": TEST_USER_ID,
+                    },
+                    {
+                        "entry_date": dt.date(2025, 8, 30),
+                        "weight": 73.5,
+                        "user_id": TEST_USER_ID,
+                    },
                 ],
             ),
             (
                 None,
                 None,
                 [
-                    {"entry_date": dt.date(2024, 10, 2), "weight": 73.81},
-                    {"entry_date": dt.date(2025, 1, 12), "weight": 72},
-                    {"entry_date": dt.date(2025, 8, 28), "weight": 71.12},
-                    {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
-                    {"entry_date": dt.date(2025, 9, 2), "weight": 72},
+                    {
+                        "entry_date": dt.date(2024, 10, 2),
+                        "weight": 73.81,
+                        "user_id": TEST_USER_ID,
+                    },
+                    {
+                        "entry_date": dt.date(2025, 1, 12),
+                        "weight": 72,
+                        "user_id": TEST_USER_ID,
+                    },
+                    {
+                        "entry_date": dt.date(2025, 8, 28),
+                        "weight": 71.12,
+                        "user_id": TEST_USER_ID,
+                    },
+                    {
+                        "entry_date": dt.date(2025, 8, 30),
+                        "weight": 73.5,
+                        "user_id": TEST_USER_ID,
+                    },
+                    {
+                        "entry_date": dt.date(2025, 9, 2),
+                        "weight": 72,
+                        "user_id": TEST_USER_ID,
+                    },
                 ],
             ),
             (
@@ -165,7 +218,11 @@ class TestHelperFunctions:
                 dt.date(2024, 10, 2),
                 dt.date(2024, 10, 2),
                 [
-                    {"entry_date": dt.date(2024, 10, 2), "weight": 73.81},
+                    {
+                        "entry_date": dt.date(2024, 10, 2),
+                        "weight": 73.81,
+                        "user_id": TEST_USER_ID,
+                    },
                 ],
             ),
         ],
@@ -177,7 +234,9 @@ class TestHelperFunctions:
         mock_storage.get_weight_entries.return_value = sample_daily_entries
         app.dependency_overrides[get_data_storage] = lambda: mock_storage
 
-        daily_entries = get_filtered_daily_entries(mock_storage, date_from, date_to)
+        daily_entries = get_filtered_daily_entries(
+            mock_storage, TEST_USER_ID, date_from, date_to
+        )
         expected_entries = TypeAdapter(list[WeightEntry]).validate_python(
             expected_entries
         )
@@ -270,7 +329,7 @@ class TestHelperFunctions:
         ],
     )
     def test_get_filtered_weekly_entries(
-        self, mocker, weeks_limit, sample_daily_entries_extended, expected_entries
+        self, weeks_limit, sample_daily_entries_extended, expected_entries
     ):
         expected_entries = TypeAdapter(list[WeeklyAggregateEntry]).validate_python(
             expected_entries
@@ -288,6 +347,9 @@ class TestHelperFunctions:
 
 
 class TestAPIEndpoints:
+    def mock_get_user(self):
+        return TEST_USER_ID
+
     ENDPOINT_URLS = {
         "latest-entry": app.url_path_for("get_latest_entry"),
         "daily-entries": app.url_path_for("get_daily_entries"),
@@ -298,8 +360,12 @@ class TestAPIEndpoints:
 
     @pytest.fixture
     def client(self):
-        with TestClient(app) as client:
-            yield client
+        app.dependency_overrides[get_current_user] = lambda: TEST_USER_ID
+        try:
+            with TestClient(app) as client:
+                yield client
+        finally:
+            app.dependency_overrides.clear()
 
     @pytest.fixture
     def mock_storage(self, mocker):
@@ -324,8 +390,14 @@ class TestAPIEndpoints:
         "latest_entry, expected_return",
         [
             (
-                WeightEntry(entry_date=dt.date(2025, 9, 1), weight=72.56),
-                {"entry_date": "2025-09-01", "weight": 72.56},
+                WeightEntry(
+                    user_id=TEST_USER_ID, entry_date=dt.date(2025, 9, 1), weight=72.56
+                ),
+                {
+                    "user_id": str(TEST_USER_ID),
+                    "entry_date": "2025-09-01",
+                    "weight": 72.56,
+                },
             ),
             (None, None),
         ],
@@ -365,6 +437,7 @@ class TestAPIEndpoints:
         assert response.status_code == 200
         fetch_daily_fn.assert_called_once_with(
             mock_storage,
+            TEST_USER_ID,
             dt.date.fromisoformat(date_from) if date_from else None,
             dt.date.fromisoformat(date_to) if date_to else None,
         )
@@ -465,6 +538,14 @@ class TestAPIEndpoints:
         assert response.status_code == 500
         assert "detail" in response.json()
 
+    def test_get_daily_entries_no_data(self, client, mocker, mock_storage):
+        mocker.patch("app.api.get_filtered_daily_entries").return_value = []
+
+        response = client.get(self.ENDPOINT_URLS["daily-entries"])
+
+        assert response.status_code == 200
+        assert response.json() == []
+
     def test_weekly_aggregates_return_value(
         self, client, sample_weekly_entries, mocker
     ):
@@ -516,7 +597,6 @@ class TestAPIEndpoints:
             "goal": "lose",
             "weeks_limit": invalid_weeks_limit,
         }
-
         response = client.get(self.ENDPOINT_URLS["weekly-aggregates"], params=params)
 
         assert response.status_code == 422
@@ -583,7 +663,7 @@ class TestAPIEndpoints:
     ):
         mocker.patch(
             "app.api.GoogleFitAuth"
-        ).return_value.load_auth_token.return_value = "creds123"
+        ).return_value.load_credentials.return_value = "creds123"
         mocker.patch("app.api.DataIntegrationService")
 
         # Mocking the appropriate data source constructor based on the request params
@@ -609,6 +689,7 @@ class TestAPIEndpoints:
 
     def test_sync_data_invalid_data_source(self, client):
         request_body = {"data_source": "invalid_src"}
+
         response = client.post(self.ENDPOINT_URLS["sync-data"], json=request_body)
 
         assert response.status_code == 422
@@ -656,10 +737,13 @@ class TestAPIEndpoints:
         )
 
         actual_response = response.json()
+        expected_auth_url = (
+            f"{app.url_path_for('google_signin')}?user_id={TEST_USER_ID}"
+        )
 
         assert response.status_code == 401
         assert "auth_url" in actual_response
-        assert actual_response["auth_url"] == app.url_path_for("google_signin")
+        assert actual_response["auth_url"] == expected_auth_url
 
     def test_sync_data_no_new_data(self, client, mocker, mock_storage_refresh_needed):
         mocker.patch("app.api.GoogleFitAuth")

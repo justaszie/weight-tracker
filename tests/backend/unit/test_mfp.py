@@ -26,6 +26,7 @@ def sample_raw_data():
     }
 
 
+@pytest.mark.skip
 def test_get_raw_data_default_date_from(mocker, client, sample_raw_data):
     mocker.patch("app.mfp.browser_cookie3.chrome")
 
@@ -48,6 +49,7 @@ def test_get_raw_data_default_date_from(mocker, client, sample_raw_data):
     assert raw_data == sample_raw_data
 
 
+@pytest.mark.skip
 def test_get_raw_data_provided_date_from(mocker, client, sample_raw_data):
     mocker.patch("app.mfp.browser_cookie3.chrome")
 
@@ -65,6 +67,7 @@ def test_get_raw_data_provided_date_from(mocker, client, sample_raw_data):
     assert raw_data == sample_raw_data
 
 
+@pytest.mark.skip
 def test_get_raw_data_no_data(mocker, client):
     mocker.patch("app.mfp.browser_cookie3.chrome")
 
@@ -78,6 +81,7 @@ def test_get_raw_data_no_data(mocker, client):
     assert raw_data == {}
 
 
+@pytest.mark.skip
 def test_convert_to_daily_entries(client, sample_raw_data):
     expected_return = TypeAdapter(list[WeightEntry]).validate_python(
         [
@@ -102,10 +106,12 @@ def test_convert_to_daily_entries(client, sample_raw_data):
     assert client.convert_to_daily_entries(sample_raw_data) == expected_return
 
 
+@pytest.mark.skip
 def test_convert_to_daily_entries_empty_dataset(mocker, client):
     assert client.convert_to_daily_entries({}) == []
 
 
+@pytest.mark.skip
 def test_store_raw_data(mocker, client, sample_raw_data, tmp_path):
     test_file = tmp_path / "test_raw_data.json"
     mocker.patch("app.mfp.RAW_DATA_FILE_PATH", test_file)
@@ -126,6 +132,7 @@ def test_store_raw_data(mocker, client, sample_raw_data, tmp_path):
     assert written_text == expected_stored_format
 
 
+@pytest.mark.skip
 def test_store_raw_data_empty_dataset(mocker, client, tmp_path):
     test_file = tmp_path / "test_raw_data.json"
     mocker.patch("app.mfp.RAW_DATA_FILE_PATH", test_file)

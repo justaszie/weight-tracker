@@ -4,6 +4,7 @@ import datetime as dt
 
 import pytest
 from pydantic import TypeAdapter
+from uuid import UUID
 
 from app.project_types import WeightEntry
 from app.utils import (
@@ -12,16 +13,38 @@ from app.utils import (
     get_latest_entry_date,
 )
 
+TEST_USER_ID = UUID("3760183f-61fa-4ee1-badf-2668fbec152d")
+
 
 class TestDailyEntriesManipulation:
     @pytest.fixture
     def sample_daily_entries(self) -> list[WeightEntry]:
         data = [
-            {"entry_date": dt.date(2025, 8, 30), "weight": 72.5},
-            {"entry_date": dt.date(2025, 8, 29), "weight": 73.5},
-            {"entry_date": dt.date(2025, 8, 25), "weight": 74.5},
-            {"entry_date": dt.date(2025, 5, 29), "weight": 72.3},
-            {"entry_date": dt.date(2025, 5, 27), "weight": 71.5},
+            {
+                "entry_date": dt.date(2025, 8, 30),
+                "weight": 72.5,
+                "user_id": TEST_USER_ID,
+            },
+            {
+                "entry_date": dt.date(2025, 8, 29),
+                "weight": 73.5,
+                "user_id": TEST_USER_ID,
+            },
+            {
+                "entry_date": dt.date(2025, 8, 25),
+                "weight": 74.5,
+                "user_id": TEST_USER_ID,
+            },
+            {
+                "entry_date": dt.date(2025, 5, 29),
+                "weight": 72.3,
+                "user_id": TEST_USER_ID,
+            },
+            {
+                "entry_date": dt.date(2025, 5, 27),
+                "weight": 71.5,
+                "user_id": TEST_USER_ID,
+            },
         ]
         return TypeAdapter(list[WeightEntry]).validate_python(data)
 
@@ -65,13 +88,27 @@ class TestDailyEntriesManipulation:
         [
             ([], None),
             (
-                [{"entry_date": dt.date(2025, 5, 20), "weight": 72.5}],
+                [
+                    {
+                        "entry_date": dt.date(2025, 5, 20),
+                        "weight": 72.5,
+                        "user_id": TEST_USER_ID,
+                    }
+                ],
                 dt.date(2025, 5, 20),
             ),
             (
                 [
-                    {"entry_date": dt.date(2024, 5, 20), "weight": 72.5},
-                    {"entry_date": dt.date(2025, 1, 15), "weight": 72.5},
+                    {
+                        "entry_date": dt.date(2024, 5, 20),
+                        "weight": 72.5,
+                        "user_id": TEST_USER_ID,
+                    },
+                    {
+                        "entry_date": dt.date(2025, 1, 15),
+                        "weight": 72.5,
+                        "user_id": TEST_USER_ID,
+                    },
                 ],
                 dt.date(2025, 1, 15),
             ),
@@ -87,15 +124,37 @@ class TestDailyEntriesManipulation:
         [
             ([], None),
             (
-                [{"entry_date": dt.date(2025, 5, 20), "weight": 72.5}],
-                {"entry_date": dt.date(2025, 5, 20), "weight": 72.5},
+                [
+                    {
+                        "entry_date": dt.date(2025, 5, 20),
+                        "weight": 72.5,
+                        "user_id": TEST_USER_ID,
+                    }
+                ],
+                {
+                    "entry_date": dt.date(2025, 5, 20),
+                    "weight": 72.5,
+                    "user_id": TEST_USER_ID,
+                },
             ),
             (
                 [
-                    {"entry_date": dt.date(2024, 5, 20), "weight": 75.5},
-                    {"entry_date": dt.date(2025, 1, 15), "weight": 71.5},
+                    {
+                        "entry_date": dt.date(2024, 5, 20),
+                        "weight": 75.5,
+                        "user_id": TEST_USER_ID,
+                    },
+                    {
+                        "entry_date": dt.date(2025, 1, 15),
+                        "weight": 71.5,
+                        "user_id": TEST_USER_ID,
+                    },
                 ],
-                {"entry_date": dt.date(2025, 1, 15), "weight": 71.5},
+                {
+                    "entry_date": dt.date(2025, 1, 15),
+                    "weight": 71.5,
+                    "user_id": TEST_USER_ID,
+                },
             ),
         ],
     )
