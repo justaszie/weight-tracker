@@ -52,9 +52,9 @@ def mock_db_instantiation(mocker):
 
 # We want to test real app features here.
 # The Demo mode is tested in separate integration tests
-@pytest.fixture(autouse=True)
-def disable_demo_mode(monkeypatch):
-    monkeypatch.setenv("DEMO_MODE", "false")
+# @pytest.fixture(autouse=True)
+# def disable_demo_mode(monkeypatch):
+#     monkeypatch.setenv("DEMO_MODE", "false")
 
 
 @pytest.fixture
