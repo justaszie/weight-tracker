@@ -310,7 +310,7 @@ def test_creds_db_entry_to_credentials_object_missing_config(monkeypatch):
         token_uri="https://url.sample",
         expiry=dt.datetime.fromisoformat("2030-01-01"),
     )
-    monkeypatch.delenv("GOOGLE_CLIENT_ID", "client1")
+    monkeypatch.delenv("GOOGLE_CLIENT_ID", raising=False)
 
     with pytest.raises(KeyError):
         result = test_creds_db_entry.to_credentials_object()
@@ -366,6 +366,8 @@ def test_store_credentials_existing_user(storage_with_creds, valid_google_creds)
 
 
 def test_load_valid_credentials(storage_with_creds):
+    monkeypatch.setenv("GOOGLE_CLIENT_ID", "abc123")
+    monkeypatch.setenv("GOOGLE_CLIENT_SECRET", "ddd11")
     result = storage_with_creds.load_google_credentials(TEST_USER_ID)
     assert (
         isinstance(result, Credentials)
@@ -375,5 +377,7 @@ def test_load_valid_credentials(storage_with_creds):
 
 
 def test_load_nonexisting_credentials(storage_empty):
+    monkeypatch.setenv("GOOGLE_CLIENT_ID", "abc123")
+    monkeypatch.setenv("GOOGLE_CLIENT_SECRET", "ddd11")
     result = storage_empty.load_google_credentials(TEST_USER_ID)
     assert result is None
