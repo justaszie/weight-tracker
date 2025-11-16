@@ -21,7 +21,7 @@ export default function Login(props: LoginProps) {
     if (!email || !password) {
       props.showToast("error", "Both email and password are required");
     } else {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email: email,
         password: password,
       });
