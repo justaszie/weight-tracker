@@ -110,9 +110,8 @@ class DataIntegrationService:
     def store_new_weight_entries(
         self, user_id: UUID, new_entries: list[WeightEntry]
     ) -> None:
-        for entry in new_entries:
-            self.storage.create_weight_entry(user_id, entry.entry_date, entry.weight)
-            logger.info(f"Inserted {len(new_entries)} new weight entries for {user_id}")
+        self.storage.create_weight_entries(new_entries)
+        logger.info(f"Inserted {len(new_entries)} new weight entries for {user_id}")
 
         # Only need this step to persist the data if we're using file storage
         if isinstance(self.storage, FileStorage):

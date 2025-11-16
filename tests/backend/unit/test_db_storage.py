@@ -13,6 +13,7 @@ from app.db_storage import (
     DBWeightEntry,
     DBGoogleCredentials,
 )
+from app.project_types import WeightEntry
 
 TEST_DB_CONN_STRING = (
     "postgresql+psycopg2://postgres@localhost:5432/test_weight_tracker"
@@ -121,24 +122,27 @@ def _insert_daily_entries(engine, daily_entries):
         test_session.commit()
 
 
+# TODO : Fix using batch method
 def test_create_weight_entries(storage_empty, sample_daily_entries):
     engine = create_engine(TEST_DB_CONN_STRING)
     with Session(engine) as test_session:
         count = test_session.exec(select(func.count()).select_from(DBWeightEntry)).one()
         assert count == 0
 
-    for entry in sample_daily_entries[:2]:
-        storage_empty.create_weight_entry(
-            entry["user_id"], entry["entry_date"], entry["weight"]
-        )
+    test_user_daily_entries = [
+        WeightEntry.model_validate(entry)
+        for entry in sample_daily_entries
+        if entry["user_id"] == TEST_USER_ID
+    ][:5]
+    storage_empty.create_weight_entries(test_user_daily_entries)
 
     # Checking that the entries were inserted
     with Session(engine) as test_session:
         results = test_session.exec(select(DBWeightEntry)).all()
-        assert len(results) == 2
+        assert len(results) == 5
 
-        for idx, sample_entry in enumerate(sample_daily_entries[:2]):
-            assert results[idx].model_dump() == sample_entry
+        for idx, sample_entry in enumerate(test_user_daily_entries[:5]):
+            assert results[idx].model_dump() == sample_entry.model_dump()
 
 
 @pytest.mark.parametrize(

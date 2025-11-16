@@ -1,4 +1,5 @@
 import datetime as dt
+from collections.abc import Iterable
 from typing import Any, Literal, Protocol
 from uuid import UUID
 
@@ -42,6 +43,8 @@ class DataStorage(Protocol):
     def get_weight_entry(
         self, user_id: UUID, entry_date: dt.date
     ) -> WeightEntry | None: ...
+
+    def create_weight_entries(self, entries: Iterable[WeightEntry]) -> None: ...
 
     def create_weight_entry(
         self, user_id: UUID, entry_date: dt.date, weight: float | int

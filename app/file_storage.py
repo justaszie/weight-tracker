@@ -1,6 +1,7 @@
 import datetime as dt
 import json
 import logging
+from collections.abc import Iterable
 from pathlib import Path
 from typing import cast
 from uuid import UUID
@@ -69,6 +70,20 @@ class FileStorage:
         self._data.append(
             WeightEntry(user_id=user_id, entry_date=entry_date, weight=float(weight))
         )
+
+    def create_weight_entries(self, entries: Iterable[WeightEntry]) -> None:
+        existing: set[tuple[UUID, dt.date]] = {
+            (entry.user_id, entry.entry_date) for entry in self._data
+        }
+
+        for entry in entries:
+            if (entry.user_id, entry.entry_date) in existing:
+                logger.warning(
+                    f"({entry.user_id, entry.entry_date}) pair already exists. Skipping"
+                )
+                continue
+
+            self._data.append(entry)
 
     def delete_weight_entry(self, user_id: UUID, entry_date: dt.date) -> None:
         existing: list[WeightEntry] = [

@@ -242,6 +242,18 @@ class TestWeightStorageProtocol:
             == expected_entry_after_creation
         )
 
+    def test_create_weight_entries(self, empty_storage, sample_weight_entries):
+        count_before_create = len(empty_storage.get_weight_entries(TEST_USER_ID))
+        test_user_daily_entries = [
+            entry for entry in sample_weight_entries if entry.user_id == TEST_USER_ID
+        ]
+
+        empty_storage.create_weight_entries(test_user_daily_entries)
+
+        new_entries = empty_storage.get_weight_entries(TEST_USER_ID)
+        assert count_before_create + len(test_user_daily_entries) == len(new_entries)
+        assert test_user_daily_entries[1] == new_entries[1]
+
     def test_create_duplicate_weight_entry(self, sample_storage):
         existing_entries = sample_storage.get_weight_entries(TEST_USER_ID)
         assert len(existing_entries) > 0
