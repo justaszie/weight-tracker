@@ -365,7 +365,7 @@ def test_store_credentials_existing_user(storage_with_creds, valid_google_creds)
         )
 
 
-def test_load_valid_credentials(storage_with_creds):
+def test_load_valid_credentials(storage_with_creds, monkeypatch):
     monkeypatch.setenv("GOOGLE_CLIENT_ID", "abc123")
     monkeypatch.setenv("GOOGLE_CLIENT_SECRET", "ddd11")
     result = storage_with_creds.load_google_credentials(TEST_USER_ID)
@@ -376,7 +376,7 @@ def test_load_valid_credentials(storage_with_creds):
     )
 
 
-def test_load_nonexisting_credentials(storage_empty):
+def test_load_nonexisting_credentials(storage_empty, monkeypatch):
     monkeypatch.setenv("GOOGLE_CLIENT_ID", "abc123")
     monkeypatch.setenv("GOOGLE_CLIENT_SECRET", "ddd11")
     result = storage_empty.load_google_credentials(TEST_USER_ID)

@@ -17,8 +17,8 @@ import { ReactComponent as MFPIcon } from "@/assets/MFPIcon.svg";
 
 const DEFAULT_WEEKS_LIMIT = 4;
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const API_PREFIX = import.meta.env.VITE_API_PREFIX;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
+const API_PREFIX = import.meta.env.VITE_API_PREFIX as string;
 
 export default function Main(props: MainProps) {
   const [latestEntry, setLatestEntry] = useState<WeightEntry | null>(null);

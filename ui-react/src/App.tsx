@@ -14,8 +14,8 @@ import { isDataSourceName, type DataSourceName } from "@/types/utils";
 
 const DEFAULT_GOAL = "maintain";
 const DEFAULT_DATA_SOURCE = "gfit";
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const API_PREFIX = import.meta.env.VITE_API_PREFIX;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
+const API_PREFIX = import.meta.env.VITE_API_PREFIX as string;
 
 function App() {
   const [session, setSession] = useState<Session | null>(null);

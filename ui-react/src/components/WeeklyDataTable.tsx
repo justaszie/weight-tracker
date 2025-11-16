@@ -9,8 +9,8 @@ import type {
 
 import { ReactComponent as Spinner } from "@/assets/spinner.svg";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const API_PREFIX = import.meta.env.VITE_API_PREFIX;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
+const API_PREFIX = import.meta.env.VITE_API_PREFIX as string;
 
 export default function WeeklyDataTable(props: WeeklyDataTableProps) {
   const [weeklyData, setWeeklyData] = useState([]);

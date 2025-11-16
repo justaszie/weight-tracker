@@ -13,8 +13,8 @@ const GOAL_LABELS: { [key in Goal]: string } = {
   maintain: "Maintaining",
   gain: "Gaining Muscle",
 };
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const API_PREFIX = import.meta.env.VITE_API_PREFIX;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
+const API_PREFIX = import.meta.env.VITE_API_PREFIX as string;
 
 export default function Summary(props: SummaryProps) {
   const [summaryData, setSummaryData] = useState<SummaryData>({});
