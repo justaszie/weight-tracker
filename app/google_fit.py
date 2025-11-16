@@ -25,7 +25,12 @@ SCOPES = [
     "https://www.googleapis.com/auth/fitness.body.read",
     "https://www.googleapis.com/auth/fitness.activity.read",
 ]
-REDIRECT_URI = "http://localhost:8000/auth/google-auth"
+
+REDIRECT_URI = (
+    "https://api.tracker.justas.tech/auth/google-auth"
+    if (os.environ.get("APP_ENV") == "prod")
+    else "http://localhost:8000/auth/google-auth"
+)
 
 BASE_DIR: Path = Path(__file__).resolve().parent
 AUTH_DIR = "auth"
