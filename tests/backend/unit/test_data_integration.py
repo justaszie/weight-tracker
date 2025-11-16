@@ -1,6 +1,7 @@
 import datetime as dt
 import pytest
 from pydantic import TypeAdapter
+from uuid import UUID
 
 from app.google_fit import NoCredentialsError
 from app.data_integration import (
@@ -11,6 +12,10 @@ from app.data_integration import (
 )
 from app.file_storage import FileStorage
 from app.project_types import WeightEntry
+
+
+TEST_USER_ID = UUID("3760183f-61fa-4ee1-badf-2668fbec152d")
+RANDOM_UUID = UUID("5ebcce4b-e597-406e-9d93-8de7072bbc34")
 
 
 @pytest.fixture
@@ -26,9 +31,13 @@ def sample_raw_data():
 @pytest.fixture
 def sample_daily_entries():
     data = [
-        {"entry_date": dt.date(2025, 8, 28), "weight": 73.6},
-        {"entry_date": dt.date(2025, 8, 29), "weight": 73.6},
-        {"entry_date": dt.date(2025, 9, 1), "weight": 73.0},
+        {"entry_date": dt.date(2025, 8, 28), "weight": 73.6, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 29), "weight": 73.6, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 9, 1), "weight": 73.0, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 28), "weight": 73.6, "user_id": RANDOM_UUID},
+        {"entry_date": dt.date(2025, 8, 29), "weight": 73.6, "user_id": RANDOM_UUID},
+        {"entry_date": dt.date(2025, 8, 30), "weight": 73.6, "user_id": RANDOM_UUID},
+        {"entry_date": dt.date(2025, 9, 1), "weight": 73.0, "user_id": RANDOM_UUID},
     ]
     return TypeAdapter(list[WeightEntry]).validate_python(data)
 
@@ -40,25 +49,54 @@ def test_refresh_no_raw_data_found(mocker, service):
     )
 
     with pytest.raises(SourceNoDataError):
-        service.refresh_weight_entries()
+        service.refresh_weight_entries(TEST_USER_ID)
 
-    service.source.get_raw_data.assert_called_once()
+    service.source.get_raw_data.assert_called_once_with()
 
 
 @pytest.mark.parametrize(
     "test_entries",
     [
         [
-            {"entry_date": dt.date(2025, 8, 28), "weight": 73.6},
-            {"entry_date": dt.date(2025, 8, 29), "weight": 73.6},
+            {
+                "entry_date": dt.date(2025, 8, 28),
+                "weight": 73.6,
+                "user_id": TEST_USER_ID,
+            },
+            {
+                "entry_date": dt.date(2025, 8, 29),
+                "weight": 73.6,
+                "user_id": TEST_USER_ID,
+            },
+            {
+                "entry_date": dt.date(2025, 9, 15),
+                "weight": 73.6,
+                "user_id": RANDOM_UUID,
+            },
         ],
         [
-            {"entry_date": dt.date(2025, 8, 28), "weight": 73.6},
+            {
+                "entry_date": dt.date(2025, 8, 28),
+                "weight": 73.6,
+                "user_id": TEST_USER_ID,
+            },
         ],
         [
-            {"entry_date": dt.date(2025, 8, 28), "weight": 70.1},
-            {"entry_date": dt.date(2025, 8, 29), "weight": 70.2},
-            {"entry_date": dt.date(2025, 9, 1), "weight": 73.0},
+            {
+                "entry_date": dt.date(2025, 8, 28),
+                "weight": 70.1,
+                "user_id": TEST_USER_ID,
+            },
+            {
+                "entry_date": dt.date(2025, 8, 29),
+                "weight": 70.2,
+                "user_id": TEST_USER_ID,
+            },
+            {
+                "entry_date": dt.date(2025, 9, 1),
+                "weight": 73.0,
+                "user_id": TEST_USER_ID,
+            },
         ],
     ],
 )
@@ -67,16 +105,19 @@ def test_refresh_no_new_data(mocker, service, sample_daily_entries, test_entries
     mocker.patch(
         "app.data_integration.DataIntegrationService.convert_to_daily_entries"
     ).return_value = test_entries
+    existing_entries = [
+        entry for entry in sample_daily_entries if entry.user_id == TEST_USER_ID
+    ]
     mocker.patch(
         "app.data_integration.DataIntegrationService.get_existing_weight_entries"
-    ).return_value = sample_daily_entries
+    ).return_value = existing_entries
     mock_store_data = mocker.patch(
         "app.data_integration.DataIntegrationService.store_new_weight_entries"
     )
 
-    new_entries = service.refresh_weight_entries()
+    new_entries = service.refresh_weight_entries(TEST_USER_ID)
 
-    mock_store_data.assert_called_once_with([])
+    mock_store_data.assert_called_once_with(TEST_USER_ID, [])
     assert new_entries == []
 
 
@@ -85,24 +126,74 @@ def test_refresh_no_new_data(mocker, service, sample_daily_entries, test_entries
     [
         (
             [
-                {"entry_date": dt.date(2025, 9, 20), "weight": 70.9},
+                {
+                    "entry_date": dt.date(2025, 9, 20),
+                    "weight": 70.9,
+                    "user_id": TEST_USER_ID,
+                },
             ],
             [
-                {"entry_date": dt.date(2025, 9, 20), "weight": 70.9},
+                {
+                    "entry_date": dt.date(2025, 9, 20),
+                    "weight": 70.9,
+                    "user_id": TEST_USER_ID,
+                },
             ],
         ),
         (
             [
-                {"entry_date": dt.date(2025, 1, 5), "weight": 70.9},
-                {"entry_date": dt.date(2025, 8, 28), "weight": 70.9},
-                {"entry_date": dt.date(2025, 8, 29), "weight": 70.9},
-                {"entry_date": dt.date(2025, 8, 30), "weight": 72.9},
-                {"entry_date": dt.date(2025, 9, 28), "weight": 71.9},
+                {
+                    "entry_date": dt.date(2025, 1, 5),
+                    "weight": 70.9,
+                    "user_id": TEST_USER_ID,
+                },
+                {
+                    "entry_date": dt.date(2025, 8, 28),
+                    "weight": 70.9,
+                    "user_id": TEST_USER_ID,
+                },
+                {
+                    "entry_date": dt.date(2025, 8, 29),
+                    "weight": 70.9,
+                    "user_id": TEST_USER_ID,
+                },
+                {
+                    "entry_date": dt.date(2025, 8, 30),
+                    "weight": 72.9,
+                    "user_id": TEST_USER_ID,
+                },
+                {
+                    "entry_date": dt.date(2025, 9, 28),
+                    "weight": 71.9,
+                    "user_id": TEST_USER_ID,
+                },
+                {
+                    "entry_date": dt.date(2025, 9, 28),
+                    "weight": 71.9,
+                    "user_id": RANDOM_UUID,
+                },
+                {
+                    "entry_date": dt.date(2025, 9, 15),
+                    "weight": 71.9,
+                    "user_id": RANDOM_UUID,
+                },
             ],
             [
-                {"entry_date": dt.date(2025, 1, 5), "weight": 70.9},
-                {"entry_date": dt.date(2025, 8, 30), "weight": 72.9},
-                {"entry_date": dt.date(2025, 9, 28), "weight": 71.9},
+                {
+                    "entry_date": dt.date(2025, 1, 5),
+                    "weight": 70.9,
+                    "user_id": TEST_USER_ID,
+                },
+                {
+                    "entry_date": dt.date(2025, 8, 30),
+                    "weight": 72.9,
+                    "user_id": TEST_USER_ID,
+                },
+                {
+                    "entry_date": dt.date(2025, 9, 28),
+                    "weight": 71.9,
+                    "user_id": TEST_USER_ID,
+                },
             ],
         ),
     ],
@@ -114,40 +205,43 @@ def test_refresh_new_data(
     expected_new_entries = TypeAdapter(list[WeightEntry]).validate_python(
         expected_new_entries
     )
-
     mocker.patch(
         "app.data_integration.DataIntegrationService.convert_to_daily_entries"
     ).return_value = test_entries
+    existing_entries = [
+        entry for entry in sample_daily_entries if entry.user_id == TEST_USER_ID
+    ]
     mocker.patch(
         "app.data_integration.DataIntegrationService.get_existing_weight_entries"
-    ).return_value = sample_daily_entries
+    ).return_value = existing_entries
     mock_store_data = mocker.patch(
         "app.data_integration.DataIntegrationService.store_new_weight_entries"
     )
 
-    new_entries = service.refresh_weight_entries()
+    new_entries = service.refresh_weight_entries(TEST_USER_ID)
 
-    mock_store_data.assert_called_once_with(expected_new_entries)
+    mock_store_data.assert_called_once_with(TEST_USER_ID, expected_new_entries)
     assert new_entries == expected_new_entries
 
 
-def test_refresh_with_store_raw_copy_on(mocker, service):
-    mocker.patch("app.data_integration.DataIntegrationService.get_raw_data")
-    mocker.patch("app.data_integration.DataIntegrationService.convert_to_daily_entries")
-    mocker.patch(
-        "app.data_integration.DataIntegrationService.get_existing_weight_entries"
-    )
-    mocker.patch(
-        "app.data_integration.DataIntegrationService.filter_new_weight_entries"
-    )
-    mocker.patch("app.data_integration.DataIntegrationService.store_new_weight_entries")
-    mock_store_raw_copy_fn = mocker.patch(
-        "app.data_integration.DataIntegrationService.store_raw_data"
-    )
+# Disabled for now - it makes no sense to store data in temporary files on a cloud service
+# def test_refresh_with_store_raw_copy_on(mocker, service):
+#     mocker.patch("app.data_integration.DataIntegrationService.get_raw_data")
+#     mocker.patch("app.data_integration.DataIntegrationService.convert_to_daily_entries")
+#     mocker.patch(
+#         "app.data_integration.DataIntegrationService.get_existing_weight_entries"
+#     )
+#     mocker.patch(
+#         "app.data_integration.DataIntegrationService.filter_new_weight_entries"
+#     )
+#     mocker.patch("app.data_integration.DataIntegrationService.store_new_weight_entries")
+#     mock_store_raw_copy_fn = mocker.patch(
+#         "app.data_integration.DataIntegrationService.store_raw_data"
+#     )
 
-    service.refresh_weight_entries(store_raw_copy=True)
+#     service.refresh_weight_entries(TEST_USER_ID, store_raw_copy=True)
 
-    mock_store_raw_copy_fn.assert_called_once()
+#     mock_store_raw_copy_fn.assert_called_once()
 
 
 def test_get_raw_data(mocker, service, sample_raw_data):
@@ -172,10 +266,11 @@ def test_get_raw_data_other_errors(mocker, service):
         raw_data = service.get_raw_data()
 
 
-def test_store_raw_data(mocker, service, sample_raw_data):
-    mock_source_fn = mocker.patch.object(service.source, "store_raw_data")
-    service.store_raw_data(sample_raw_data)
-    mock_source_fn.assert_called_once_with(sample_raw_data)
+# Disabled for now - it makes no sense to store data in temporary files on a cloud service
+# def test_store_raw_data(mocker, service, sample_raw_data):
+#     mock_source_fn = mocker.patch.object(service.source, "store_raw_data")
+#     service.store_raw_data(sample_raw_data)
+#     mock_source_fn.assert_called_once_with(sample_raw_data)
 
 
 def test_convert_to_daily_entries(
@@ -202,13 +297,16 @@ def test_convert_to_daily_entries_empty_dataset(mocker, service):
 
 
 def test_get_existing_weight_entries(mocker, service, sample_daily_entries):
+    existing_entries = [
+        entry for entry in sample_daily_entries if entry.user_id == TEST_USER_ID
+    ]
     mock_storage_fn = mocker.patch.object(service.storage, "get_weight_entries")
-    mock_storage_fn.return_value = sample_daily_entries
+    mock_storage_fn.return_value = existing_entries
 
-    result = service.get_existing_weight_entries()
+    result = service.get_existing_weight_entries(TEST_USER_ID)
 
     mock_storage_fn.assert_called_once()
-    assert result == sample_daily_entries
+    assert result == existing_entries
 
 
 @pytest.mark.parametrize(
@@ -216,31 +314,89 @@ def test_get_existing_weight_entries(mocker, service, sample_daily_entries):
     [
         (
             [
-                {"entry_date": dt.date(2025, 9, 20), "weight": 70.9},
+                {
+                    "entry_date": dt.date(2025, 9, 20),
+                    "weight": 70.9,
+                    "user_id": TEST_USER_ID,
+                },
             ],
             [
-                {"entry_date": dt.date(2025, 9, 20), "weight": 70.9},
+                {
+                    "entry_date": dt.date(2025, 9, 20),
+                    "weight": 70.9,
+                    "user_id": TEST_USER_ID,
+                },
             ],
         ),
         (
             [
-                {"entry_date": dt.date(2025, 8, 28), "weight": 70.9},
-                {"entry_date": dt.date(2025, 8, 29), "weight": 70.9},
+                {
+                    "entry_date": dt.date(2025, 8, 28),
+                    "weight": 70.9,
+                    "user_id": TEST_USER_ID,
+                },
+                {
+                    "entry_date": dt.date(2025, 8, 29),
+                    "weight": 70.9,
+                    "user_id": TEST_USER_ID,
+                },
             ],
             [],
         ),
         (
             [
-                {"entry_date": dt.date(2025, 1, 5), "weight": 70.9},
-                {"entry_date": dt.date(2025, 8, 28), "weight": 70.9},
-                {"entry_date": dt.date(2025, 8, 29), "weight": 70.9},
-                {"entry_date": dt.date(2025, 8, 30), "weight": 72.9},
-                {"entry_date": dt.date(2025, 9, 28), "weight": 71.9},
+                {
+                    "entry_date": dt.date(2025, 1, 5),
+                    "weight": 70.9,
+                    "user_id": TEST_USER_ID,
+                },
+                {
+                    "entry_date": dt.date(2025, 8, 28),
+                    "weight": 70.9,
+                    "user_id": TEST_USER_ID,
+                },
+                {
+                    "entry_date": dt.date(2025, 8, 29),
+                    "weight": 70.9,
+                    "user_id": TEST_USER_ID,
+                },
+                {
+                    "entry_date": dt.date(2025, 8, 30),
+                    "weight": 72.9,
+                    "user_id": TEST_USER_ID,
+                },
+                {
+                    "entry_date": dt.date(2025, 8, 30),
+                    "weight": 72.9,
+                    "user_id": RANDOM_UUID,
+                },
+                {
+                    "entry_date": dt.date(2025, 9, 28),
+                    "weight": 71.9,
+                    "user_id": TEST_USER_ID,
+                },
+                {
+                    "entry_date": dt.date(2025, 9, 28),
+                    "weight": 71.9,
+                    "user_id": RANDOM_UUID,
+                },
             ],
             [
-                {"entry_date": dt.date(2025, 1, 5), "weight": 70.9},
-                {"entry_date": dt.date(2025, 8, 30), "weight": 72.9},
-                {"entry_date": dt.date(2025, 9, 28), "weight": 71.9},
+                {
+                    "entry_date": dt.date(2025, 1, 5),
+                    "weight": 70.9,
+                    "user_id": TEST_USER_ID,
+                },
+                {
+                    "entry_date": dt.date(2025, 8, 30),
+                    "weight": 72.9,
+                    "user_id": TEST_USER_ID,
+                },
+                {
+                    "entry_date": dt.date(2025, 9, 28),
+                    "weight": 71.9,
+                    "user_id": TEST_USER_ID,
+                },
             ],
         ),
     ],
@@ -248,12 +404,15 @@ def test_get_existing_weight_entries(mocker, service, sample_daily_entries):
 def test_filter_new_weight_entries(
     mocker, service, test_entries, sample_daily_entries, expected_filtered_entries
 ):
+    existing_entries = [
+        entry for entry in sample_daily_entries if entry.user_id == TEST_USER_ID
+    ]
     mocker.patch.object(
         service, "get_existing_weight_entries"
-    ).return_value = sample_daily_entries
+    ).return_value = existing_entries
 
     test_entries = TypeAdapter(list[WeightEntry]).validate_python(test_entries)
-    filtered_new_entries = service.filter_new_weight_entries(test_entries)
+    filtered_new_entries = service.filter_new_weight_entries(TEST_USER_ID, test_entries)
 
     expected_filtered_entries = TypeAdapter(list[WeightEntry]).validate_python(
         expected_filtered_entries
@@ -264,15 +423,18 @@ def test_filter_new_weight_entries(
 def test_store_new_weight_entries(mocker, service, sample_daily_entries):
     mock_storage_fn = mocker.patch.object(service.storage, "create_weight_entry")
     sample_entry = sample_daily_entries[0]
-    sample_entry_date, sample_entry_weight = (
+    sample_entry_date, sample_entry_weight, sample_entry_user_id = (
         sample_entry.entry_date,
         sample_entry.weight,
+        sample_entry.user_id,
     )
 
-    service.store_new_weight_entries(sample_daily_entries)
+    service.store_new_weight_entries(sample_entry.user_id, sample_daily_entries)
 
     assert mock_storage_fn.call_count == len(sample_daily_entries)
-    mock_storage_fn.assert_any_call(sample_entry_date, sample_entry_weight)
+    mock_storage_fn.assert_any_call(
+        sample_entry_user_id, sample_entry_date, sample_entry_weight
+    )
 
 
 def test_store_new_weight_entries_with_persist_command(mocker, sample_daily_entries):
@@ -281,6 +443,6 @@ def test_store_new_weight_entries_with_persist_command(mocker, sample_daily_entr
     mock_storage_fn = mocker.patch.object(service.storage, "create_weight_entry")
     mock_persist_fn = mocker.patch.object(service.storage, "save")
 
-    service.store_new_weight_entries(sample_daily_entries)
+    service.store_new_weight_entries(TEST_USER_ID, sample_daily_entries)
 
     mock_persist_fn.assert_called_once()

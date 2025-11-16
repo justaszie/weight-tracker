@@ -1,11 +1,12 @@
 import datetime as dt
 import pytest
+from uuid import UUID
 
 from fastapi.testclient import TestClient
 from pydantic import TypeAdapter
 from sqlmodel import create_engine, Session, SQLModel
 
-from app.api import get_data_storage
+from app.api import get_current_user, get_data_storage
 from app.db_storage import (
     DatabaseStorage,
     DBWeightEntry,
@@ -17,25 +18,29 @@ from app.project_types import WeightEntry
 TEST_DB_CONN_STRING = (
     "postgresql+psycopg2://postgres@localhost:5432/test_weight_tracker"
 )
+TEST_USER_ID = UUID("3760183f-61fa-4ee1-badf-2668fbec152d")
+RANDOM_UUID = UUID("5ebcce4b-e597-406e-9d93-8de7072bbc34")
 
 
 @pytest.fixture
 def sample_daily_entries():
     return [
-        {"entry_date": dt.date(2025, 8, 18), "weight": 73.0},
-        {"entry_date": dt.date(2025, 8, 19), "weight": 72.9},
-        {"entry_date": dt.date(2025, 8, 20), "weight": 72.3},
-        {"entry_date": dt.date(2025, 8, 21), "weight": 72.7},
-        {"entry_date": dt.date(2025, 8, 22), "weight": 72.5},
-        {"entry_date": dt.date(2025, 8, 25), "weight": 73.0},
-        {"entry_date": dt.date(2025, 8, 26), "weight": 73.6},
-        {"entry_date": dt.date(2025, 8, 27), "weight": 73.0},
-        {"entry_date": dt.date(2025, 8, 28), "weight": 73.6},
-        {"entry_date": dt.date(2025, 8, 29), "weight": 73.6},
-        {"entry_date": dt.date(2025, 8, 30), "weight": 73.5},
-        {"entry_date": dt.date(2025, 9, 1), "weight": 73},
-        {"entry_date": dt.date(2025, 9, 2), "weight": 72},
-        {"entry_date": dt.date(2025, 9, 3), "weight": 72.5},
+        {"entry_date": dt.date(2025, 8, 18), "weight": 73.0, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 19), "weight": 72.9, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 20), "weight": 72.3, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 21), "weight": 72.7, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 22), "weight": 72.5, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 25), "weight": 73.0, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 26), "weight": 73.6, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 27), "weight": 73.0, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 28), "weight": 73.6, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 29), "weight": 73.6, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 30), "weight": 73.5, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 8, 30), "weight": 73.5, "user_id": RANDOM_UUID},
+        {"entry_date": dt.date(2025, 9, 1), "weight": 73, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 9, 2), "weight": 72, "user_id": TEST_USER_ID},
+        {"entry_date": dt.date(2025, 9, 2), "weight": 72, "user_id": RANDOM_UUID},
+        {"entry_date": dt.date(2025, 9, 3), "weight": 72.5, "user_id": TEST_USER_ID},
     ]
 
 
@@ -88,6 +93,7 @@ def get_test_storage(request, mocker, sample_daily_entries, tmp_path):
 @pytest.fixture
 def client_with_storage(get_test_storage):
     app.dependency_overrides[get_data_storage] = lambda: get_test_storage
+    app.dependency_overrides[get_current_user] = lambda: TEST_USER_ID
     try:
         with TestClient(app) as client:
             yield client
@@ -101,17 +107,19 @@ def test_get_daily_entries(client_with_storage):
         params={"date_from": "2025-08-20", "date_to": "2025-09-01"},
     )
 
+    test_user_id_str = str(TEST_USER_ID)
+
     expected = [
-        {"entry_date": "2025-08-20", "weight": 72.3},
-        {"entry_date": "2025-08-21", "weight": 72.7},
-        {"entry_date": "2025-08-22", "weight": 72.5},
-        {"entry_date": "2025-08-25", "weight": 73.0},
-        {"entry_date": "2025-08-26", "weight": 73.6},
-        {"entry_date": "2025-08-27", "weight": 73.0},
-        {"entry_date": "2025-08-28", "weight": 73.6},
-        {"entry_date": "2025-08-29", "weight": 73.6},
-        {"entry_date": "2025-08-30", "weight": 73.5},
-        {"entry_date": "2025-09-01", "weight": 73.0},
+        {"entry_date": "2025-08-20", "weight": 72.3, "user_id": test_user_id_str},
+        {"entry_date": "2025-08-21", "weight": 72.7, "user_id": test_user_id_str},
+        {"entry_date": "2025-08-22", "weight": 72.5, "user_id": test_user_id_str},
+        {"entry_date": "2025-08-25", "weight": 73.0, "user_id": test_user_id_str},
+        {"entry_date": "2025-08-26", "weight": 73.6, "user_id": test_user_id_str},
+        {"entry_date": "2025-08-27", "weight": 73.0, "user_id": test_user_id_str},
+        {"entry_date": "2025-08-28", "weight": 73.6, "user_id": test_user_id_str},
+        {"entry_date": "2025-08-29", "weight": 73.6, "user_id": test_user_id_str},
+        {"entry_date": "2025-08-30", "weight": 73.5, "user_id": test_user_id_str},
+        {"entry_date": "2025-09-01", "weight": 73.0, "user_id": test_user_id_str},
     ]
 
     assert response.status_code == 200
@@ -226,6 +234,11 @@ def test_summary_weekly_filter(client_with_storage):
 
 def test_latest_entry(client_with_storage):
     response = client_with_storage.get("/api/v1/latest-entry")
+    test_user_id_str = str(TEST_USER_ID)
 
     assert response.status_code == 200
-    assert response.json() == {"entry_date": "2025-09-03", "weight": 72.5}
+    assert response.json() == {
+        "entry_date": "2025-09-03",
+        "weight": 72.5,
+        "user_id": test_user_id_str,
+    }

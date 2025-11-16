@@ -3,6 +3,7 @@ import json
 import logging
 from pathlib import Path
 from typing import Any
+from uuid import UUID
 
 from pydantic import TypeAdapter
 
@@ -10,6 +11,8 @@ from . import utils
 from .project_types import WeightEntry
 
 logger = logging.getLogger(__name__)
+
+TEST_USER_ID = UUID("3760183f-61fa-4ee1-badf-2668fbec152d")
 
 
 class DemoStorage:
@@ -22,7 +25,7 @@ class DemoStorage:
         self._data: list[WeightEntry] = DemoStorage._load_weights_from_file()
         logger.info(f"DemoStorage created with {len(self._data)} demo weight entries")
 
-    def get_weight_entries(self) -> list[WeightEntry]:
+    def get_weight_entries(self, user_id: UUID) -> list[WeightEntry]:
         return self._data
 
     def get_weight_entry(self, entry_date: dt.date) -> WeightEntry | None:
@@ -42,7 +45,11 @@ class DemoStorage:
                 f"Use update method to replace it."
             )
 
-        self._data.append(WeightEntry(entry_date=entry_date, weight=float(weight)))
+        self._data.append(
+            WeightEntry(
+                user_id=TEST_USER_ID, entry_date=entry_date, weight=float(weight)
+            )
+        )
 
     def delete_weight_entry(self, entry_date: dt.date) -> None:
         existing: list[WeightEntry] = [

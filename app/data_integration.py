@@ -2,6 +2,7 @@ import logging
 from collections.abc import Callable, Sequence
 from functools import wraps
 from typing import Any, ParamSpec, TypeVar
+from uuid import UUID
 
 from .file_storage import FileStorage
 from .google_fit import NoCredentialsError
@@ -37,7 +38,9 @@ class DataIntegrationService:
         self.storage = data_storage
         self.source = data_source
 
-    def refresh_weight_entries(self, store_raw_copy: bool = False) -> list[WeightEntry]:
+    def refresh_weight_entries(
+        self, user_id: UUID, store_raw_copy: bool = False
+    ) -> list[WeightEntry]:
         """
         Load data from source and insert only new weight entries in the storage
         Return value: list of inserted new weight entries
@@ -48,9 +51,11 @@ class DataIntegrationService:
             self.store_raw_data(raw_data)
 
         daily_entries: list[WeightEntry] = self.convert_to_daily_entries(raw_data)
-        new_entries: list[WeightEntry] = self.filter_new_weight_entries(daily_entries)
+        new_entries: list[WeightEntry] = self.filter_new_weight_entries(
+            user_id, daily_entries
+        )
 
-        self.store_new_weight_entries(new_entries)
+        self.store_new_weight_entries(user_id, new_entries)
 
         return new_entries
 
@@ -85,24 +90,28 @@ class DataIntegrationService:
         return daily_entries
 
     @raises_sync_error
-    def get_existing_weight_entries(self) -> list[WeightEntry]:
-        return self.storage.get_weight_entries()
+    def get_existing_weight_entries(self, user_id: UUID) -> list[WeightEntry]:
+        return self.storage.get_weight_entries(user_id)
 
     @raises_sync_error
     def filter_new_weight_entries(
-        self, source_entries: Sequence[WeightEntry]
+        self, user_id: UUID, source_entries: Sequence[WeightEntry]
     ) -> list[WeightEntry]:
         existing_dates = {
-            entry.entry_date for entry in self.get_existing_weight_entries()
+            entry.entry_date for entry in self.get_existing_weight_entries(user_id)
         }
         return [
-            entry for entry in source_entries if entry.entry_date not in existing_dates
+            entry
+            for entry in source_entries
+            if entry.entry_date not in existing_dates and entry.user_id == user_id
         ]
 
     @raises_sync_error
-    def store_new_weight_entries(self, new_entries: list[WeightEntry]) -> None:
+    def store_new_weight_entries(
+        self, user_id: UUID, new_entries: list[WeightEntry]
+    ) -> None:
         for entry in new_entries:
-            self.storage.create_weight_entry(entry.entry_date, entry.weight)
+            self.storage.create_weight_entry(user_id, entry.entry_date, entry.weight)
 
         # Only need this step to persist the data if we're using file storage
         if isinstance(self.storage, FileStorage):

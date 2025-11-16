@@ -17,8 +17,8 @@ import { ReactComponent as MFPIcon } from "@/assets/MFPIcon.svg";
 
 const DEFAULT_WEEKS_LIMIT = 4;
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-const API_PREFIX = import.meta.env.VITE_API_PREFIX
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
+const API_PREFIX = import.meta.env.VITE_API_PREFIX as string;
 
 export default function Main(props: MainProps) {
   const [latestEntry, setLatestEntry] = useState<WeightEntry | null>(null);
@@ -40,7 +40,14 @@ export default function Main(props: MainProps) {
   useEffect(() => {
     const fetchLatestEntry = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/${API_PREFIX}/latest-entry`);
+        const response = await fetch(
+          `${API_BASE_URL}/${API_PREFIX}/latest-entry`,
+          {
+            headers: {
+              Authorization: `Bearer ${props.session.access_token}`,
+            },
+          }
+        );
         if (!response.ok) {
           const body = await response.json();
           const errorMessage =
@@ -100,9 +107,13 @@ export default function Main(props: MainProps) {
               />
             ))}
 
-            {isLoading ? <Spinner className="spinner" /> : (latestEntry !== null && (
-              <p>Latest entry: {latestEntry.entry_date ?? "No Data Yet"}</p>
-            ))}
+            {isLoading ? (
+              <Spinner className="spinner" />
+            ) : (
+              latestEntry !== null && (
+                <p>Latest entry: {latestEntry.entry_date ?? "No Data Yet"}</p>
+              )
+            )}
           </div>
         </div>
         <Summary
@@ -111,6 +122,7 @@ export default function Main(props: MainProps) {
           weeksFilterValues={weeksFilterValues}
           datesFilterValues={datesFilterValues}
           dataSyncComplete={props.dataSyncComplete}
+          session={props.session}
           showToast={props.showToast}
         />
 
@@ -119,6 +131,7 @@ export default function Main(props: MainProps) {
           weeksFilterValues={weeksFilterValues}
           datesFilterValues={datesFilterValues}
           dataSyncComplete={props.dataSyncComplete}
+          session={props.session}
           showToast={props.showToast}
         />
       </div>

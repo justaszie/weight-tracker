@@ -13,8 +13,8 @@ const GOAL_LABELS: { [key in Goal]: string } = {
   maintain: "Maintaining",
   gain: "Gaining Muscle",
 };
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const API_PREFIX = import.meta.env.VITE_API_PREFIX;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
+const API_PREFIX = import.meta.env.VITE_API_PREFIX as string;
 
 export default function Summary(props: SummaryProps) {
   const [summaryData, setSummaryData] = useState<SummaryData>({});
@@ -45,7 +45,11 @@ export default function Summary(props: SummaryProps) {
       const summaryURL = new URL(`${API_BASE_URL}/${API_PREFIX}/summary`);
       summaryURL.search = new URLSearchParams(urlParams).toString();
       try {
-        const response = await fetch(summaryURL);
+        const response = await fetch(summaryURL, {
+          headers: {
+            Authorization: `Bearer ${props.session.access_token}`,
+          },
+        });
         if(!response.ok) {
           const body = await response.json();
           const errorMessage = ('error_message' in body) ? body['error_message'] : 'Error while getting summary data';
