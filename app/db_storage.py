@@ -2,6 +2,7 @@ import datetime as dt
 import json
 import logging
 import os
+from collections.abc import Iterable
 from pathlib import Path
 from uuid import UUID
 
@@ -134,6 +135,19 @@ class DatabaseStorage:
                     f" {entry_date.strftime('%Y-%m-%d')}."
                     f"Use update method to replace it."
                 ) from e
+
+    def create_weight_entries(self, entries: Iterable[WeightEntry]) -> None:
+        entries_db = [
+            DBWeightEntry(
+                user_id=entry.user_id,
+                entry_date=entry.entry_date,
+                weight=entry.weight,
+            )
+            for entry in entries
+        ]
+        with Session(self._engine) as session:
+            session.add_all(entries_db)
+            session.commit()
 
     def data_refresh_needed(self, user_id: UUID) -> bool:
         existing_data = self.get_weight_entries(user_id)

@@ -421,28 +421,26 @@ def test_filter_new_weight_entries(
 
 
 def test_store_new_weight_entries(mocker, service, sample_daily_entries):
-    mock_storage_fn = mocker.patch.object(service.storage, "create_weight_entry")
-    sample_entry = sample_daily_entries[0]
-    sample_entry_date, sample_entry_weight, sample_entry_user_id = (
-        sample_entry.entry_date,
-        sample_entry.weight,
-        sample_entry.user_id,
-    )
+    test_user_daily_entries = [
+        entry for entry in sample_daily_entries if entry.user_id == TEST_USER_ID
+    ]
+    mock_storage_fn = mocker.patch.object(service.storage, "create_weight_entries")
 
-    service.store_new_weight_entries(sample_entry.user_id, sample_daily_entries)
+    service.store_new_weight_entries(TEST_USER_ID, test_user_daily_entries)
 
-    assert mock_storage_fn.call_count == len(sample_daily_entries)
-    mock_storage_fn.assert_any_call(
-        sample_entry_user_id, sample_entry_date, sample_entry_weight
-    )
+    mock_storage_fn.assert_called_once_with(test_user_daily_entries)
 
 
 def test_store_new_weight_entries_with_persist_command(mocker, sample_daily_entries):
     service = DataIntegrationService(FileStorage(), mocker.Mock())
+    test_user_daily_entries = [
+        entry for entry in sample_daily_entries if entry.user_id == TEST_USER_ID
+    ]
 
-    mock_storage_fn = mocker.patch.object(service.storage, "create_weight_entry")
+    mock_storage_fn = mocker.patch.object(service.storage, "create_weight_entries")
     mock_persist_fn = mocker.patch.object(service.storage, "save")
 
-    service.store_new_weight_entries(TEST_USER_ID, sample_daily_entries)
+    service.store_new_weight_entries(TEST_USER_ID, test_user_daily_entries)
 
+    mock_storage_fn.assert_called_once_with(test_user_daily_entries)
     mock_persist_fn.assert_called_once()
