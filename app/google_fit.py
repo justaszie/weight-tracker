@@ -7,6 +7,7 @@ from typing import Annotated, Any, cast
 from uuid import UUID
 
 import pandas as pd
+from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -49,6 +50,7 @@ RAW_DATA_FILE_PATH: Path = Path.joinpath(
 
 # FOR DEVELOPMENT ONLY: allow google to send authorization to HTTP (insecure)
 # endpoint of this app. For testing.
+load_dotenv()
 if os.environ.get("APP_ENV") == "dev":
     os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 

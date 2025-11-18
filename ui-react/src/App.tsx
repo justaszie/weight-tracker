@@ -34,16 +34,20 @@ function App() {
     }, 2000);
   }
 
-  async function triggerDataSync(data_source?: DataSourceName, ) {
+  async function triggerDataSync(
+    data_source?: DataSourceName,
+    authenticated_session?: Session | null
+  ) {
     try {
-      if (!session) {
-        console.log(`Session value: ${session}`);
+      authenticated_session = session ?? authenticated_session;
+
+      if (!authenticated_session) {
         throw new Error("Must be signed in to get data");
       }
       const response = await fetch(`${API_BASE_URL}/${API_PREFIX}/sync-data`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${authenticated_session.access_token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -89,13 +93,13 @@ function App() {
   }
 
   async function initializeApp() {
-    let session = await authenticate();
-    setSession(session);
+    let authenticated_session = await authenticate();
+    setSession(authenticated_session);
 
     // Set up a listener that will get auth state updates
     // and update client session accordingly
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
+    supabase.auth.onAuthStateChange((_event, authenticated_session) => {
+      setSession(authenticated_session);
     });
 
     // Persist the user's goal value from the state to local storage
@@ -107,7 +111,7 @@ function App() {
     if (queryParams.get("initiator") === "data_source_auth_success") {
       const dataSource = queryParams.get("source");
       if (dataSource && isDataSourceName(dataSource)) {
-        triggerDataSync(dataSource);
+        triggerDataSync(dataSource, authenticated_session);
       }
     }
   }
