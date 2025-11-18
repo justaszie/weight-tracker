@@ -111,7 +111,13 @@ function App() {
     if (queryParams.get("initiator") === "data_source_auth_success") {
       const dataSource = queryParams.get("source");
       if (dataSource && isDataSourceName(dataSource)) {
-        triggerDataSync(dataSource, authenticated_session);
+        await triggerDataSync(dataSource, authenticated_session);
+
+        // Remove the query params that came from redirect from BE
+        const url = new URL(window.location.href);
+        url.searchParams.delete("initiator");
+        url.searchParams.delete("source");
+        window.history.replaceState({}, "", url.toString());
       }
     }
   }
