@@ -101,7 +101,9 @@ export default function Main(props: MainProps) {
             </div>
           </div>
         </div>
-        {latestEntry == null ? (
+        {isLoading ? (
+          <Spinner className="spinner" />
+        ) : latestEntry == null ? (
           <NoDataView onDataSyncRequest={props.onDataSyncRequest} />
         ) : (
           <>
