@@ -76,3 +76,11 @@ export type HeaderProps = {
   goalSelected: Goal;
   user: User;
 };
+
+export type NoDataViewProps = {
+  onDataSyncRequest: (data_source?: DataSourceName) => void;
+}
+
+export type GetDataSelectionProps = {
+  onDataSyncRequest: (data_source?: DataSourceName) => void;
+}
