@@ -11,9 +11,9 @@ export default function Header(props: HeaderProps) {
     props.handleGoalChange(goalSelection);
   }
 
-  // function isDemoMode() {
-  //   return import.meta.env.VITE_DEMO_MODE == "true";
-  // }
+  function isDemoMode() {
+    return props.user.userId == (import.meta.env.VITE_DEMO_USER_ID || null)
+  }
 
   async function handleSignOut() {
     // Log user out of all sessions
@@ -28,7 +28,7 @@ export default function Header(props: HeaderProps) {
             <a className="header__home-link" href="/">
               Weight Tracker
             </a>
-            {/* {isDemoMode() && <span className="demo-tag">Demo Mode</span>} */}
+            {isDemoMode() && <span className="demo-tag">Demo Mode</span>}
           </h1>
           <p className="header__subtitle">
             Track your weight changes without a calculator

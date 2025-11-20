@@ -1,5 +1,6 @@
 import datetime as dt
 import logging
+import os
 from collections.abc import Sequence
 from typing import (
     Annotated,
@@ -28,6 +29,7 @@ from .data_integration import (
     SourceFetchError,
     SourceNoDataError,
 )
+from .demo import DemoDataSourceClient
 from .google_fit import GoogleFitAuth, GoogleFitClient
 from .project_types import (
     DataSourceClient,
@@ -81,8 +83,8 @@ def get_data_storage(request: Request) -> DataStorage:
 def get_data_source_client(
     request: Request, source_name: DataSourceName, user_id: UUID
 ) -> DataSourceClient:
-    # if os.environ.get("DEMO_MODE", "false") == "true":
-    #     return DemoDataSourceClient()
+    if is_demo_user(user_id):
+        return DemoDataSourceClient()
 
     if source_name == GFIT_SOURCE_NAME:
         data_storage = get_data_storage(request)
@@ -119,6 +121,15 @@ def get_current_user(
     except Exception as e:
         logger.exception("User Authentication Failed")
         raise HTTPException(401, "Authentication failed") from e
+
+
+def is_demo_user(user_id: UUID) -> bool:
+    demo_user_id = os.environ.get("DEMO_USER_ID")
+    if demo_user_id is None:
+        logger.warning("Failed to verify demo user id - missing config")
+        return False
+
+    return UUID(demo_user_id) == user_id
 
 
 DataStorageDependency = Annotated[DataStorage, Depends(get_data_storage)]
