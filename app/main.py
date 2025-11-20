@@ -29,10 +29,13 @@ def configure_logging() -> None:
 
 def log_dotenv_configuration() -> None:
     logger.info("=== Application Configuration ===")
-    # logger.info(f"DEMO_MODE: {os.environ.get('DEMO_MODE')}")
+    logger.info(f"APP_ENV: {os.environ.get('APP_ENV')}")
     logger.info(f"STORAGE_TYPE: {os.environ.get('STORAGE_TYPE')}")
     logger.info(f"FRONTEND_URL: {os.environ.get('FRONTEND_URL')}")
     logger.info("=================================")
+
+    if os.environ.get("DEMO_USER_ID") is None:
+        raise Exception("Missing DEMO_USER_ID in config variables")
 
 
 def create_data_storage() -> DataStorage:

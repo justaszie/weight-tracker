@@ -6,7 +6,7 @@ import pytest
 from dotenv import load_dotenv
 from fastapi.testclient import TestClient
 from pydantic import TypeAdapter
-from sqlmodel import create_engine, select, SQLModel, Session
+from sqlmodel import create_engine, SQLModel, Session
 
 from app.analytics import (
     get_weekly_aggregates,
@@ -215,7 +215,9 @@ class TestDemoSyncData:
         existing_entries = {
             (entry.user_id, entry.entry_date) for entry in sample_daily_entries
         }
-        data_source_entries = DemoDataSourceClient().convert_to_daily_entries(None)
+        data_source_entries = DemoDataSourceClient(
+            DEMO_USER_ID
+        ).convert_to_daily_entries(None)
 
         new_entries = [
             entry
@@ -276,7 +278,9 @@ class TestDemoSyncData:
             - /sync-data returns success with the number of new entries
             - new entries are available when /daily-entries is called
         """
-        data_source_entries = DemoDataSourceClient().convert_to_daily_entries(None)
+        data_source_entries = DemoDataSourceClient(
+            DEMO_USER_ID
+        ).convert_to_daily_entries(None)
 
         expected_delta_count = len(data_source_entries)
         expected_new_entry = data_source_entries[-1]
