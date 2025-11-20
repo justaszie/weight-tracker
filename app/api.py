@@ -84,7 +84,7 @@ def get_data_source_client(
     request: Request, source_name: DataSourceName, user_id: UUID
 ) -> DataSourceClient:
     if is_demo_user(user_id):
-        return DemoDataSourceClient()
+        return DemoDataSourceClient(user_id)
 
     if source_name == GFIT_SOURCE_NAME:
         data_storage = get_data_storage(request)
