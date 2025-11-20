@@ -226,6 +226,12 @@ body {
     padding-bottom: 15px;
 }
 
+.get-data__selection {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
 .get-data__cta {
     display: flex;
     align-items: center;

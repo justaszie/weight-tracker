@@ -8,12 +8,11 @@ import type { DataSourceCTA } from "@/types/utils";
 import { ReactComponent as Spinner } from "@/assets/spinner.svg";
 
 import Filters from "./Filters";
-import GetDataCTA from "./GetDataCTA";
 import Summary from "./Summary";
 import WeeklyDataTable from "./WeeklyDataTable";
+import NoDataView from "./NoDataView";
 
-import { ReactComponent as GoogleIcon } from "@/assets/GoogleIcon.svg";
-import { ReactComponent as MFPIcon } from "@/assets/MFPIcon.svg";
+import GetDataSelection from "./GetDataSelection";
 
 const DEFAULT_WEEKS_LIMIT = 4;
 
@@ -31,11 +30,6 @@ export default function Main(props: MainProps) {
     {}
   );
   const [isLoading, setIsLoading] = useState(true);
-
-  const dataSources: DataSourceCTA[] = [
-    { srcName: "gfit", ctaText: "Get Google Fit Data", icon: GoogleIcon },
-    { srcName: "mfp", ctaText: "Get MyFitnessPal Data", icon: MFPIcon },
-  ];
 
   useEffect(() => {
     const fetchLatestEntry = async () => {
@@ -97,43 +91,42 @@ export default function Main(props: MainProps) {
             />
           </div>
           <div className="get-data">
-            {dataSources.map((src) => (
-              <GetDataCTA
-                key={src.srcName}
-                dataSource={src.srcName}
-                ctaText={src.ctaText}
-                srcIcon={src.icon}
-                onDataSyncRequest={props.onDataSyncRequest}
-              />
-            ))}
-
-            {isLoading ? (
-              <Spinner className="spinner" />
-            ) : (
-              latestEntry !== null && (
-                <p>Latest entry: {latestEntry.entry_date ?? "No Data Yet"}</p>
-              )
-            )}
+            <GetDataSelection onDataSyncRequest={props.onDataSyncRequest} />
+            <div>
+              {isLoading ? (
+                <Spinner className="spinner" />
+              ) : (
+                latestEntry !== null && (
+                  <p>Latest entry: {latestEntry.entry_date ?? "No Data Yet"}</p>
+                )
+              )}
+            </div>
           </div>
         </div>
-        <Summary
-          latestEntry={latestEntry}
-          goalSelected={props.goalSelected}
-          weeksFilterValues={weeksFilterValues}
-          datesFilterValues={datesFilterValues}
-          dataSyncComplete={props.dataSyncComplete}
-          session={props.session}
-          showToast={props.showToast}
-        />
+        {latestEntry == null ? (
+          <NoDataView onDataSyncRequest={props.onDataSyncRequest} />
+        ) : (
+          <>
+            <Summary
+              latestEntry={latestEntry}
+              goalSelected={props.goalSelected}
+              weeksFilterValues={weeksFilterValues}
+              datesFilterValues={datesFilterValues}
+              dataSyncComplete={props.dataSyncComplete}
+              session={props.session}
+              showToast={props.showToast}
+            />
 
-        <WeeklyDataTable
-          goalSelected={props.goalSelected}
-          weeksFilterValues={weeksFilterValues}
-          datesFilterValues={datesFilterValues}
-          dataSyncComplete={props.dataSyncComplete}
-          session={props.session}
-          showToast={props.showToast}
-        />
+            <WeeklyDataTable
+              goalSelected={props.goalSelected}
+              weeksFilterValues={weeksFilterValues}
+              datesFilterValues={datesFilterValues}
+              dataSyncComplete={props.dataSyncComplete}
+              session={props.session}
+              showToast={props.showToast}
+            />
+          </>
+        )}
       </div>
     </main>
   );
