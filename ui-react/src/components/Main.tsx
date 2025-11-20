@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import type { MainProps } from "@/types/props";
 import type { WeightEntry } from "@/types/weight-entry";
 import type { DatesFilterValues, WeeksFilterValues } from "@/types/filter";
-import type { DataSourceCTA } from "@/types/utils";
 
 import { ReactComponent as Spinner } from "@/assets/spinner.svg";
 
@@ -11,7 +10,6 @@ import Filters from "./Filters";
 import Summary from "./Summary";
 import WeeklyDataTable from "./WeeklyDataTable";
 import NoDataView from "./NoDataView";
-
 import GetDataSelection from "./GetDataSelection";
 
 const DEFAULT_WEEKS_LIMIT = 4;
