@@ -90,9 +90,14 @@ def create_app() -> FastAPI:
         https_only=False,  # In Dev we need insecure transport via http
     )
 
+    cors_origins: list[str] = []
+    frontend_domain: str | None = os.environ.get("FRONTEND_URL")
+    if frontend_domain:
+        cors_origins.append(frontend_domain)
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=cors_origins,
         allow_methods=["*"],
         allow_headers=["*"],
         allow_credentials=False,

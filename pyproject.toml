@@ -93,7 +93,7 @@ omit = [
   "app/project_types.py",
   "app/main.py",
   "app/throwaway/*",
-  "app/demo.py"
+  "app/mfp.py",
 ]
 
 [build-system]
