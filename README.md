@@ -3,21 +3,28 @@
 
 # Weight Tracker - Full Stack Portfolio Project
 
-This is a weight tracking application that fetches data from external sources (Google Fit API), stores that data, performs analytics, and presents insights through a modern web interface to help users track their weight goals. It's built primarily as a software portfolio project to demonstrate full-stack development, OAuth implementation, 3rd party API integration, modular architecture, and CI/CD practices.
+This is a full-stack weight tracking application that:
+- Fetches weight data from external sources (Google Fit API),
+- Cleans, stores, and aggregates it
+- Presents weekly trends and weight goal-based insights in a modern web UI.
+
+I built it as a portfolio project to demonstrate end-to-end skills: full-stack development, OAuth 2.0, 3rd-party API integration, modular backend architecture, automated testing, and CI/CD.
 
 ---
 
 ## Table of Contents
 - [Live Demo](#live-demo)
+- [Summary for Hiring Teams](#summary-for-hiring-teams)
 - [Project Overview](#project-overview)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
-- [Architecture Overview](#architecture-overview)
+- [Architecture & Project Structure](#architecture--project-structure)
 - [API Documentation](#api-documentation)
+- [CI/CD Pipeline](#cicd-pipeline)
 - [Testing](#testing)
 - [Running the Project Locally](#running-the-project-locally)
 - [Design Patterns & Best Practices](#design-patterns--best-practices)
-- [Limitations and Enhancements](#limitations-and-enhancements)
+- [Limitations & Enhancements](#limitations--enhancements)
 - [Contact Me](#contact-me)
 
 ---
@@ -28,35 +35,40 @@ This is a weight tracking application that fetches data from external sources (G
 
 **Demo credentials**
 - Email: `wtdemo@justas.tech`
-- Pwd: `demo1`
+- Password: `demo1`
 
 > **Note on Google Fit Integration:**
-The credentials above give access to **demo mode** where you can try the features using a mock data source instead of real Google Fit API data. The app is currently in the testing phase on Google’s platform, so it can access a user’s Google Fit data only if that user is part of the testing group. I can add users to the testing group and create accounts on the app upon request (please mention your gmail address): [contact me]((#contact-me)). Alternatively, the complete app with Google Fit integration can be run and tested [locally](#running-the-project-locally).
+The credentials above give access to **demo mode** where you can try the features using a mock data source instead of real Google Fit API data. The app is currently in the testing phase on Google’s platform, so only the testing group users can access their Google Fit data using this app. I can add users to the testing group and provide app credentials upon request - [contact me](#contact-me) (please mention your gmail address). Alternatively, the complete app with Google Fit integration can be run and tested [locally](#running-the-project-locally).
 
 ---
+
+## Summary (for Hiring Teams)
+- **Scope**: Full-stack SPA (React + Typescript frontend and Python/FastAPI backend) with Google OAuth 2.0 + Google Fit API integration.
+- **Architecture**: REST APIs, protocol-based interfaces, dependency injection, modular architecture, demo mode.
+- **Quality**: 85%+ unit test coverage, full business logic coverage via integration tests, static type checking, linting/formatting via pre-commit, GitHub Actions CI.
+- **Deployment**: Backend on Koyeb, frontend on Cloudflare Pages, Supabase for Auth + PostgreSQL.
+- **Security & Auth**: JWT-based auth via Supabase for frontend and APIs, secure Google OAuth 2.0 token storage/refresh to access Google data.
+
 
 ## Project Overview
 
 ### Why This Project?
 
-I built this application to solve a personal need and because it presented some advanced tech challenges important in full-stack application development.
-1. **Personal problem** - When tracking progress on weight goals it's more productive to look at weekly averages and trends, rather than day-to-day fluctuations. The Google Fit mobile app is useful to log the weight and have a quick overview but not enoughto analyze trends. I haven't found any app that does it conveniently.
-2. **Tech Challenges** - secure OAuth 2.0 auth flow with Google, fetching, processing and storing real-world data from Google Fit API, React SPA powered by REST APIs, automated testing, production deployment.
+I built this project because it:
+1. **Solves a real problem** – When tracking weight, weekly averages and trends are more helpful than daily fluctuations. Google Fit and similar apps are good for logging data but don't provide convenient interface for such analysis.
+2. **Presents advanced full-stack challenges** – Secure OAuth 2.0 with Google, fetching and processing real-world data from 3rd party APIs, a React SPA powered by REST APIs, analytics on time-series data, automated testing, and production deployment.
 
 ### Learning Outcomes
-This is the first full-stack project that I shipped to production. It taught me many valuable skills to be used in the next projects.
-- **Building full-stack apps** (Single Page Application) with Python/FastAPI backend and React frontend
-- **OAuth 2.0** flow implementation to get access to user's Google Fit data
-- **API design** following REST principles
-- **Database design and querying** with PostgreSQL and SQLModel
-- **Version Control** with remote Github repo, commit and PR hygiene
-- **CI/CD practices** including pre-commit hooks for code quality and automated testing
-- **Type safety** with Python type hints (mypy) and TypeScript
-- **Cloud deployment** on modern platforms: Koyeb (backend) and Cloudlfare Pages (frontend)
+This is the first full-stack application I shipped to production. It helped me build various skills such as:
 
-### AI tools
-Since learning was the main goal, the codebase was written manually. **No AI code generation was used**, except help with debugging and evaluating my own code.
-Drafts of the UI design were generated using [v0](https://v0.app/chat/simple-weight-tracker-design-ouWpH9FyHKR?ref=KSHPPZ) but I used them just as a visual inspiration and wrote the code from scratch myself.
+- **Full-stack development** – React + TypeScript SPA frontend with a Python/FastAPI backend.
+- **OAuth 2.0** – Implementing the flow to get access to user’s Google Fit data.
+- **API design** – REST endpoints with clear responsibilities and versioning.
+- **Database design and usage** – PostgreSQL + SQLModel for relational data.
+- **Clean code principles** – modular architecture, DRY and SOLID (see [Best Practices](#design-patterns--best-practices)).
+- **CI/CD** – GitHub Actions, pre-commit hooks, and thorough automated tests.
+- **Type safety** – Python type hints + mypy, and TypeScript for the frontend.
+- **Cloud deployment** – Koyeb (backend) and Cloudflare Pages (frontend), Supabase for managed PostgreSQL + Auth.
 
 ---
 
@@ -64,7 +76,7 @@ Drafts of the UI design were generated using [v0](https://v0.app/chat/simple-wei
 
 ### User Features
 
-**📈 Progress Dashboard**
+**Progress Dashboard**
 - **Weight change overview** over a selected period: total change from dates X to Y (in absolute and relative terms), average weekly change, average estimated caloric surplus / deficit
 - **Weekly details** key metrics for every week in the selected period
 - **Filtering data**
@@ -72,41 +84,45 @@ Drafts of the UI design were generated using [v0](https://v0.app/chat/simple-wei
   - View data for the last N weeks
   - Real-time updates when filters change
 - **Syncing data with external sources** - user can request to get data from their selected source (currently only Google Fit supported)
-- **Responsive design** clean minimalistic UI that adjusts to various screen sizes, including mobile
-- **Meaningful metrics** PTs and nutritionists recommend to keep the weight change to ~0.5% - 1% per week for a healthy and sustainable change. The app calculates this rate for the user's data and allows them to evaluate if they're following healthy weight change.
+- **Responsive UI** clean minimalistic UI that adjusts to various screen sizes, including mobile
+- **Meaningful metrics** PTs and nutritionists generally recommend keeping weight change to ~0.5%–1% per week for a healthy and sustainable change. The app calculates this rate for the user’s data so they can see if their weight change is within a healthy range.
 
-**🎯 Goal-Based Evaluation**
+**Goal-Based Evaluation**
 - Switch between three fitness goals: Lose Fat, Maintain Weight, Gain Muscle
 - Color coded progress indicators (positive/negative) based on your selected goal
 
 ### Backend Features
 
-**🔐 Authentication & Authorization**
+**Authentication & Authorization**
 - **JWT authentication via Supabase** to log in to the frontend and to access the app's REST APIs.
 - **Google OAuth 2.0** implementation to get access to fetch the user's Google Fit data. This includes secure access token storage and refresh mechanism
 
-**💾 Data Management**
+**Data Management**
 - **Data syncing strategy** - on user's request, fetch and store user's data from the external source (Google Fit)
-- **Database as source of truth**  - eternal source weight entries are only inserted if there's no entry for that user and date in the DB yet.
+- **Database as source of truth** - weight entries fetched from external sources are only inserted if there's no entry for that user and date in the DB yet.
 - **Flexible storage layer** - the app supports multiple storage systems: PostgreSQL and file-based storage
 - **Analytics module** - calculates and returns metrics for the stored weight data
 
-**🔌 External Integrations**
+**External Integrations**
 - **Google Fit REST API** - Fetch user's weight entries
 - **Supabase Auth** - User authentication and JWT validation
 
-**🏗️ Architecture**
+**Architecture**
 - **RESTful API** design with FastAPI
 - **Protocol-based abstractions** for storage layer and external data sources
-- **Dependency injections** for clean, testable code
+- **Dependency injection** for clean, testable code
 - **Exception handling** with meaningful responses and logging
 - **Type safety** with strict MyPy checking
 
 ### Screenshots
 ![App Screenshot](/doc/wt-screenshot-1.png)
+
 ![App Screenshot - No Data](/doc/wt-screenshot-2.png)
+
 ![App Screenshot - Login](doc/wt-screenshot-login.png)
+
 ![App Screenshot - Mobile](doc/wt-screenshot-mobile.png)
+
 ---
 
 ## Tech Stack
@@ -115,10 +131,10 @@ Drafts of the UI design were generated using [v0](https://v0.app/chat/simple-wei
 | Technology | Purpose |
 |------------|---------|
 | **Python 3.12** | Backend logic |
-| **FastAPI** | Framework for FastAPIs with automated request/response validation (Pydantic. Includes uvicorn server) |
-| **Pydantic** | Automated data vaidation: HTTP request / responses, ORM objects |
+| **FastAPI** | Framework for REST APIs with automated request/response validation (Pydantic). Includes uvicorn ASGI server |
+| **Pydantic** | Automated data validation for HTTP requests/responses and ORM objects |
 | **SQLModel** | SQL ORM with Pydantic integration |
-| **PostgreSQL** | Relational DB (managed by Supabase in prod) |
+| **PostgreSQL** | Relational DB (managed by Supabase in production) |
 | **Pandas** | Data processing and analytics |
 | **Poetry** | Dependency management and packaging |
 | **Supabase** | Protecting APIs with JWT auth |
@@ -127,7 +143,7 @@ Drafts of the UI design were generated using [v0](https://v0.app/chat/simple-wei
 ### Frontend
 | Technology | Purpose |
 |------------|---------|
-| **React 19** | SPA Frontend built around components and state management |
+| **React 19** | SPA frontend built around reusable components and state management |
 | **TypeScript** | Frontend logic |
 | **Vite** | Frontend build tool and dev server |
 | **Custom HTML/CSS** | BEM methodology for maintainability |
@@ -136,7 +152,7 @@ Drafts of the UI design were generated using [v0](https://v0.app/chat/simple-wei
 ### DevOps & Quality Assurance
 | Tool | Purpose |
 |------|---------|
-| **Pre-commit** | Git hooks for code quality and quick tests|
+| **Pre-commit** | Git pre-commit hooks for code quality (mypy, ruff lint, format) and integration tests |
 | **MyPy** | Static type checking (strict mode) |
 | **Ruff** | Python linter and formatter |
 | **Pytest** | Automated unit and integration testing |
@@ -151,58 +167,66 @@ Drafts of the UI design were generated using [v0](https://v0.app/chat/simple-wei
 
 ---
 
-## Architecture Overview
+## Architecture & Project Structure
 
 ### High Level Architecture
 
-![Architecture](/doc/architecture.png)
+The diagram below presents the overall architecture of the system, including external parties.
+
+![Architecture - High Level](/doc/architecture_high_level.png)
+
+### Backend Architecture
+
+The diagram below details the backend architecture - the models and their dependencies.
+
+![Architecture - Backend](/doc/architecture_backend.png)
 
 ### Project Structure
+
 ```
-weight-tracker/                        # Project Root
+weight-tracker/                        # Project root (managed with Poetry)
 │
-└── Documentation
-    └── README.md                      # This file
-    └── doc                            # Doc related assets
-├── Backend (Python/FastAPI)
-│   ├── app/
-│   │   ├── main.py                    # Application starting point
-│   │   ├── api.py                     # REST API routes & endpoints
-│   │   ├── google_fit.py              # Google OAuth & Fit API
-│   │   ├── data_integration.py        # Data sync orchestration
-│   │   ├── db_storage.py              # PostgreSQL storage layer
-│   │   ├── file_storage.py            # File-based storage
-│   │   ├── analytics.py               # Analytics functions
-│   │   ├── project_types.py           # Type definitions & abstraction protocols
-│   │   ├── utils.py                   # Helper functions
-│   │   ├── demo.py                    # Demo mode implementation
-│   │   └── .env.example               # Backend env variables template
-│   │
-│   ├── pyproject.toml                 # Python dependencies (Poetry)
-│   └── poetry.lock                    # Locked dependencies
+├── app/                               # Backend (Python / FastAPI)
+│   ├── main.py                        # Application entry point
+│   ├── api.py                         # REST API routes, validation models and helpers
+│   ├── google_fit.py                  # Google OAuth endpoints, token management + Google Fit API integration
+│   ├── data_integration.py            # Orchestration service to sync storage with external sources
+│   ├── db_storage.py                  # PostgreSQL DataStorage implementation - weight data and tokens storage
+│   ├── file_storage.py                # File system-based DataStorage implementation - weight data and tokens storage
+│   ├── analytics.py                   # Weekly weight data aggregation and analytics calculations
+│   ├── project_types.py               # Type definitions and Protocol-based interfaces
+│   ├── utils.py                       # Helper functions
+│   ├── demo.py                        # Demo-mode DataSourceClient implementation
+│   └── .env.example                   # Backend environment variable config template
 │
-├── Frontend (React/TypeScript)
-│   └── ui-react/
-│       ├── src/
-│       │   ├── main.tsx               # React entry point
-│       │   ├── App.tsx                # Root component
-│       │   ├── index.css              # Global styles (BEM)
-│       │   ├── components/            # React components
-│       │   └── types/                 # TypeScript type definitions
-│       └── .env.example               # Frontend env variables
+├── ui-react/                          # Frontend (React / TypeScript)
+│   ├── src/
+│   │   ├── main.tsx                   # Frontend React app entry point
+│   │   ├── App.tsx                    # Root component with global state management
+│   │   ├── index.css                  # Global styles (BEM style)
+│   │   ├── components/                # Reusable React components
+│   │   └── types/                     # Frontend TypeScript type definitions
+│   └── package.json                   # Frontend dependencies (npm)
+│   └── vite.config.ts                 # Vite build tool configuration
+│   └── .env.example                   # Frontend environment variable config template
 │
-├── Tests
-│   └── tests/backend/
-│       ├── unit/                      # Unit tests
-│       └── integration/               # Integration tests
+├── tests/                             # Backend test suite
+│   └── backend/
+│       ├── unit/                      # Unit tests (module-level)
+│       └── integration/               # Integration tests (organized by feature group)
+│
+├── .github/workflows/                 # CI/CD pipeline workflows
+│   ├── backend_code_quality.yaml      # Code Quality check flow
+│   └── backend_testing.yaml           # Unit & integration test flow
+│
+├── doc/                               # Documentation assets (architecture diagrams, screenshots)
 |
-├── DevOps & CI/CD
-│   ├── .github/workflows/
-│   │   ├── backend_code_quality.yaml  # Linting, formatting and type checking
-│   │   └── backend_testing.yaml       # Automated testing
-│   └── .pre-commit-config.yaml        # Pre-commit hooks
-│
+├── README.md                          # Project documentation (this file)
+├── pyproject.toml                     # Backend dependencies (Managed by Poetry)
+├── poetry.lock                        # Locked Python dependency versions
+└── .pre-commit-config.yaml            # Pre-commit hooks (linter, formatter, type-check, integration tests)
 ```
+
 
 ### Backend Modules
 
@@ -211,37 +235,29 @@ weight-tracker/                        # Project Root
 | **main.py** | FastAPI app setup, API route registration |
 | **api.py** | Logic of the main REST API routes powering the app. Includes helper functions, HTTP request / response model validations, user's JWT validation. Uses FastAPI dependency injection to get the relevant data storage, external data source, and database connection instances |
 | **data_integration.py** | `DataIntegrationService` orchestrates data sync between DB data and external sources. Uses DI to support any implementation of data storage and data source protocols |
-| **db_storage.py / file_storage/py** | 2 different implementations `DataStorage` protocol that give CRUD access to data storage |
+| **db_storage.py / file_storage.py** | Two different implementations of the `DataStorage` protocol that give CRUD access to stored weight data |
 | **analytics.py** | Analytics engine. Calculates and returns weekly aggregates and summary metrics from daily weight entries using pandas |
-| **google_fit.py** | Logic related to Google OAuth flow and Google Fit API integration. Defines 2 API routes used to handle Google OAuth 2.0 flow (one to redirect user to Google consent flow, another to handle authorization callback from the server). Also, ontains `GoogleFitAuth` client that stores, loads and refreshes OAuth tokens. Finaly, `GoogleFitClient` that fetches raw data from Google Fit API and transforms it to standard format |
-| **mfp.py** | Integrates with MyFitnessPal as alternative to Google Fit and demonstrates flexibility of `DataSourceClient` protocol. Currently disabled due to 3rd party library package issues - [PR raised](https://github.com/coddingtonbear/python-myfitnesspal/pull/201) to fix it |
+| **google_fit.py** | Logic related to Google OAuth flow and Google Fit API integration. Defines 2 API routes used to handle Google OAuth 2.0 flow (one to redirect user to Google consent flow, another to handle authorization callback from the server). Also, contains a `GoogleFitAuth` class that stores, loads and refreshes OAuth tokens. Finally, the `GoogleFitClient` class fetches raw data from Google Fit API and transforms it to standard format |
+| **mfp.py** | Integrates with MyFitnessPal as alternative to Google Fit and demonstrates flexibility of `DataSourceClient` protocol. **Currently disabled** due to 3rd party library package issues - [PR raised](https://github.com/coddingtonbear/python-myfitnesspal/pull/201) to fix it |
 | **project_types.py** | Complex type definitions for type annotation and type safety checks. Includes definitions of the `DataStorage` and `DataSourceClient` protocols |
-| **demo.py** | Implements mock implementaion of the `DataSourceClient` protocol to be used in demo mode in production |
+| **demo.py** | Implements mock implementation of the `DataSourceClient` protocol with mock source data. It's in demo mode (when logging in with demo user credentials) |
 
 ### Frontend Components
+Below are key React components that constitute the frontend (smaller components not mentioned)
 
 | Component | Purpose |
 |------------|---------|
 | **App.tsx** | Root component. Overall layout of the SPA (Header and Main subcomponents),  top-level logic and callbacks passed down to sub-components. Includes logic to manage the auth state, triggering toast messages, triggering data sync to refresh the whole app, etc. |
 | **Header.tsx** | Logo, goal selection, current user info and sign out option |
-| **Login.tsx** | Login form, dispalyed if there is no active authenticated user session |
+| **Login.tsx** | Page with the login form, displayed if there is no active authenticated user session |
 | **Main.tsx** | Layout of the main section of the app. Also contains filter components and a selection of CTAs to trigger data sync from various sources |
 | **Summary.tsx**  | Cards that summarize the weight change over the selected period |
 | **WeeklyDataTable.tsx**  | Table with one row for each week in the selected period with key metrics for that week. Color coded results based on selected goal  |
 | **Filters.tsx**  | Controls to select the data period (last N weeks or from dates X to Y) |
-| **NoDataView.tsx**  | View displayed when user has no weight data stored yet and includes CTAs to get data |
 
-The screens below show the position of the main components in the UI:
+The screenshot below show the layout of the key components in the UI:
 
 ![UI Components](/doc/ui-components-1.png)
-![UI Components - No Data](/doc/ui-components-2.png)
-![UI Components - Login](/doc/ui-components-login.png)
-
-### CI/CD Pipeline
-
-**Developer Workflow**
-
-![CI / CD Workflow](doc/ci_cd_flow.png)
 
 ---
 ## API Documentation
@@ -254,23 +270,26 @@ All API endpoints require Authorization header with JWT, validated via Supabase 
 Authorization: Bearer <supabase_jwt_token>
 ```
 
+### CORS
+Currently, the APIs can only be accessed from the domain hosting the React Frontend app (defined as an environment variable `FRONTEND_URL`)
+
 ### REST API Endpoints
 The app is powered by the following endpoints (only data associated with authenticated user is returned)
-- `GET /daily-entries` -> the user's daily weight entries stored in DB
-- `GET /weekly-aggregates` -> the user's weight entries aggregated on a weekly basis and calculates key metrics
-- `GET /summarry` -> the weight change metrics over a given period
-- `GET /latest-entry` -> the latest daily weight entry (for date closest to current date)
-- `POST /sync-data` -> triggers fetching data from the selected external data source and inserting new entries in the app storage
-- `GET /healthz` -> API status check
+- **`GET /daily-entries`** -> the user's daily weight entries stored in DB
+- **`GET /weekly-aggregates`** -> calculates weekly averages and other key metrics grouped by week
+- **`GET /summary`** -> total weight change metrics over a given period
+- **`GET /latest-entry`** -> the latest daily weight entry (for date closest to current date)
+- **`POST /sync-data`**-> triggers fetching data from the selected external data source and inserting new entries in the app storage
+- **`GET /healthz`** -> API status check
 
 API is prefixed with `/api/<version_number>`. The latest prefix is included in the API documentation (see below).
 
-Full API documentation is generated automatically by FastAPI:
+Full API documentation is generated automatically by FastAPI and is available at:
 - [Swagger](https://api.tracker.justas.tech/docs)
 - [ReDoc](https://api.tracker.justas.tech/redoc)
 
 ### OAuth Endpoints
-The app has 2 endpoints that are used in the Google OAuth 2.0 flow to obtain user's google access tokens that are used to fetch Google Fit data.
+The app has 2 endpoints that are used in the Google OAuth 2.0 flow to obtain access tokens that are used to fetch the user's Google Fit data.
 
 #### **GET** `/auth/google-signin`
 
@@ -278,15 +297,23 @@ Frontend client redirects end user to this endpoint to initiate Google OAuth 2.0
 
 #### **GET** `/auth/google-auth`
 
-Google OAuth server calls this endpoint after successful consent from user. Thie endpoint fetches the access/refresh tokens given the authorization code and stores it to give the app access to user's Google Fit data.
+Google OAuth server calls this endpoint after successful consent from user. This endpoint fetches the access/refresh tokens given the authorization code and stores it to give the app access to user's Google Fit data.
+
+---
+
+## CI/CD Pipeline
+
+**Developer Workflow**
+
+![CI / CD Workflow](doc/ci_cd_flow.png)
 
 ---
 
 ## Testing
 
-- Tests only cover backend at the moment and uses `pytest` framework.
-- The test suite includes unit and integration tests.
-- Unit tests are defined by module and integration tests are split by feature groups.
+- Tests currently cover only the backend and use `pytest` framework.
+- The test suite includes unit and integration tests. Unit tests are defined by module and integration tests are split by feature groups.
+- Unit tests have a total ~85% coverage with all business logic covered.
 - Integration tests use isolated environments to test end-to-end features (separate test database, mocked Google Fit integration)
 
 Test suite structure:
@@ -329,24 +356,22 @@ poetry run pytest tests/backend/integration
 ## Running the Project Locally
 
 ### Prerequisites
+The project requires the following:
+- **Docker Desktop** - local Supabase (needed for Auth) runs inside Docker container: https://www.docker.com/products/docker-desktop/
+- **Supabase CLI** - running a local Supabase instance with Auth and PostgreSQL DB if needed:
+https://supabase.com/docs/guides/local-development/cli/getting-started
 
-Ensure you have the following installed:
-
-- **Docker Desktop** - For local Supabase instance
-- **Supabase CLI** - Database management
-  ```bash
-  brew install supabase/tap/supabase
-  ```
-- **Python 3.12+** with Poetry
+- **Python 3.12+** with Poetry package manager
   ```bash
   brew install python@3.12
-  curl -sSL https://install.python-poetry.org | python3 -
+  python -m pip install --upgrade pip
+  pip install poetry
   ```
-- **Node.js 18+** and npm
+- **Node.js 18+ Runtime** and npm
   ```bash
   brew install node
   ```
-- **(Optional) Google Cloud Console** credentials for Google Fit integration
+- **(Optional) Google Cloud Project** credentials for Google Fit integration (see below)
 
 ### Backend Setup
 
@@ -363,74 +388,48 @@ Ensure you have the following installed:
 
 3. **Start local Supabase:**
    ```bash
+   supabase init
    supabase start
    ```
 
-   📝 **Important:** Save the output values:
+   **Important:** Save the output values when starting Supabase:
    - `API URL`
-   - `anon key`
-   - `service_role key`
-   - `JWT secret`
+   - `Publishable key`
+   - `Database URL` (if you plan to use Supabase PostgreSQL as storage layer)
+   - `Studio URL:` - URL to the admin panel
 
 4. **Configure environment:**
+    Copy the sample .env file and fill it with values as described in the sample file.
 
-Sample .env files:
-- Backend: [.env.example](/app/.env.example)
-- Frontend:  [.env.example](/ui-react/.env.example)
+    [.env.example](/app/.env.example)
 
-   ```bash
-   cp app/.env.example app/.env
-   ```
+    ```bash
+    cp ./app/.env.example ./app/.env
+    ```
 
-   Edit `app/.env` with your Supabase values:
-   ```bash
-   APP_ENV=dev
-   STORAGE_TYPE=database
-   DB_CONNECTION_STRING=postgresql+psycopg2://postgres:postgres@localhost:54322/postgres
-   SUPABASE_URL=http://localhost:54321
-   SUPABASE_KEY=<your_anon_key>
-   SUPABASE_JWT_SECRET=<your_jwt_secret>
-   DEMO_USER_ID=<generate_a_uuid>
-   FRONTEND_URL=http://localhost:5173
-   ```
+5. **(Optional) Google Fit Integration setup:**
 
-1. **(Optional) Google Fit setup:**
+    **Important**: Google plans to deprecate the Google Fit REST APIs in 2026
 
-   If you want to test Google Fit integration:
+    If you want to test Google Fit integration, you need to set up a Google API client on Google Cloud Platform:
+    1.  Create a project in [GCP Console](https://console.cloud.google.com)
+    2. Enable **Fitness API** : https://console.cloud.google.com/apis/dashboard
+    3. Create **OAuth 2.0 credentials / Client** (Web application): https://console.cloud.google.com/apis/credentials
+    4. Open the Client page and add authorized redirect URI: `http://localhost:8000/auth/google-auth` or a different port value depending on the port your FastAPI backend runs on.
+    5. Download `credentials.json`. Use its values to populate the `app/.env` file. Use the following scopes:
 
-   a. Create a project in [Google Cloud Console](https://console.cloud.google.com)
 
-   b. Enable **Google Fit API**
+6. **Create Test User Account**
+    1. Go to the  Supabase Studio URL (value output when starting supabase)
+    2. Go to the `Auth` section and create a test user.
 
-   c. Create **OAuth 2.0 credentials** (Web application)
+7. **Start the backend server:**
+    ```bash
+    poetry run uvicorn app.main:app --reload --port 8000 # or other port if 8000 is taken
+    ```
 
-   d. Add authorized redirect URI: `http://localhost:8000/auth/google-auth`
-
-   e. Download `credentials.json` and place it:
-   ```bash
-   mkdir -p app/auth
-   # Move credentials.json to app/auth/
-   ```
-
-   f. Add to `app/.env`:
-   ```bash
-   GOOGLE_CLIENT_ID=<your_client_id>
-   GOOGLE_CLIENT_SECRET=<your_client_secret>
-   ```
-
-2. **Initialize database:**
-   ```bash
-   poetry run python -c "from app.db_storage import DatabaseStorage; DatabaseStorage()"
-   ```
-
-3. **Start the backend server:**
-   ```bash
-   poetry run uvicorn app.main:app --reload --port 8000
-   ```
-
-   ✅ Backend running at: http://localhost:8000
-
-   📖 API documentation: http://localhost:8000/docs
+    - Backend running at: http://localhost:8000
+    - API documentation: http://localhost:8000/docs
 
 ### Frontend Setup
 
@@ -445,36 +444,34 @@ Sample .env files:
    ```
 
 3. **Configure environment:**
-   ```bash
-   cp .env.example .env
-   ```
 
-   Edit `.env`:
-   ```bash
-   VITE_API_BASE_URL=http://localhost:8000
-   VITE_API_PREFIX=api/v1
-   VITE_SUPABASE_URL=http://localhost:54321
-   VITE_SUPABASE_ANON_KEY=<your_anon_key>
-   VITE_DEMO_USER_ID=<same_uuid_as_backend>
-   ```
+    Copy the sample .env file and fill it with values as described in the sample file.
 
-4. **Start development server:**
-   ```bash
-   npm run dev
-   ```
+    [.env.example](/ui-react/.env.example)
 
-   ✅ Frontend running at: http://localhost:5173
+    ```bash
+    cp .env.example .env
+    ```
 
-### Verify Setup
+4. **Start local development server:**
+    ```bash
+    npm run dev
+    ```
 
-1. Open http://localhost:5173 in your browser
-2. The app should load in demo mode
-3. Click "Sign In" to test authentication
-4. Try different goals and filters
+    Frontend running at: http://localhost:5173
 
+5. **Test the App**
+
+    Go to http://localhost:5173 and log in using the test credentials created in Supabase.
 ---
 
 ## Design Patterns & Best Practices
+
+### Note on using AI tools
+Since learning was the main goal, I wrote all code manually. I did **not** use AI to generate production code, other than occasional small snippet when using new libraries / APIs.
+I occasionally used AI tools for debugging support and design feedback.
+
+The initial UI drafts were created with [v0](https://v0.app/chat/simple-weight-tracker-design-ouWpH9FyHKR?ref=KSHPPZ) tool but I treated them as visual inspiration and implemented the frontend components and styles (HTML, CSS and React/TS) from scratch.
 
 ### Backend Architecture
 
@@ -521,18 +518,22 @@ async def lifespan(app: FastAPI):  # type: ignore
     )
 ```
 
+This allows changing the storage mode of the app from a single point in the app.
+
 **Dependency Injection**
 ```python
-def get_data_storage(request: Request) -> DataStorage:
-    return request.app.state.storage
+  DataStorageDependency = Annotated[DataStorage, Depends(get_data_storage)]
+  UserDependency = Annotated[UUID, Depends(get_current_user)]
 
-DataStorageDependency = Annotated[DataStorage, Depends(get_data_storage)]
-
-@router.get("/daily-entries")
-def get_entries(storage: DataStorageDependency):
-    return storage.get_weight_entries(user_id)
+  @router_v1.get("/daily-entries", response_model=list[WeightEntry])
+  def get_daily_entries(
+      user_id: UserDependency,
+      data_storage: DataStorageDependency,
+      date_from: dt.date | None = None,
+      date_to: dt.date | None = None,
+  ) -> list[WeightEntry]:
 ```
-Storage instance is injected automatically into the API routes that use it. Storage can be swapped easily or mocked for testing.
+Data storage instance and the authenticated user ID are injected automatically into the API routes that use it. We can change the code in a single place (the dependency functions) to make the change in the whole API. Also, these dependencies can be easily mocked in testing.
 
 ```python
 class DataIntegrationService:
@@ -545,6 +546,7 @@ class DataIntegrationService:
 Data integration logic can work with any data storage implementation and any external data source as these dependencies are injected by the caller.
 
 **Strict Type Safety**
+
 Catching errors before runtime by implementing clean type annotations wherever possible and running `mypy` for static type checking pre-commit and before deploying to prod. Note that some libraries like pandas are very dynamic and difficult to annotate specifically.
 
 **Error Handling Strategy**
@@ -561,7 +563,7 @@ def get_data_source_client(
 
         return GoogleFitClient(user_id, oauth_credentials)
 
-# in /sync-data:
+# in /sync-data route logic:
 ...
 except NoCredentialsError:
         logger.warning("Google Fit credentials missing or expired")
@@ -575,7 +577,7 @@ except NoCredentialsError:
             },
         )
 ```
-Using specific errors to help higher abstraction code provide clearer feedback.
+Using specific error types helps the higher-level code provide clearer feedback.
 
 **Separation of Concerns**
 - `api.py` - HTTP layer, params handling, validation, response formatting
@@ -587,6 +589,7 @@ Using specific errors to help higher abstraction code provide clearer feedback.
 ### Frontend Architecture
 
 **BEM CSS Methodology**
+
 Organizing HTML elements using class names and grouping them into blocks that contain elements and can have various states using modifiers.
 
 ```css
@@ -600,25 +603,30 @@ Organizing HTML elements using class names and grouping them into blocks that co
 .get-data__cta--loading { }
 ```
 
-Benefits: HTML and CSS are semantic, easy to read and maintain.
-Limitations: Repeated CSS code for similar elements.
+- Benefits: HTML and CSS are semantic, easy to read and maintain.
+- Limitations: Repeated CSS code for similar elements.
 
 **Component Composition**
+
 Sample composition:
 ```tsx
 <App>
   <Header />
   <Main>
-    <Summary />
     <Filters>
-      <WeeksFilter />
-      <DatesFilter />
-    </Filters>
+        <WeeksFilter />
+        <DatesFilter />
+      </Filters>
+    <GetDataSelection />
+    <NoDataView />
+      <GetDataSelection />
+    <Summary />
     <WeeklyDataTable />
   </Main>
 </App>
 ```
-Each component has a single responsibility.
+
+Components have clear responsibilities and are easily reusable. For example, `GetDataSelection` is used at the top of the main content as well as inside the `NoDataView` component
 
 **Type-Safety**
 ```typescript
@@ -637,29 +645,25 @@ interface SummaryProps {
 
 ## Limitations and Enhancements
 ### Limitations
-- The production app is in Testing state on Google Auth platform. Only users added to testing group can access their Google Fit data. I don't plan to complete this verification due to lack of resources and the fact that Google Fit APIs [will be deprecated in 2026](https://developers.google.com/fit/rest).
+- The production app is in Testing state on Google Auth platform. Only users added to the testing group can access their Google Fit data. I don't plan to complete this verification due to the fact that Google Fit APIs [will be deprecated in 2026](https://developers.google.com/fit/rest).
 - Backend APIs only support a single frontend domain. To support more diverse clients (e.g. mobile apps, automated scripts), the Google OAuth flow should be changed and the CORS authorized domain management should be made more flexible.
 - Frontend and backend are in the same repo/project which adds time to deployments (e.g. Cloudflare pages have to install Python environment in their instance). It's good enough for a small project like this but could be improved.
-- MyFitnessPal was implemented as an external data source, alternative to Google Fit API using a 3rd party scraping library. But the library has dependency conflicts with Supabase so the MFP module had to be disabled [until the library is updated](https://github.com/coddingtonbear/python-myfitnesspal/pull/201).
-- The users' Google OAuth access and refresh tokens are stored securely in the Supabase production PostgreSQL DB but they are stored in clear. There's a risk of the tokens being misused if Supabase DB is breached. Encoding those tokens would improve security. It's not prioritized because the Google integration will remain in Testing stage.
+- MyFitnessPal was implemented as an external data source, alternative to Google Fit API using a 3rd party scraping library. This demonstrates the flexibility of the DataSourceClient protocol. But the library has dependency conflicts with Supabase so the MFP module had to be disabled. I raised a fix PR and am waiting [for the merge](https://github.com/coddingtonbear/python-myfitnesspal/pull/201).
+
 
 ### Enhancements
 - Users can get their data only from the implemented external sources (currently just Google Fit API). Manual entry is a key feature to make it useful to production users.
-- Sign up feature should be implemented on the Frontend using Supabase integration
-- UI can be more polished - e.g. consistent feedback to user when a component is being refreshed, etc.
+- Sign-up feature should be implemented on the frontend using Supabase integration
+- The users' Google OAuth access and refresh tokens should be encrypted before storing them in PostgreSQL DB. This would mitigate the risk of the Supabase PostgreSQL DB being breached.
+- UI can be more polished - e.g. consistent feedback to the user when a component is being refreshed, etc.
 ---
 
 ## Contact Me
-
-I'd love to hear from you! Whether you're a hiring manager reviewing this portfolio project or a developer interested in collaboration or just want to share feedback.
+I’d love to hear from you—whether you’re a hiring manager reviewing this project, a developer interested in collaborating, or someone who would like to share feedback. **I am looking for** full-stack or backend-focused software engineering roles or contracts.
 
 **Justas Zieminykas**
-
-- 🌐 **Github:** [justaszie](https://github.com/justaszie)
-- **GitHub:** [@justaszie](https://github.com/justaszie)
-- **Email:** justaxsz@gmail.com
+- **GitHub:** [justaszie](https://github.com/justaszie)
+- **Email:** justas.zieminykas@gmail.com
 - **LinkedIn:** [Justas Zieminykas](https://www.linkedin.com/in/justas-žieminykas-01423988)
-
-**I am looking for** full-stack or backend-focused software engineering roles / contracts.
 
 ---
