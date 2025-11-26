@@ -289,7 +289,6 @@ class GoogleFitClient:
         return dataset  # pyright: ignore[reportUnknownVariableType]
 
     def store_raw_data(self, raw_dataset: Any) -> None:
-        # TODO: use self.user_id to store data separate for each user
         RAW_DATA_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
         json_data = json.dumps(raw_dataset)
         RAW_DATA_FILE_PATH.write_text(json_data)

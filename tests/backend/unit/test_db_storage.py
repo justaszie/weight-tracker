@@ -122,7 +122,6 @@ def _insert_daily_entries(engine, daily_entries):
         test_session.commit()
 
 
-# TODO : Fix using batch method
 def test_create_weight_entries(storage_empty, sample_daily_entries):
     engine = create_engine(TEST_DB_CONN_STRING)
     with Session(engine) as test_session:

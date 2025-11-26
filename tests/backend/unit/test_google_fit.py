@@ -381,7 +381,6 @@ class TestGoogleFitAuthEndpoints:
 
             assert response.status_code == 500
 
-    # TODO
     def test_handle_callback(self, mocker, monkeypatch):
         mock_request_obj = mocker.Mock()
         mock_request_obj.session = {
