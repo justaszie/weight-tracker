@@ -43,19 +43,23 @@ The credentials above give access to **demo mode** where you can try the feature
 ---
 
 ## Summary (for Hiring Teams)
-- **Scope**: Full-stack SPA (React + Typescript frontend and Python/FastAPI backend) with Google OAuth 2.0 + Google Fit API integration.
+- **Scope**: Full-stack SPA (React + TypeScript frontend and Python/FastAPI backend) with Google OAuth 2.0 + Google Fit API integration.
 - **Architecture**: REST APIs, protocol-based interfaces, dependency injection, modular architecture, demo mode.
+- **Key source code**:
+  - Backend (`app/`): `main.py`, `api.py`, `google_fit.py`, `data_integration.py`, `analytics.py`
+  - Frontend (`ui-react/`): `App.tsx`, `src/components` folder
 - **Quality**: 85%+ unit test coverage, full business logic coverage via integration tests, static type checking, linting/formatting via pre-commit, GitHub Actions CI.
 - **Deployment**: Backend on Koyeb, frontend on Cloudflare Pages, Supabase for Auth + PostgreSQL.
 - **Security & Auth**: JWT-based auth via Supabase for frontend and APIs, secure Google OAuth 2.0 token storage/refresh to access Google data.
 
+---
 
 ## Project Overview
 
 ### Why This Project?
 
 I built this project because it:
-1. **Solves a real problem** – When tracking weight, weekly averages and trends are more helpful than daily fluctuations. Google Fit and similar apps are good for logging data but don't provide convenient interface for such analysis.
+1. **Solves a real problem** – When tracking weight, weekly averages and trends are more helpful than daily fluctuations. Google Fit and similar apps are good for logging data but don't provide a convenient interface for such analysis.
 2. **Presents advanced full-stack challenges** – Secure OAuth 2.0 with Google, fetching and processing real-world data from 3rd party APIs, a React SPA powered by REST APIs, analytics on time-series data, automated testing, and production deployment.
 
 ### Learning Outcomes
@@ -78,14 +82,14 @@ This is the first full-stack application I shipped to production. It helped me b
 
 **Progress Dashboard**
 - **Weight change overview** over a selected period: total change from dates X to Y (in absolute and relative terms), average weekly change, average estimated caloric surplus / deficit
-- **Weekly details** key metrics for every week in the selected period
+- **Weekly details** - key metrics for every week in the selected period
 - **Filtering data**
   - View data for a specific date range (from/to dates)
   - View data for the last N weeks
   - Real-time updates when filters change
-- **Syncing data with external sources** - user can request to get data from their selected source (currently only Google Fit supported)
-- **Responsive UI** clean minimalistic UI that adjusts to various screen sizes, including mobile
-- **Meaningful metrics** PTs and nutritionists generally recommend keeping weight change to ~0.5%–1% per week for a healthy and sustainable change. The app calculates this rate for the user’s data so they can see if their weight change is within a healthy range.
+- **Syncing data with external sources** - the user can request to get data from their selected source (currently only Google Fit supported)
+- **Responsive UI** - clean minimalistic UI that adjusts to various screen sizes, including mobile
+- **Meaningful metrics**  - PTs and nutritionists generally recommend keeping weight change to ~0.5%–1% per week for a healthy and sustainable change. The app calculates this rate for the user’s data so they can see if their weight change is within a healthy range.
 
 **Goal-Based Evaluation**
 - Switch between three fitness goals: Lose Fat, Maintain Weight, Gain Muscle
@@ -95,7 +99,7 @@ This is the first full-stack application I shipped to production. It helped me b
 
 **Authentication & Authorization**
 - **JWT authentication via Supabase** to log in to the frontend and to access the app's REST APIs.
-- **Google OAuth 2.0** implementation to get access to fetch the user's Google Fit data. This includes secure access token storage and refresh mechanism
+- **Google OAuth 2.0** implementation to get access the user's Google Fit data. This includes secure access token storage and refresh mechanism
 
 **Data Management**
 - **Data syncing strategy** - on user's request, fetch and store user's data from the external source (Google Fit)
@@ -119,9 +123,9 @@ This is the first full-stack application I shipped to production. It helped me b
 
 ![App Screenshot - No Data](/doc/wt-screenshot-2.png)
 
-![App Screenshot - Login](doc/wt-screenshot-login.png)
+![App Screenshot - Login](/doc/wt-screenshot-login.png)
 
-![App Screenshot - Mobile](doc/wt-screenshot-mobile.png)
+![App Screenshot - Mobile](/doc/wt-screenshot-mobile.png)
 
 ---
 
@@ -171,13 +175,13 @@ This is the first full-stack application I shipped to production. It helped me b
 
 ### High Level Architecture
 
-The diagram below presents the overall architecture of the system, including external parties.
+The diagram below presents the overall architecture of the system, including external elements.
 
 ![Architecture - High Level](/doc/architecture_high_level.png)
 
 ### Backend Architecture
 
-The diagram below details the backend architecture - the models and their dependencies.
+The diagram below details the backend architecture - key modules, interfaces and classes, and their dependencies.
 
 ![Architecture - Backend](/doc/architecture_backend.png)
 
@@ -227,7 +231,6 @@ weight-tracker/                        # Project root (managed with Poetry)
 └── .pre-commit-config.yaml            # Pre-commit hooks (linter, formatter, type-check, integration tests)
 ```
 
-
 ### Backend Modules
 
 | Module | Purpose |
@@ -255,7 +258,7 @@ Below are key React components that constitute the frontend (smaller components 
 | **WeeklyDataTable.tsx**  | Table with one row for each week in the selected period with key metrics for that week. Color coded results based on selected goal  |
 | **Filters.tsx**  | Controls to select the data period (last N weeks or from dates X to Y) |
 
-The screenshot below show the layout of the key components in the UI:
+The screenshot below shows the layout of the key components in the UI:
 
 ![UI Components](/doc/ui-components-1.png)
 
@@ -299,18 +302,41 @@ Frontend client redirects end user to this endpoint to initiate Google OAuth 2.0
 
 Google OAuth server calls this endpoint after successful consent from user. This endpoint fetches the access/refresh tokens given the authorization code and stores it to give the app access to user's Google Fit data.
 
+### Database Schema
+
+When database is used as storage mode, app uses a PostgreSQL database that contains two main tables managed by SQLModel ORM:
+
+#### `weight_entries` Table
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `user_id` | UUID | PRIMARY KEY | User ID (managed by Supabase Auth) |
+| `entry_date` | DATE | PRIMARY KEY | Date when the weight measurement was taken |
+| `weight` | FLOAT | NOT NULL | Weight value in kilograms |
+
+**Composite Primary Key:** `(user_id, entry_date)` - only one weight entry allowed per user per day
+
+**Note:** No foreign key constraint on `user_id` because user  account management is handled externally by Supabase Auth.
+
+#### `google_credentials` Table
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `user_id` | UUID | PRIMARY KEY | User whose access token we store here (users managed by Supabase Auth) |
+| `token` | VARCHAR | NOT NULL | OAuth access token to access user's Google Fit data |
+| `refresh_token` | VARCHAR | NOT NULL | OAuth refresh token for obtaining new access tokens |
+| `scopes` | VARCHAR | NOT NULL | JSON array of Google API scopes |
+| `token_uri` | VARCHAR | NOT NULL | Google OAuth token endpoint URI |
+| `expiry` | TIMESTAMP | NULLABLE | Access token expiration timestamp |
+
 ---
 
 ## CI/CD Pipeline
-
-**Developer Workflow**
+The project includes best practices to manage code versioning and get it to prod while assuring quality. The diagram below details the developer workflow I used to ship new code to production.
 
 ![CI / CD Workflow](doc/ci_cd_flow.png)
 
 ---
 
 ## Testing
-
 - Tests currently cover only the backend and use `pytest` framework.
 - The test suite includes unit and integration tests. Unit tests are defined by module and integration tests are split by feature groups.
 - Unit tests have a total ~85% coverage with all business logic covered.
@@ -420,7 +446,7 @@ https://supabase.com/docs/guides/local-development/cli/getting-started
 
 
 6. **Create Test User Account**
-    1. Go to the  Supabase Studio URL (value output when starting supabase)
+    1. Go to the Supabase Studio URL (value output when starting supabase)
     2. Go to the `Auth` section and create a test user.
 
 7. **Start the backend server:**
