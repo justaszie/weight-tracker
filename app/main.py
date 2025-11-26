@@ -58,7 +58,6 @@ async def lifespan(app: FastAPI):  # type: ignore
         f"App started with {data_storage.__class__.__name__} as Storage Backend"
     )
 
-    # TODO: exception handling if config vars are missing or supabase init fails
     url: str | None = os.environ.get("SUPABASE_URL")
     key: str | None = os.environ.get("SUPABASE_KEY")
     if url and key:
