@@ -12,23 +12,6 @@ I built it as a portfolio project to demonstrate end-to-end skills: full-stack d
 
 ---
 
-## Table of Contents
-- [Live Demo](#live-demo)
-- [Summary for Hiring Teams](#summary-for-hiring-teams)
-- [Project Overview](#project-overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Architecture & Project Structure](#architecture--project-structure)
-- [API Documentation](#api-documentation)
-- [CI/CD Pipeline](#cicd-pipeline)
-- [Testing](#testing)
-- [Running the Project Locally](#running-the-project-locally)
-- [Design Patterns & Best Practices](#design-patterns--best-practices)
-- [Limitations & Enhancements](#limitations--enhancements)
-- [Contact Me](#contact-me)
-
----
-
 ## Live Demo
 
 **[Try the live application](https://tracker.justas.tech)**
@@ -51,6 +34,23 @@ The credentials above give access to **demo mode** where you can try the feature
 - **Quality**: 85%+ unit test coverage, full business logic coverage via integration tests, static type checking, linting/formatting via pre-commit, GitHub Actions CI.
 - **Deployment**: Backend on Koyeb, frontend on Cloudflare Pages, Supabase for Auth + PostgreSQL.
 - **Security & Auth**: JWT-based auth via Supabase for frontend and APIs, secure Google OAuth 2.0 token storage/refresh to access Google data.
+
+---
+
+## Table of Contents
+- [Live Demo](#live-demo)
+- [Summary for Hiring Teams](#summary-for-hiring-teams)
+- [Project Overview](#project-overview)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Architecture & Project Structure](#architecture--project-structure)
+- [API Documentation](#api-documentation)
+- [CI/CD Pipeline](#cicd-pipeline)
+- [Testing](#testing)
+- [Running the Project Locally](#running-the-project-locally)
+- [Design Patterns & Best Practices](#design-patterns--best-practices)
+- [Limitations & Enhancements](#limitations--enhancements)
+- [Contact Me](#contact-me)
 
 ---
 
@@ -669,7 +669,7 @@ interface SummaryProps {
 }
 ```
 
-## Limitations and Enhancements
+## Limitations & Enhancements
 ### Limitations
 - The production app is in Testing state on Google Auth platform. Only users added to the testing group can access their Google Fit data. I don't plan to complete this verification due to the fact that Google Fit APIs [will be deprecated in 2026](https://developers.google.com/fit/rest).
 - Backend APIs only support a single frontend domain. To support more diverse clients (e.g. mobile apps, automated scripts), the Google OAuth flow should be changed and the CORS authorized domain management should be made more flexible.
