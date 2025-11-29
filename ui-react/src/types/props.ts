@@ -15,8 +15,17 @@ export type MainProps = {
   showToast: ShowToastFn;
 };
 
+export type AuthenticationProps = {
+  showToast: ShowToastFn;
+}
 export type LoginProps = {
   showToast: ShowToastFn;
+  onSignUpCTAClick: () => void;
+}
+
+export type SignUpProps = {
+  showToast: ShowToastFn;
+  onLoginCTAClick: () => void;
 }
 
 export type SummaryProps = {

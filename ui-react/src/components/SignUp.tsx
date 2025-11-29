@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { supabase } from "@/supabaseClient.ts";
 
-import type { LoginProps } from "@/types/props";
+import type { SignUpProps } from "@/types/props";
 
 import { ReactComponent as Spinner } from "@/assets/spinner.svg";
 
-export default function Login(props: LoginProps) {
+export default function Login(props: SignUpProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
 
-  async function handleLogin(event: React.FormEvent) {
+  async function handleSignUp(event: React.FormEvent) {
     event.preventDefault();
     let formData: FormData = new FormData(
       event.currentTarget as HTMLFormElement
@@ -21,15 +21,15 @@ export default function Login(props: LoginProps) {
     if (!email || !password) {
       props.showToast("error", "Both email and password are required");
     } else {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signUp({
         email: email,
-        password: password,
-      });
+        password: password
+      })
 
       if (error) {
         props.showToast("error", error.message);
       } else {
-        props.showToast("success", "Welcome back");
+        props.showToast("success", "Welcome!");
       }
     }
     setIsLoading(false);
@@ -40,38 +40,38 @@ export default function Login(props: LoginProps) {
         {isLoading ? (
           <Spinner className="spinner" />
         ) : (
-          <form onSubmit={handleLogin} className="login">
-            <h2 className="login__header">Please Log In</h2>
-            <div className="login__row">
-              <label htmlFor="login-email" className="login__label">
+          <form onSubmit={handleSignUp} className="signup">
+            <h2 className="signup__header">Sign Up</h2>
+            <div className="signup__row">
+              <label htmlFor="signup-email" className="signup__label">
                 Email
               </label>
               <input
-                className="login__input"
+                className="signup__input"
                 type="email"
-                id="login-email"
+                id="signup-email"
                 name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <div className="login__row">
-              <label htmlFor="login-password" className="login__label">
+            <div className="signup__row">
+              <label htmlFor="signup-password" className="signup__label">
                 Password
               </label>
               <input
-                id="login-password"
-                className="login__input"
+                id="signup-password"
+                className="signup__input"
                 type="password"
                 name="password"
               />
             </div>
-            <div className="login__actions">
-              <button className="login__cta login__cta--primary" type="submit">
-                Log In
-              </button>
-              <button className="login__cta login__cta--secondary" type="button" onClick={props.onSignUpCTAClick}>
+            <div className="signup__actions">
+              <button className="signup__cta signup__cta--primary" type="submit">
                 Sign Up
+              </button>
+              <button className="signup__cta signup__cta--secondary" type="button" onClick={props.onLoginCTAClick}>
+                Log In
               </button>
             </div>
           </form>

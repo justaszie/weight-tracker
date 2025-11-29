@@ -38,7 +38,7 @@ export default function AddDataModal(props: AddDataModalProps) {
       );
       props.closeModal();
       props.handleDataUpdate();
-    } else if (result.status == 409) {
+    } else if (result.status === 409) {
       const body = await result.json();
       const errorMessage =
         "detail" in body

@@ -12,7 +12,7 @@ export default function Header(props: HeaderProps) {
   }
 
   function isDemoMode() {
-    return props.user.userId == (import.meta.env.VITE_DEMO_USER_ID || null)
+    return props.user.userId == (import.meta.env.VITE_DEMO_USER_ID || null);
   }
 
   async function handleSignOut() {
@@ -41,9 +41,7 @@ export default function Header(props: HeaderProps) {
                 version="1.1"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <g
-                  id="Page-1"
-                >
+                <g id="Page-1">
                   <g
                     id="Dribbble-Light-Preview"
                     transform="translate(-380.000000, -2159.000000)"
@@ -61,7 +59,7 @@ export default function Header(props: HeaderProps) {
               <p className="profile__email">{props.user.email}</p>
             </div>
             <a className="profile__signout" href="#" onClick={handleSignOut}>
-              Sign Out
+              Log Out
             </a>
           </div>
         </div>

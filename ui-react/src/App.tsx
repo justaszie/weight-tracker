@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Main from "@/components/Main";
 import Toast from "@/components/Toast";
-import Login from "@/components/Login";
+import Authentication from "@/components/Authentication";
 
 import { supabase } from "./supabaseClient.ts";
 
@@ -140,7 +140,7 @@ function App() {
   return (
     <div className="page">
       {session == null ? (
-        <Login showToast={showToast} />
+        <Authentication showToast={showToast}/>
       ) : (
         <>
           <Header

@@ -527,7 +527,7 @@ body {
     color: white;
 }
 
-.signin {
+.login {
     display: flex;
     flex-direction: column;
     /* max-width: 300pxx; */
@@ -538,32 +538,39 @@ body {
     padding: 15px;
 }
 
-.signin__header {
+.login__header {
     font-size: var(--fs-header-subtitle);
     font-weight: 600;
 }
 
-.signin__row {
+.login__row {
     display: flex;
     flex-direction: column;
     color: var(--clr-text-main);
     gap: 5px;
-    max-width: 210px;
+    max-width: 300px;
 }
 
-.signin__input {
+.login__input {
     padding: var(--padding-btn);
     min-width: 0;
     border: 1px solid var(--clr-border);
     border-radius: var(--rounded-corners-btn);
 }
 
-.signin__label {
+.login__label {
     font-weight: 500;
 }
 
-.signin__cta {
-    margin-top: 15px;
+.login__actions {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-width: 300px;
+}
+
+.login__cta {
     padding: 10px 15px;
     border-radius: var(--rounded-corners-btn);
     background-color: var(--clr-bg-inverse);
@@ -573,10 +580,80 @@ body {
     cursor: pointer;
 }
 
-.signin__cta:hover {
+.login__cta--primary:hover {
     background-color: var(--clr-bg-inverse-muted);
 }
 
+.login__cta--secondary {
+    background-color: var(--clr-bg);
+    color: var(--clr-text-primary);
+    border: 1px solid var(--clr-border);
+}
+
+/* SIGNUP */
+
+.signup {
+    display: flex;
+    flex-direction: column;
+    /* max-width: 300pxx; */
+    gap: 10px;
+    border: 0.5px solid var(--clr-border);
+    border-radius: var(--rounded-corners-main);
+    background-color: var(--clr-surface-muted);
+    padding: 15px;
+}
+
+.signup__header {
+    font-size: var(--fs-header-subtitle);
+    font-weight: 600;
+}
+
+.signup__row {
+    display: flex;
+    flex-direction: column;
+    color: var(--clr-text-main);
+    gap: 5px;
+    max-width: 300px;
+}
+
+.signup__input {
+    padding: var(--padding-btn);
+    min-width: 0;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--rounded-corners-btn);
+}
+
+.signup__label {
+    font-weight: 500;
+}
+
+.signup__actions {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-width: 300px;
+}
+
+.signup__cta {
+    padding: 10px 15px;
+    border-radius: var(--rounded-corners-btn);
+    background-color: var(--clr-bg-inverse);
+    color: var(--clr-text-inverse);
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.signup__cta--primary:hover {
+    background-color: var(--clr-bg-inverse-muted);
+}
+
+.signup__cta--secondary {
+    background-color: var(--clr-bg);
+    color: var(--clr-text-primary);
+    border: 1px solid var(--clr-border);
+}
 .add-weight {
     position: fixed;
     top: calc(50% - 150px);
