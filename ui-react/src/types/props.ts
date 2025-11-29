@@ -11,7 +11,7 @@ export type MainProps = {
   session: Session;
   handleDataSyncComplete: () => void;
   dataSyncComplete: boolean;
-  onDataSyncRequest: (data_source?: DataSourceName) => void;
+  onCTAClick: (data_source?: DataSourceName) => void;
   showToast: ShowToastFn;
 };
 
@@ -31,9 +31,14 @@ export type SummaryProps = {
 
 export type GetDataCTAProps = {
   ctaText: string;
-  srcIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  dataSource: DataSourceName;
-  onDataSyncRequest: (data_source?: DataSourceName) => void;
+  srcIcon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  dataSource?: DataSourceName;
+  onCTAClick: (data_source?: DataSourceName) => void;
+};
+
+export type ManageDataCTAProps = {
+  ctaText: string;
+  onCTAClick: () => void;
 };
 
 export type WeeklyDataTableProps = {
@@ -78,9 +83,14 @@ export type HeaderProps = {
 };
 
 export type NoDataViewProps = {
-  onDataSyncRequest: (data_source?: DataSourceName) => void;
+  onCTAClick: (data_source?: DataSourceName) => void;
 }
 
 export type GetDataSelectionProps = {
-  onDataSyncRequest: (data_source?: DataSourceName) => void;
+  onCTAClick: (data_source?: DataSourceName) => void;
+}
+
+export type AddDataModalProps = {
+  closeModal: () => void;
+  latestWeight: string;
 }

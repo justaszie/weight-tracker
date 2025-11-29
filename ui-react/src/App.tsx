@@ -155,7 +155,7 @@ function App() {
             session={session}
             handleDataSyncComplete={markDataSyncComplete}
             dataSyncComplete={dataSyncComplete}
-            onDataSyncRequest={triggerDataSync}
+            onCTAClick={triggerDataSync}
             showToast={showToast}
           />
         </>

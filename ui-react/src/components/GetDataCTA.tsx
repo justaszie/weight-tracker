@@ -12,7 +12,7 @@ export default function GetDataCTA(props: GetDataCTAProps) {
     const source = event.currentTarget.dataset.dataSource;
     event.preventDefault();
     if (isDataSourceName(source)) {
-      await props.onDataSyncRequest(source);
+      await props.onCTAClick(source);
     }
     setIsLoading(false);
   }
@@ -28,7 +28,7 @@ export default function GetDataCTA(props: GetDataCTAProps) {
     >
       { isLoading ? <Spinner className="spinner spinner--cta"/> : (
           <>
-            <Icon className="get-data__cta-icon" />
+            { Icon && <Icon className="get-data__cta-icon" /> }
             <span>{props.ctaText}</span>
           </>
         )

@@ -29,7 +29,7 @@ export default function NoDataView(props: NoDataViewProps) {
         Start tracking your weight journey by getting data <br /> from the
         source of your choice:
       </p>
-      <GetDataSelection onDataSyncRequest={props.onDataSyncRequest} />
+      <GetDataSelection onCTAClick={props.onCTAClick} />
     </section>
   );
 }
