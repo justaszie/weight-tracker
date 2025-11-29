@@ -62,7 +62,9 @@ class DataSyncAuthNeededResponse(BaseModel):
 
 
 class APIWeightEntry(BaseModel):
-    entry_date: dt.date
+    entry_date: dt.date = Field(
+        le=dt.date.today(), description="Date cannot be in the future"
+    )
     weight: float = Field(gt=0, description="Weight must be positive")
 
 
@@ -399,19 +401,13 @@ def create_daily_entry(
     entry: APIWeightEntry,
     data_storage: DataStorageDependency,
 ) -> APIWeightEntry:
-    today = dt.date.today()
-    if entry.entry_date > today:
-        raise HTTPException(
-            status_code=422, detail="Entry date cannot be in the future"
-        )
-
     try:
         data_storage.create_weight_entry(
             entry_date=entry.entry_date, user_id=user_id, weight=entry.weight
         )
         return entry
     except DuplicateEntryError as e:
-        raise HTTPException(status_code=422, detail="Duplicate weight entry") from e
+        raise HTTPException(status_code=409, detail="Duplicate weight entry") from e
 
 
 @router_v1.get("/healthz")

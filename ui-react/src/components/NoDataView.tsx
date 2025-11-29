@@ -1,4 +1,5 @@
 import GetDataSelection from "./GetDataSelection";
+import ManageDataCTA from "./ManageDataCTA";
 
 import type { NoDataViewProps } from "@/types/props";
 
@@ -29,7 +30,10 @@ export default function NoDataView(props: NoDataViewProps) {
         Start tracking your weight journey by getting data <br /> from the
         source of your choice:
       </p>
-      <GetDataSelection onCTAClick={props.onCTAClick} />
+      <div className="get-data">
+        <GetDataSelection onCTAClick={props.onGetDataCTAClick} />
+        <ManageDataCTA ctaText="+ Add Data" onCTAClick={props.onAddDataCTAClick}/>
+      </div>
     </section>
   );
 }

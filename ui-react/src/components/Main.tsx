@@ -62,7 +62,7 @@ export default function Main(props: MainProps) {
     };
 
     fetchLatestEntry();
-  }, [props.dataSyncComplete]);
+  }, [props.dataUpdated]);
 
   function handleWeeksFilterChange(newValues: WeeksFilterValues) {
     setWeeksFilterValues(newValues);
@@ -97,7 +97,7 @@ export default function Main(props: MainProps) {
               />
             </div>
             <div className="get-data">
-              <GetDataSelection onCTAClick={props.onCTAClick} />
+              <GetDataSelection onCTAClick={props.onGetDataCTAClick} />
               <ManageDataCTA
                 ctaText="+ Add Weight"
                 onCTAClick={toggleAddDataModal}
@@ -118,7 +118,10 @@ export default function Main(props: MainProps) {
           {isLoading ? (
             <Spinner className="spinner" />
           ) : latestEntry == null ? (
-            <NoDataView onCTAClick={props.onCTAClick} />
+            <NoDataView
+              onGetDataCTAClick={props.onGetDataCTAClick}
+              onAddDataCTAClick={toggleAddDataModal}
+            />
           ) : (
             <>
               <Summary
@@ -126,7 +129,7 @@ export default function Main(props: MainProps) {
                 goalSelected={props.goalSelected}
                 weeksFilterValues={weeksFilterValues}
                 datesFilterValues={datesFilterValues}
-                dataSyncComplete={props.dataSyncComplete}
+                dataUpdated={props.dataUpdated}
                 session={props.session}
                 showToast={props.showToast}
               />
@@ -135,7 +138,7 @@ export default function Main(props: MainProps) {
                 goalSelected={props.goalSelected}
                 weeksFilterValues={weeksFilterValues}
                 datesFilterValues={datesFilterValues}
-                dataSyncComplete={props.dataSyncComplete}
+                dataUpdated={props.dataUpdated}
                 session={props.session}
                 showToast={props.showToast}
               />
@@ -147,6 +150,9 @@ export default function Main(props: MainProps) {
         <AddDataModal
           closeModal={toggleAddDataModal}
           latestWeight={latestEntry ? String(latestEntry.weight) : ""}
+          session={props.session}
+          showToast={props.showToast}
+          handleDataUpdate={props.handleDataUpdate}
         />
       )}
     </>

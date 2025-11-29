@@ -25,7 +25,7 @@ function App() {
     goalStored ?? DEFAULT_GOAL
   );
   const [toast, setToast] = useState<ToastMessage | null>(null);
-  const [dataSyncComplete, setDataSyncComplete] = useState<boolean>(false);
+  const [dataUpdated, setDataUpdated] = useState<boolean>(false);
 
   function showToast(category: ToastMessageCategory, message: string) {
     setToast({ category, message });
@@ -44,7 +44,8 @@ function App() {
       if (!authenticated_session) {
         throw new Error("Must be signed in to get data");
       }
-      const response = await fetch(`${API_BASE_URL}/${API_PREFIX}/sync-data`, {
+      const route_url = `${API_BASE_URL}/${API_PREFIX}/sync-data`
+      const response = await fetch(route_url, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${authenticated_session.access_token}`,
@@ -69,7 +70,8 @@ function App() {
       const body = await response.json();
       if (body.status === "sync_success") {
         // If sync success,  update state to trigger re-rendering
-        markDataSyncComplete();
+        showToast("success", "Data updated successfully");
+        toggleDataUpdated();
       } else if (
         ["data_up_to_date", "no_data_received", "no_new_data"].includes(
           body.status
@@ -131,9 +133,8 @@ function App() {
     setGoalSelected(goalSelection);
   }
 
-  function markDataSyncComplete() {
-    showToast("success", "Data updated successfully");
-    setDataSyncComplete(true);
+  function toggleDataUpdated() {
+    setDataUpdated((prev) => !prev);
   }
 
   return (
@@ -153,9 +154,9 @@ function App() {
           <Main
             goalSelected={goalSelected}
             session={session}
-            handleDataSyncComplete={markDataSyncComplete}
-            dataSyncComplete={dataSyncComplete}
-            onCTAClick={triggerDataSync}
+            handleDataUpdate={toggleDataUpdated}
+            dataUpdated={dataUpdated}
+            onGetDataCTAClick={triggerDataSync}
             showToast={showToast}
           />
         </>

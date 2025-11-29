@@ -68,7 +68,7 @@ export default function Summary(props: SummaryProps) {
     };
 
     fetchSummaryDataWithFilters();
-  }, [props.datesFilterValues, props.weeksFilterValues, props.dataSyncComplete]);
+  }, [props.datesFilterValues, props.weeksFilterValues, props.dataUpdated]);
 
   return (
     <section className="summary">

@@ -9,9 +9,9 @@ import type { Session } from "@supabase/supabase-js";
 export type MainProps = {
   goalSelected: Goal;
   session: Session;
-  handleDataSyncComplete: () => void;
-  dataSyncComplete: boolean;
-  onCTAClick: (data_source?: DataSourceName) => void;
+  handleDataUpdate: () => void;
+  dataUpdated: boolean;
+  onGetDataCTAClick: (data_source?: DataSourceName) => void;
   showToast: ShowToastFn;
 };
 
@@ -24,7 +24,7 @@ export type SummaryProps = {
   goalSelected: Goal;
   weeksFilterValues?: WeeksFilterValues;
   datesFilterValues?: DatesFilterValues;
-  dataSyncComplete: boolean;
+  dataUpdated: boolean;
   session: Session;
   showToast: ShowToastFn;
 };
@@ -45,7 +45,7 @@ export type WeeklyDataTableProps = {
   goalSelected: Goal;
   weeksFilterValues?: WeeksFilterValues;
   datesFilterValues?: DatesFilterValues;
-  dataSyncComplete: boolean;
+  dataUpdated: boolean;
   session: Session;
   showToast: ShowToastFn;
 };
@@ -83,7 +83,8 @@ export type HeaderProps = {
 };
 
 export type NoDataViewProps = {
-  onCTAClick: (data_source?: DataSourceName) => void;
+  onGetDataCTAClick: (data_source?: DataSourceName) => void;
+  onAddDataCTAClick: () => void;
 }
 
 export type GetDataSelectionProps = {
@@ -93,4 +94,7 @@ export type GetDataSelectionProps = {
 export type AddDataModalProps = {
   closeModal: () => void;
   latestWeight: string;
+  session: Session;
+  showToast: ShowToastFn;
+  handleDataUpdate: () => void;
 }
