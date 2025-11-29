@@ -18,7 +18,7 @@ from sqlmodel import (
 )
 
 from . import utils
-from .project_types import WeightEntry
+from .project_types import DuplicateEntryError, WeightEntry
 
 logger = logging.getLogger(__name__)
 
@@ -130,7 +130,7 @@ class DatabaseStorage:
                     f"Duplicate weight entry creation attempted. Date: {entry_date}",
                     exc_info=True,
                 )
-                raise ValueError(
+                raise DuplicateEntryError(
                     f"Weight entry already exists for date"
                     f" {entry_date.strftime('%Y-%m-%d')}."
                     f"Use update method to replace it."

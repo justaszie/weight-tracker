@@ -11,7 +11,7 @@ from google.oauth2.credentials import Credentials
 from pydantic import TypeAdapter
 
 from . import utils
-from .project_types import WeightEntry
+from .project_types import DuplicateEntryError, WeightEntry
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ class FileStorage:
                 "Duplicate weight entry creation attempted."
                 f"Date: {entry_date}. User: {user_id}"
             )
-            raise ValueError(
+            raise DuplicateEntryError(
                 "Weight entry already exists for this date and user"
                 "Use update method to replace it."
             )

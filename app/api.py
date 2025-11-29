@@ -18,9 +18,7 @@ from fastapi import (
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from google.oauth2.credentials import Credentials
-from pydantic import (
-    BaseModel,
-)
+from pydantic import BaseModel, Field
 
 from . import analytics, utils
 from .data_integration import (
@@ -35,6 +33,7 @@ from .project_types import (
     DataSourceClient,
     DataSourceName,
     DataStorage,
+    DuplicateEntryError,
     FitnessGoal,
     ProgressSummary,
     WeeklyAggregateEntry,
@@ -60,6 +59,11 @@ class DataSyncSuccessResponse(BaseModel):
 class DataSyncAuthNeededResponse(BaseModel):
     message: str
     auth_url: str | None = None
+
+
+class APIWeightEntry(BaseModel):
+    entry_date: dt.date
+    weight: float = Field(gt=0, description="Weight must be positive")
 
 
 class NoCredentialsError(Exception):
@@ -387,6 +391,27 @@ if you're logged in and try again."
             detail="We're having trouble syncing your data. \
 We're working on it",
         ) from e
+
+
+@router_v1.post("/daily-entry")
+def create_daily_entry(
+    user_id: UserDependency,
+    entry: APIWeightEntry,
+    data_storage: DataStorageDependency,
+) -> APIWeightEntry:
+    today = dt.date.today()
+    if entry.entry_date > today:
+        raise HTTPException(
+            status_code=422, detail="Entry date cannot be in the future"
+        )
+
+    try:
+        data_storage.create_weight_entry(
+            entry_date=entry.entry_date, user_id=user_id, weight=entry.weight
+        )
+        return entry
+    except DuplicateEntryError as e:
+        raise HTTPException(status_code=422, detail="Duplicate weight entry") from e
 
 
 @router_v1.get("/healthz")
