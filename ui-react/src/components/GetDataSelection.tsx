@@ -20,7 +20,7 @@ export default function GetDataSelection(props: GetDataSelectionProps) {
           dataSource={src.srcName}
           ctaText={src.ctaText}
           srcIcon={src.icon}
-          onDataSyncRequest={props.onDataSyncRequest}
+          onCTAClick={props.onCTAClick}
         />
       ))}
       </div>

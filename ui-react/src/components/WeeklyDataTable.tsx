@@ -104,7 +104,7 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
     props.datesFilterValues,
     props.weeksFilterValues,
     props.goalSelected,
-    props.dataSyncComplete,
+    props.dataUpdated,
   ]);
 
   return (

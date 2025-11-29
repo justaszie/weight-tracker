@@ -11,6 +11,8 @@ import Summary from "./Summary";
 import WeeklyDataTable from "./WeeklyDataTable";
 import NoDataView from "./NoDataView";
 import GetDataSelection from "./GetDataSelection";
+import ManageDataCTA from "./ManageDataCTA";
+import AddDataModal from "./AddDataModal";
 
 const DEFAULT_WEEKS_LIMIT = 4;
 
@@ -28,6 +30,7 @@ export default function Main(props: MainProps) {
     {}
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [showAddDataModal, setshowAddDataModal] = useState(false);
 
   useEffect(() => {
     const fetchLatestEntry = async () => {
@@ -59,7 +62,7 @@ export default function Main(props: MainProps) {
     };
 
     fetchLatestEntry();
-  }, [props.dataSyncComplete]);
+  }, [props.dataUpdated]);
 
   function handleWeeksFilterChange(newValues: WeeksFilterValues) {
     setWeeksFilterValues(newValues);
@@ -74,60 +77,84 @@ export default function Main(props: MainProps) {
     setDatesFilterValues({});
   }
 
+  function toggleAddDataModal() {
+    setshowAddDataModal(!showAddDataModal);
+  }
+
   return (
-    <main>
-      <div className="main-content">
-        <div className="data-controls">
-          <div className="filters">
-            <Filters
-              weeksFilterValues={weeksFilterValues}
-              datesFilterValues={datesFilterValues}
-              handleWeeksFilterChange={handleWeeksFilterChange}
-              handleDatesFilterChange={handleDatesFilterChange}
-              showToast={props.showToast}
-              resetFilterValues={resetFilterValues}
-            />
-          </div>
-          <div className="get-data">
-            <GetDataSelection onDataSyncRequest={props.onDataSyncRequest} />
-            <div>
-              {isLoading ? (
-                <Spinner className="spinner" />
-              ) : (
-                latestEntry !== null && (
-                  <p>Latest entry: {latestEntry.entry_date ?? "No Data Yet"}</p>
-                )
-              )}
+    <>
+      <main>
+        <div className="main-content">
+          <div className="data-controls">
+            <div className="filters">
+              <Filters
+                weeksFilterValues={weeksFilterValues}
+                datesFilterValues={datesFilterValues}
+                handleWeeksFilterChange={handleWeeksFilterChange}
+                handleDatesFilterChange={handleDatesFilterChange}
+                showToast={props.showToast}
+                resetFilterValues={resetFilterValues}
+              />
+            </div>
+            <div className="get-data">
+              <GetDataSelection onCTAClick={props.onGetDataCTAClick} />
+              <ManageDataCTA
+                ctaText="+ Add Weight"
+                onCTAClick={toggleAddDataModal}
+              />
+              <div>
+                {isLoading ? (
+                  <Spinner className="spinner" />
+                ) : (
+                  latestEntry !== null && (
+                    <p>
+                      Latest entry: {latestEntry.entry_date ?? "No Data Yet"}
+                    </p>
+                  )
+                )}
+              </div>
             </div>
           </div>
-        </div>
-        {isLoading ? (
-          <Spinner className="spinner" />
-        ) : latestEntry == null ? (
-          <NoDataView onDataSyncRequest={props.onDataSyncRequest} />
-        ) : (
-          <>
-            <Summary
-              latestEntry={latestEntry}
-              goalSelected={props.goalSelected}
-              weeksFilterValues={weeksFilterValues}
-              datesFilterValues={datesFilterValues}
-              dataSyncComplete={props.dataSyncComplete}
-              session={props.session}
-              showToast={props.showToast}
+          {isLoading ? (
+            <Spinner className="spinner" />
+          ) : latestEntry == null ? (
+            <NoDataView
+              onGetDataCTAClick={props.onGetDataCTAClick}
+              onAddDataCTAClick={toggleAddDataModal}
             />
+          ) : (
+            <>
+              <Summary
+                latestEntry={latestEntry}
+                goalSelected={props.goalSelected}
+                weeksFilterValues={weeksFilterValues}
+                datesFilterValues={datesFilterValues}
+                dataUpdated={props.dataUpdated}
+                session={props.session}
+                showToast={props.showToast}
+              />
 
-            <WeeklyDataTable
-              goalSelected={props.goalSelected}
-              weeksFilterValues={weeksFilterValues}
-              datesFilterValues={datesFilterValues}
-              dataSyncComplete={props.dataSyncComplete}
-              session={props.session}
-              showToast={props.showToast}
-            />
-          </>
-        )}
-      </div>
-    </main>
+              <WeeklyDataTable
+                goalSelected={props.goalSelected}
+                weeksFilterValues={weeksFilterValues}
+                datesFilterValues={datesFilterValues}
+                dataUpdated={props.dataUpdated}
+                session={props.session}
+                showToast={props.showToast}
+              />
+            </>
+          )}
+        </div>
+      </main>
+      {showAddDataModal && (
+        <AddDataModal
+          closeModal={toggleAddDataModal}
+          latestWeight={latestEntry ? String(latestEntry.weight) : ""}
+          session={props.session}
+          showToast={props.showToast}
+          handleDataUpdate={props.handleDataUpdate}
+        />
+      )}
+    </>
   );
 }

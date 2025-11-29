@@ -75,3 +75,7 @@ class DataSourceClient(Protocol):
     def store_raw_data(self, raw_dataset: Any) -> None: ...
 
     def convert_to_daily_entries(self, raw_dataset: Any) -> list[WeightEntry]: ...
+
+
+class DuplicateEntryError(ValueError):
+    pass
