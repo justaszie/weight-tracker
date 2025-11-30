@@ -1,5 +1,5 @@
 import { ReactComponent as GoogleIcon } from "@/assets/GoogleIcon.svg";
-import { ReactComponent as MFPIcon } from "@/assets/MFPIcon.svg";
+// import { ReactComponent as MFPIcon } from "@/assets/MFPIcon.svg";
 
 import GetDataCTA from "./GetDataCTA";
 
@@ -8,7 +8,8 @@ import type { GetDataSelectionProps } from "@/types/props";
 
 const dataSources: DataSourceCTA[] = [
     { srcName: "gfit", ctaText: "Get Google Fit Data", icon: GoogleIcon },
-    { srcName: "mfp", ctaText: "Get MyFitnessPal Data", icon: MFPIcon },
+    // Disabled until MFP library is fixed
+    // { srcName: "mfp", ctaText: "Get MyFitnessPal Data", icon: MFPIcon },
   ];
 
 export default function GetDataSelection(props: GetDataSelectionProps) {

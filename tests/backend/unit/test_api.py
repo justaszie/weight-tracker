@@ -356,6 +356,7 @@ class TestAPIEndpoints:
         "weekly-aggregates": app.url_path_for("get_weekly_aggregates"),
         "summary": app.url_path_for("get_summary"),
         "sync-data": app.url_path_for("sync_data"),
+        "daily-entry": app.url_path_for("create_daily_entry"),
     }
 
     @pytest.fixture
@@ -790,3 +791,6 @@ class TestAPIEndpoints:
 
         assert response.status_code == 500
         assert "detail" in response.json()
+
+    def test_create_valid_entry(self, client, mocker, mock_storage):
+        pass

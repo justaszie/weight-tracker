@@ -6,6 +6,7 @@
 This is a full-stack weight tracking application that:
 - Fetches weight data from external sources (Google Fit API),
 - Cleans, stores, and aggregates it
+- Allows user to manually enter their daily weight
 - Presents weekly trends and weight goal-based insights in a modern web UI.
 
 I built it as a portfolio project to demonstrate end-to-end skills: full-stack development, OAuth 2.0, 3rd-party API integration, modular backend architecture, automated testing, and CI/CD.
@@ -16,13 +17,14 @@ I built it as a portfolio project to demonstrate end-to-end skills: full-stack d
 
 **[Try the live application](https://tracker.justas.tech)**
 
+You can **sign up** for a new account or use the demo credentials below:
+
 **Demo credentials**
 - Email: `wtdemo@justas.tech`
 - Password: `demo1`
 
-> **Note on Google Fit Integration:**
-The credentials above give access to **demo mode** where you can try the features using a mock data source instead of real Google Fit API data. The app is currently in the testing phase on Google’s platform, so only the testing group users can access their Google Fit data using this app. I can add users to the testing group and provide app credentials upon request - [contact me](#contact-me) (please mention your gmail address). Alternatively, the complete app with Google Fit integration can be run and tested [locally](#running-the-project-locally).
-
+> **Note on Demo mode and Google Fit Integration:**
+The credentials above give access to **demo mode** where Google Fit integration is replaced by mock data source. The app is currently in the testing phase on Google’s platform, so only the testing group users can sync the app with their Google Fit data. If you want to test live integration, I can add you to the testing group - [contact me](#contact-me) mentioning if you signed up on the app and including your gmail address. Otherwise, the complete app with Google Fit integration can be run and tested [locally](#running-the-project-locally).
 ---
 
 ## Summary (for Hiring Teams)
@@ -80,30 +82,33 @@ This is the first full-stack application I shipped to production. It helped me b
 
 ### User Features
 
+**Getting Data**
+- **Manual entry** - the user can enter their daily weight using the app
+- **Syncing data with external sources** - the user can also request to get data from their selected source (currently only Google Fit supported)
+
 **Progress Dashboard**
-- **Weight change overview** over a selected period: total change from dates X to Y (in absolute and relative terms), average weekly change, average estimated caloric surplus / deficit
-- **Weekly details** - key metrics for every week in the selected period
 - **Filtering data**
   - View data for a specific date range (from/to dates)
   - View data for the last N weeks
   - Real-time updates when filters change
-- **Syncing data with external sources** - the user can request to get data from their selected source (currently only Google Fit supported)
+- **Weight change overview** over selected period: total change from dates X to Y (in absolute and relative terms), average weekly change, average estimated caloric surplus / deficit
+- **Weekly details** - key metrics for every week in the selected period
+- **Meaningful metrics** - PTs and nutritionists generally recommend keeping weight change to ~0.5%–1% per week for a healthy and sustainable change. The app calculates this rate for the user’s data so they can see if their weight change is within a healthy range.
 - **Responsive UI** - clean minimalistic UI that adjusts to various screen sizes, including mobile
-- **Meaningful metrics**  - PTs and nutritionists generally recommend keeping weight change to ~0.5%–1% per week for a healthy and sustainable change. The app calculates this rate for the user’s data so they can see if their weight change is within a healthy range.
 
 **Goal-Based Evaluation**
-- Switch between three fitness goals: Lose Fat, Maintain Weight, Gain Muscle
-- Color coded progress indicators (positive/negative) based on your selected goal
+- **Switch between three fitness goals**: Lose Fat, Maintain Weight, Gain Muscle
+- **The result metrics are color-coded** (positive/negative) based on your selected goal
 
 ### Backend Features
 
 **Authentication & Authorization**
-- **JWT authentication via Supabase** to log in to the frontend and to access the app's REST APIs.
+- **JWT authentication via Supabase** to sign up, log in to the frontend, and to access the app's REST APIs
 - **Google OAuth 2.0** implementation to get access the user's Google Fit data. This includes secure access token storage and refresh mechanism
 
 **Data Management**
-- **Data syncing strategy** - on user's request, fetch and store user's data from the external source (Google Fit)
-- **Database as source of truth** - weight entries fetched from external sources are only inserted if there's no entry for that user and date in the DB yet.
+- **Data syncing strategy** - on user's request, fetch and store their data from the external source (Google Fit)
+- **Database as source of truth** - weight entries fetched from external sources are inserted only if there's no entry for that user and date in the DB yet.
 - **Flexible storage layer** - the app supports multiple storage systems: PostgreSQL and file-based storage
 - **Analytics module** - calculates and returns metrics for the stored weight data
 
@@ -119,13 +124,16 @@ This is the first full-stack application I shipped to production. It helped me b
 - **Type safety** with strict MyPy checking
 
 ### Screenshots
-![App Screenshot](/doc/wt-screenshot-1.png)
 
-![App Screenshot - No Data](/doc/wt-screenshot-2.png)
+![Screenshot-1](/doc/wt-screenshot-1.png)
 
-![App Screenshot - Login](/doc/wt-screenshot-login.png)
+![Screenshot-2](/doc/wt-screenshot-2.png)
 
-![App Screenshot - Mobile](/doc/wt-screenshot-mobile.png)
+![Screenshot-3](/doc/wt-screenshot-3.png)
+
+![Screenshot Login](/doc/wt-screenshot-login.png)
+
+![Screenshot Mobile](/doc/wt-screenshot-mobile.png)
 
 ---
 
@@ -240,7 +248,7 @@ weight-tracker/                        # Project root (managed with Poetry)
 | **data_integration.py** | `DataIntegrationService` orchestrates data sync between DB data and external sources. Uses DI to support any implementation of data storage and data source protocols |
 | **db_storage.py / file_storage.py** | Two different implementations of the `DataStorage` protocol that give CRUD access to stored weight data |
 | **analytics.py** | Analytics engine. Calculates and returns weekly aggregates and summary metrics from daily weight entries using pandas |
-| **google_fit.py** | Logic related to Google OAuth flow and Google Fit API integration. Defines 2 API routes used to handle Google OAuth 2.0 flow (one to redirect user to Google consent flow, another to handle authorization callback from the server). Also, contains a `GoogleFitAuth` class that stores, loads and refreshes OAuth tokens. Finally, the `GoogleFitClient` class fetches raw data from Google Fit API and transforms it to standard format |
+| **google_fit.py** | Logic related to Google OAuth flow and Google Fit API integration. Defines 2 API routes used to handle Google OAuth 2.0 flow (one to redirect user to Google consent flow, another to handle authorization callback from the server). Also, contains `GoogleFitAuth` class that stores, loads and refreshes OAuth tokens. Finally, the `GoogleFitClient` class fetches raw data from Google Fit API and transforms it to standard format |
 | **mfp.py** | Integrates with MyFitnessPal as alternative to Google Fit and demonstrates flexibility of `DataSourceClient` protocol. **Currently disabled** due to 3rd party library package issues - [PR raised](https://github.com/coddingtonbear/python-myfitnesspal/pull/201) to fix it |
 | **project_types.py** | Complex type definitions for type annotation and type safety checks. Includes definitions of the `DataStorage` and `DataSourceClient` protocols |
 | **demo.py** | Implements mock implementation of the `DataSourceClient` protocol with mock source data. It's in demo mode (when logging in with demo user credentials) |
@@ -252,10 +260,11 @@ Below are key React components that constitute the frontend (smaller components 
 |------------|---------|
 | **App.tsx** | Root component. Overall layout of the SPA (Header and Main subcomponents),  top-level logic and callbacks passed down to sub-components. Includes logic to manage the auth state, triggering toast messages, triggering data sync to refresh the whole app, etc. |
 | **Header.tsx** | Logo, goal selection, current user info and sign out option |
-| **Login.tsx** | Page with the login form, displayed if there is no active authenticated user session |
+| **Authentication.tsx** | Page that presents either Login or SignUp subcomponent, allowing user to login or sign up. It's rendered when there is no active authenticated session |
 | **Main.tsx** | Layout of the main section of the app. Also contains filter components and a selection of CTAs to trigger data sync from various sources |
 | **Summary.tsx**  | Cards that summarize the weight change over the selected period |
 | **WeeklyDataTable.tsx**  | Table with one row for each week in the selected period with key metrics for that week. Color coded results based on selected goal  |
+| **AddDataModal.tsx** | Modal component that allows manually adding new entries
 | **Filters.tsx**  | Controls to select the data period (last N weeks or from dates X to Y) |
 
 The screenshot below shows the layout of the key components in the UI:
@@ -279,6 +288,7 @@ Currently, the APIs can only be accessed from the domain hosting the React Front
 ### REST API Endpoints
 The app is powered by the following endpoints (only data associated with authenticated user is returned)
 - **`GET /daily-entries`** -> the user's daily weight entries stored in DB
+- **`POST /daily-entries`** -> create a new weight entry in DB
 - **`GET /weekly-aggregates`** -> calculates weekly averages and other key metrics grouped by week
 - **`GET /summary`** -> total weight change metrics over a given period
 - **`GET /latest-entry`** -> the latest daily weight entry (for date closest to current date)
@@ -338,9 +348,9 @@ The project includes best practices to manage code versioning and get it to prod
 
 ## Testing
 - Tests currently cover only the backend and use `pytest` framework.
-- The test suite includes unit and integration tests. Unit tests are defined by module and integration tests are split by feature groups.
+- The test suite includes unit and integration tests. The unit tests are defined by module and the integration tests are split by feature groups.
 - Unit tests have a total ~85% coverage with all business logic covered.
-- Integration tests use isolated environments to test end-to-end features (separate test database, mocked Google Fit integration)
+- Integration tests use isolated environments to test end-to-end API features (separate test database, mocked Google Fit integration)
 
 Test suite structure:
 
@@ -356,7 +366,7 @@ tests/backend/
 │   └── test_utils.py
 │
 └── integration/
-    ├── test_sync_data.py
+    ├── test_manage_data.py
     ├── test_get_data.py
     └── test_demo_mode.py
 ```
@@ -445,11 +455,7 @@ https://supabase.com/docs/guides/local-development/cli/getting-started
     5. Download `credentials.json`. Use its values to populate the `app/.env` file. Use the following scopes:
 
 
-6. **Create Test User Account**
-    1. Go to the Supabase Studio URL (value output when starting supabase)
-    2. Go to the `Auth` section and create a test user.
-
-7. **Start the backend server:**
+6. **Start the backend server:**
     ```bash
     poetry run uvicorn app.main:app --reload --port 8000 # or other port if 8000 is taken
     ```
@@ -488,7 +494,7 @@ https://supabase.com/docs/guides/local-development/cli/getting-started
 
 5. **Test the App**
 
-    Go to http://localhost:5173 and log in using the test credentials created in Supabase.
+    Go to http://localhost:5173 and sign up for a new account or create a test user in Supabase Studio (Auth section) and log in.
 ---
 
 ## Design Patterns & Best Practices
@@ -659,27 +665,25 @@ Components have clear responsibilities and are easily reusable. For example, `Ge
 type Goal = 'lose' | 'maintain' | 'gain';
 
 interface SummaryProps {
-  goalSelected: Goal;
-  datesFilterValues: DatesFilterValues | null;
-  weeksFilterValues: WeeksFilterValues | null;
-  session: Session;
-  showToast: ShowToastFunction;
-  dataSyncComplete: boolean;
-  latestEntry: WeightEntry | null;
+    latestEntry?: WeightEntry | null;
+    goalSelected: Goal;
+    weeksFilterValues?: WeeksFilterValues;
+    datesFilterValues?: DatesFilterValues;
+    dataUpdated: boolean;
+    session: Session;
+    showToast: ShowToastFn;
 }
 ```
 
 ## Limitations & Enhancements
 ### Limitations
-- The production app is in Testing state on Google Auth platform. Only users added to the testing group can access their Google Fit data. I don't plan to complete this verification due to the fact that Google Fit APIs [will be deprecated in 2026](https://developers.google.com/fit/rest).
+- The production app is in Testing state on Google Auth platform. Only users added to the testing group can sync the app with their Google Fit data. I don't plan to complete this verification due to the fact that Google Fit APIs [will be deprecated in 2026](https://developers.google.com/fit/rest).
 - Backend APIs only support a single frontend domain. To support more diverse clients (e.g. mobile apps, automated scripts), the Google OAuth flow should be changed and the CORS authorized domain management should be made more flexible.
 - Frontend and backend are in the same repo/project which adds time to deployments (e.g. Cloudflare pages have to install Python environment in their instance). It's good enough for a small project like this but could be improved.
-- MyFitnessPal was implemented as an external data source, alternative to Google Fit API using a 3rd party scraping library. This demonstrates the flexibility of the DataSourceClient protocol. But the library has dependency conflicts with Supabase so the MFP module had to be disabled. I raised a fix PR and am waiting [for the merge](https://github.com/coddingtonbear/python-myfitnesspal/pull/201).
+- MyFitnessPal was implemented as an external data source, alternative to Google Fit API using a 3rd party scraping library. This demonstrates the flexibility of the DataSourceClient protocol. But the library has dependency conflicts with Supabase so the MFP module had to be disabled. I raised a fix PR and am waiting [for the merge](https://github.com/coddingtonbear/python-myfitnesspal/pull/201) to fix it.
 
 
 ### Enhancements
-- Users can get their data only from the implemented external sources (currently just Google Fit API). Manual entry is a key feature to make it useful to production users.
-- Sign-up feature should be implemented on the frontend using Supabase integration
 - The users' Google OAuth access and refresh tokens should be encrypted before storing them in PostgreSQL DB. This would mitigate the risk of the Supabase PostgreSQL DB being breached.
 - UI can be more polished - e.g. consistent feedback to the user when a component is being refreshed, etc.
 ---
