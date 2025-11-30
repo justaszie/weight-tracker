@@ -18,7 +18,7 @@ from fastapi import (
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from google.oauth2.credentials import Credentials
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, field_validator
 
 from . import analytics, utils
 from .data_integration import (
@@ -62,10 +62,22 @@ class DataSyncAuthNeededResponse(BaseModel):
 
 
 class APIWeightEntry(BaseModel):
-    entry_date: dt.date = Field(
-        le=dt.date.today(), description="Date cannot be in the future"
-    )
-    weight: float = Field(gt=0, description="Weight must be positive")
+    entry_date: dt.date
+    weight: float | int
+
+    @field_validator("entry_date", mode="after")
+    @classmethod
+    def past_or_today(cls, value: dt.date) -> dt.date:
+        if value > dt.date.today():
+            raise ValueError("Date Cannot be in the future")
+        return value
+
+    @field_validator("weight", mode="after")
+    @classmethod
+    def above_zero(cls, value: float | int) -> float:
+        if value <= 0:
+            raise ValueError("Weight must be above 0")
+        return round(value, 2)
 
 
 class NoCredentialsError(Exception):

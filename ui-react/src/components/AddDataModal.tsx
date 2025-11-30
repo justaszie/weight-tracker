@@ -13,11 +13,19 @@ export default function AddDataModal(props: AddDataModalProps) {
 
   const submitForm = async function (event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setIsLoading(true);
 
     const formData: FormData = new FormData(
       event.currentTarget as HTMLFormElement
     );
+
+    let entryDate = formData.get('entry-date')
+
+    if (entryDate && entryDate > dateToday()) {
+      props.showToast('error', 'Date cannot be in the future');
+      return
+    }
+
+    setIsLoading(true);
     const route_url = `${API_BASE_URL}/${API_PREFIX}/daily-entry`;
     let result = await fetch(route_url, {
       method: "POST",
@@ -77,6 +85,7 @@ export default function AddDataModal(props: AddDataModalProps) {
             name="entry-date"
             id="entry-date-input"
             required
+            max={dateToday()}
             defaultValue={dateToday()}
           ></input>
           <label className="add-weight__input-label" htmlFor="weight-input">
