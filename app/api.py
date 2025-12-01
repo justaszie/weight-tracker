@@ -419,7 +419,10 @@ def create_daily_entry(
         )
         return entry
     except DuplicateEntryError as e:
-        raise HTTPException(status_code=409, detail="Duplicate weight entry") from e
+        raise HTTPException(
+            status_code=409,
+            detail=f"Weight entry for for {entry.entry_date} already exists",
+        ) from e
 
 
 @router_v1.get("/healthz")

@@ -127,8 +127,9 @@ class DatabaseStorage:
                 session.commit()
             except IntegrityError as e:
                 logger.warning(
-                    f"Duplicate weight entry creation attempted. Date: {entry_date}",
-                    exc_info=True,
+                    f"Duplicate weight entry creation attempted "
+                    f"| User: {user_id}"
+                    f"| Date: {entry_date}"
                 )
                 raise DuplicateEntryError(
                     f"Weight entry already exists for date"

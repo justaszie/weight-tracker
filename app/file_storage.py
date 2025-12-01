@@ -59,12 +59,13 @@ class FileStorage:
         ]
         if existing:
             logger.warning(
-                "Duplicate weight entry creation attempted."
-                f"Date: {entry_date}. User: {user_id}"
+                "Duplicate weight entry creation attempted "
+                f"| Date: {entry_date} | User: {user_id}"
             )
             raise DuplicateEntryError(
-                "Weight entry already exists for this date and user"
-                "Use update method to replace it."
+                f"Weight entry already exists for date"
+                f" {entry_date.strftime('%Y-%m-%d')}."
+                f"Use update method to replace it."
             )
 
         self._data.append(
