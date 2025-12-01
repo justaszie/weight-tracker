@@ -336,10 +336,7 @@ class GoogleFitClient:
             inplace=True,
         )
 
-        # Remove outliers that were added by mistake
-        filtered_df = df[(df["weight"] > 50) & (df["weight"] < 100)]
-
-        records = filtered_df.to_dict(orient="records")  # pyright: ignore
+        records = df.to_dict(orient="records")  # pyright: ignore
         daily_entries = [WeightEntry.model_validate(record) for record in records]
         logger.info(
             f"Converted {len(data)} datapoints to {len(daily_entries)} daily entries"

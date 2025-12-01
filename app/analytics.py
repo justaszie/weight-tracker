@@ -137,9 +137,3 @@ def calculate_result(weight_change: float, goal: FitnessGoal) -> Result | None:
                 if abs(weight_change) <= MAINTAIN_ACCEPTABLE_CHANGE
                 else "negative"
             )
-
-
-# TODO - Here we will implement the logic
-# to build text that evaluates the overall results
-def get_evaluation(weekly_data: Sequence[WeeklyAggregateEntry]) -> str | None:
-    return None
