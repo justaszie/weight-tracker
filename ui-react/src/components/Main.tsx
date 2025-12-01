@@ -33,6 +33,7 @@ export default function Main(props: MainProps) {
   const [showAddDataModal, setshowAddDataModal] = useState(false);
 
   useEffect(() => {
+    setIsLoading(true);
     const fetchLatestEntry = async () => {
       try {
         const response = await fetch(
