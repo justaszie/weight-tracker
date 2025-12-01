@@ -17,6 +17,7 @@ from app.api import (
 from app.data_integration import DataSyncError, SourceFetchError, SourceNoDataError
 from app.main import app
 from app.project_types import (
+    DuplicateEntryError,
     WeightEntry,
     WeeklyAggregateEntry,
     ProgressMetrics,
@@ -356,7 +357,7 @@ class TestAPIEndpoints:
         "weekly-aggregates": app.url_path_for("get_weekly_aggregates"),
         "summary": app.url_path_for("get_summary"),
         "sync-data": app.url_path_for("sync_data"),
-        "daily-entry": app.url_path_for("create_daily_entry"),
+        "post-daily-entry": app.url_path_for("create_daily_entry"),
     }
 
     @pytest.fixture
@@ -792,5 +793,68 @@ class TestAPIEndpoints:
         assert response.status_code == 500
         assert "detail" in response.json()
 
-    def test_create_valid_entry(self, client, mocker, mock_storage):
-        pass
+    def test_create_valid_entry(self, client, mock_storage):
+        request_body = {
+            "entry_date": "2025-01-15",
+            "weight": 72.5,
+        }
+
+        response = client.post(
+            self.ENDPOINT_URLS["post-daily-entry"], json=request_body
+        )
+
+        assert response.status_code == 200
+        assert response.json() == request_body
+
+        mock_storage.create_weight_entry.assert_called_once_with(
+            entry_date=dt.date.fromisoformat(request_body["entry_date"]),
+            user_id=TEST_USER_ID,
+            weight=request_body["weight"],
+        )
+
+    @pytest.mark.parametrize(
+        "request_body",
+        [
+            # Future date (tomorrow)
+            {
+                "entry_date": (dt.date.today() + dt.timedelta(days=1)).isoformat(),
+                "weight": 70.0,
+            },
+            # Zero weight
+            {
+                "entry_date": dt.date.today().isoformat(),
+                "weight": 0,
+            },
+            # Negative weight
+            {
+                "entry_date": dt.date.today().isoformat(),
+                "weight": -5,
+            },
+        ],
+    )
+    def test_create_entry_invalid_entries(self, client, mock_storage, request_body):
+        response = client.post(
+            self.ENDPOINT_URLS["post-daily-entry"], json=request_body
+        )
+        response_body = response.json()
+
+        assert response.status_code == 422
+        assert "detail" in response_body
+        assert len(response_body["detail"]) > 0 and "msg" in response_body["detail"][0]
+        mock_storage.create_weight_entry.assert_not_called()
+
+    def test_create_dupliacate_entry(self, client, sample_daily_entries, mock_storage):
+        existing_date = sample_daily_entries[0].entry_date
+        request_body = {
+            "entry_date": existing_date.isoformat(),
+            "weight": 73.81,
+        }
+
+        mock_storage.create_weight_entry.side_effect = DuplicateEntryError()
+
+        response = client.post(
+            self.ENDPOINT_URLS["post-daily-entry"], json=request_body
+        )
+
+        assert response.status_code == 409
+        assert "detail" in response.json()
