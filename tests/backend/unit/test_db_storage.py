@@ -257,6 +257,8 @@ def test_delete_nonexistent_weight_entry(storage_sample):
         storage_sample.delete_weight_entry(TEST_USER_ID, entry_date=dt.date(1850, 2, 2))
 
 
+# Feature removed 1/12/2025
+@pytest.mark.skip
 @pytest.mark.parametrize(
     "test_case, expected_output", [("outdated_data", True), ("data_up_to_date", False)]
 )

@@ -10,7 +10,6 @@ import pandas as pd
 from google.oauth2.credentials import Credentials
 from pydantic import TypeAdapter
 
-from . import utils
 from .project_types import DuplicateEntryError, WeightEntry
 
 logger = logging.getLogger(__name__)
@@ -148,17 +147,6 @@ class FileStorage:
                 f"Failed to export weight entries to csvFilepath: {filepath}",
                 exc_info=True,
             )
-
-    def data_refresh_needed(self, user_id: UUID) -> bool:
-        if not self._data:
-            return True
-
-        user_entries = [entry for entry in self._data if entry.user_id == user_id]
-        if not user_entries:
-            return True
-
-        latest_entry_date: dt.date | None = utils.get_latest_entry_date(user_entries)
-        return latest_entry_date < dt.date.today() if latest_entry_date else True
 
     @classmethod
     def _load_weights_from_file(cls) -> list[WeightEntry]:

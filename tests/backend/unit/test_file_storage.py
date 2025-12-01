@@ -323,6 +323,8 @@ class TestWeightStorageProtocol:
             sample_storage.delete_weight_entry(TEST_USER_ID, date)
         assert len(sample_storage.get_weight_entries(TEST_USER_ID)) == count_before
 
+    # Feature removed 1/12/2025
+    @pytest.mark.skip
     @pytest.mark.parametrize(
         "dates_in_db, expected_output",
         [
@@ -397,6 +399,8 @@ class TestWeightStorageProtocol:
             empty_storage.delete_weight_entry(TEST_USER_ID, date)
         assert len(empty_storage.get_weight_entries(TEST_USER_ID)) == 0
 
+    # Feature removed 1/12/2025
+    @pytest.mark.skip
     def test_data_refresh_needed_empty_storage(self, empty_storage):
         assert len(empty_storage.get_weight_entries(TEST_USER_ID)) == 0
         assert empty_storage.data_refresh_needed(TEST_USER_ID) == True
