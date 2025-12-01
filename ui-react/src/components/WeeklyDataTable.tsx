@@ -54,6 +54,7 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
 
   // Fetching data when filter values change
   useEffect(() => {
+    setIsLoading(true);
     const fetchDataWithFilters = async () => {
       const { weeksLimit } = props.weeksFilterValues ?? {};
       const { dateTo, dateFrom } = props.datesFilterValues ?? {};
@@ -94,8 +95,9 @@ export default function WeeklyDataTable(props: WeeklyDataTableProps) {
         if (err instanceof Error) {
           props.showToast("error", err.message);
         }
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     fetchDataWithFilters();
