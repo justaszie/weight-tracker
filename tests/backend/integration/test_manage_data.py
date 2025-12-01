@@ -355,7 +355,7 @@ def test_create_duplicate_daily_entry(client_with_storage, sample_daily_entries)
     assert response.status_code == 409
     assert "detail" in response.json()
 
-    # Verify that duplicate was not create and the existing entry has the same weight value
+    # Verify that duplicate was not created and the existing entry has the same weight value
     response = client_with_storage.get("/api/v1/daily-entries")
     assert response.status_code == 200
     daily_entries_after = response.json()
