@@ -335,12 +335,6 @@ def sync_data(
     http_request: Request,
     data_storage: DataStorageDependency,
 ) -> DataSyncSuccessResponse | JSONResponse:
-    if not data_storage.data_refresh_needed(user_id):
-        logger.info("Data sync skipped - already up to date")
-        return DataSyncSuccessResponse(
-            status="data_up_to_date", message="Your data is already up to date"
-        )
-
     logger.info(f"Starting weights data sync for source: {sync_request.data_source}")
     data_source = sync_request.data_source
 
@@ -419,7 +413,10 @@ def create_daily_entry(
         )
         return entry
     except DuplicateEntryError as e:
-        raise HTTPException(status_code=409, detail="Duplicate weight entry") from e
+        raise HTTPException(
+            status_code=409,
+            detail=f"Weight entry for for {entry.entry_date} already exists",
+        ) from e
 
 
 @router_v1.get("/healthz")

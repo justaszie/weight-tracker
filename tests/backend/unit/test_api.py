@@ -376,18 +376,6 @@ class TestAPIEndpoints:
         yield mock_storage
         app.dependency_overrides.pop(get_data_storage, None)
 
-    @pytest.fixture
-    def mock_storage_refresh_needed(self, mocker):
-        mock_storage = mocker.MagicMock()
-        mock_storage.data_refresh_needed.return_value = True
-
-        # Override get_data_storage function with a lambda that just returns mock storage
-        app.dependency_overrides[get_data_storage] = lambda: mock_storage
-        yield mock_storage
-
-        # Make sure to remove the dependency override after the tests run
-        app.dependency_overrides.pop(get_data_storage, None)
-
     @pytest.mark.parametrize(
         "latest_entry, expected_return",
         [
@@ -661,8 +649,6 @@ class TestAPIEndpoints:
         client,
         data_source_client_name,
         mocker,
-        mock_storage_refresh_needed,
-        # disable_demo_mode,
     ):
         mocker.patch(
             "app.api.GoogleFitAuth"
@@ -698,9 +684,7 @@ class TestAPIEndpoints:
         assert response.status_code == 422
         assert "detail" in response.json()
 
-    def test_sync_data_success(
-        self, client, mocker, sample_daily_entries, mock_storage_refresh_needed
-    ):
+    def test_sync_data_success(self, client, mocker, sample_daily_entries):
         mocker.patch("app.api.GoogleFitAuth")
         mock_service = mocker.patch("app.api.DataIntegrationService").return_value
         mock_service.refresh_weight_entries.return_value = sample_daily_entries
@@ -722,6 +706,8 @@ class TestAPIEndpoints:
         assert response.status_code == 200
         assert all(actual_response[k] == v for k, v in expected_response.items())
 
+    # Feature removed 1/12/2025
+    @pytest.mark.skip
     def test_sync_data_refresh_not_needed(self, client, mocker, mock_storage):
         mock_storage.data_refresh_needed.return_value = False
 
@@ -732,7 +718,7 @@ class TestAPIEndpoints:
         assert response.status_code == 200
         assert response.json()["status"] == "data_up_to_date"
 
-    def test_sync_data_auth_needed(self, client, mocker, mock_storage_refresh_needed):
+    def test_sync_data_auth_needed(self, client, mocker):
         mocker.patch("app.api.get_data_source_client").side_effect = NoCredentialsError
 
         response = client.post(
@@ -748,7 +734,7 @@ class TestAPIEndpoints:
         assert "auth_url" in actual_response
         assert actual_response["auth_url"] == expected_auth_url
 
-    def test_sync_data_no_new_data(self, client, mocker, mock_storage_refresh_needed):
+    def test_sync_data_no_new_data(self, client, mocker):
         mocker.patch("app.api.GoogleFitAuth")
         mock_service = mocker.patch("app.api.DataIntegrationService").return_value
         mock_service.refresh_weight_entries.return_value = []
@@ -762,7 +748,7 @@ class TestAPIEndpoints:
         assert response.status_code == 200
         assert response.json()["status"] == "no_new_data"
 
-    def test_sync_data_no_data_found(self, client, mocker, mock_storage_refresh_needed):
+    def test_sync_data_no_data_found(self, client, mocker):
         mocker.patch("app.api.GoogleFitAuth")
         mock_service = mocker.patch("app.api.DataIntegrationService").return_value
         mock_service.refresh_weight_entries.side_effect = SourceNoDataError("no data")
@@ -777,9 +763,7 @@ class TestAPIEndpoints:
         assert response.json()["status"] == "no_data_received"
 
     @pytest.mark.parametrize("exc", [SourceFetchError("test"), DataSyncError("test")])
-    def test_sync_data_refresh_exceptions(
-        self, client, mocker, mock_storage_refresh_needed, exc
-    ):
+    def test_sync_data_refresh_exceptions(self, client, mocker, exc):
         mocker.patch("app.api.GoogleFitAuth")
         mock_service = mocker.patch("app.api.DataIntegrationService").return_value
         mock_service.refresh_weight_entries.side_effect = exc

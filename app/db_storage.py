@@ -17,7 +17,6 @@ from sqlmodel import (
     select,
 )
 
-from . import utils
 from .project_types import DuplicateEntryError, WeightEntry
 
 logger = logging.getLogger(__name__)
@@ -127,8 +126,9 @@ class DatabaseStorage:
                 session.commit()
             except IntegrityError as e:
                 logger.warning(
-                    f"Duplicate weight entry creation attempted. Date: {entry_date}",
-                    exc_info=True,
+                    f"Duplicate weight entry creation attempted "
+                    f"| User: {user_id}"
+                    f"| Date: {entry_date}"
                 )
                 raise DuplicateEntryError(
                     f"Weight entry already exists for date"
@@ -148,12 +148,6 @@ class DatabaseStorage:
         with Session(self._engine) as session:
             session.add_all(entries_db)
             session.commit()
-
-    def data_refresh_needed(self, user_id: UUID) -> bool:
-        existing_data = self.get_weight_entries(user_id)
-
-        latest_entry_date: dt.date | None = utils.get_latest_entry_date(existing_data)
-        return latest_entry_date < dt.date.today() if latest_entry_date else True
 
     def get_weight_entry(
         self, user_id: UUID, entry_date: dt.date
