@@ -6,11 +6,12 @@ import type { DailyDataUrlParams } from "@/types/daily-table";
 import { ReactComponent as Spinner } from "@/assets/spinner.svg";
 import type { WeightEntry } from "@/types/weight-entry";
 
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 const API_PREFIX = import.meta.env.VITE_API_PREFIX as string;
 
-export default function DailyDataTable(props: DailyDataTableProps) {
-  const [dailyData, setDailyData] = useState([]);
+export default function dailyEntriesTable(props: DailyDataTableProps) {
+  const [dailyEntries, setDailyEntries] = useState<WeightEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   function dayToRow(dailyEntry: WeightEntry) {
@@ -21,17 +22,46 @@ export default function DailyDataTable(props: DailyDataTableProps) {
           {dailyEntry["weight"].toFixed(2)} kg
         </td>
         <td className="data-table__cell data-table__cell--action">
-          <button key={dailyEntry["entry_date"]} className="data-table__delete-cta" onClick={deleteEntry}>Delete</button>
+          <button
+            className="data-table__delete-cta"
+            onClick={() => deleteEntry(dailyEntry["entry_date"])}
+          >
+            Delete
+          </button>
         </td>
       </tr>
     );
   }
 
-  function deleteEntry(event: React.MouseEvent<HTMLButtonElement>): void {
-    console.log('Delete event');
+  async function deleteEntry(entryDate: string) {
+    setIsLoading(true);
+
+    const deleteEntryURL = new URL(`${API_BASE_URL}/${API_PREFIX}/daily-entry`);
+    const urlParams = { entry_date: entryDate };
+    deleteEntryURL.search = new URLSearchParams(urlParams).toString();
+
+    const result = await fetch(deleteEntryURL, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${props.session.access_token}`,
+      },
+    });
+
+    if (!result.ok) {
+      props.showToast("error", "Error while deleting entry");
+      setIsLoading(false);
+      return;
+    }
+
+    setDailyEntries((prev) =>
+      prev.filter((entry) => entry.entry_date !== entryDate)
+    );
+    setIsLoading(false);
+    props.handleDataUpdate()
+    props.showToast("success", `Entry deleted for ${entryDate}`)
   }
 
-  function sortedDesc(entries: WeightEntry[]): void {
+  function sortedDesc(entries: WeightEntry[]): WeightEntry[] {
     entries.sort((a, b) => {
       if (a["entry_date"] > b["entry_date"]) {
         return -1;
@@ -39,6 +69,7 @@ export default function DailyDataTable(props: DailyDataTableProps) {
         return 1;
       }
     });
+    return entries;
   }
 
   // Fetching data when filter values change
@@ -58,12 +89,12 @@ export default function DailyDataTable(props: DailyDataTableProps) {
       if (dateTo) {
         urlParams["date_to"] = dateTo;
       }
-      const dailyDataURL = new URL(
+      const dailyEntriesURL = new URL(
         `${API_BASE_URL}/${API_PREFIX}/daily-entries`
       );
-      dailyDataURL.search = new URLSearchParams(urlParams).toString();
+      dailyEntriesURL.search = new URLSearchParams(urlParams).toString();
       try {
-        const response = await fetch(dailyDataURL, {
+        const response = await fetch(dailyEntriesURL, {
           headers: {
             Authorization: `Bearer ${props.session.access_token}`,
           },
@@ -77,10 +108,9 @@ export default function DailyDataTable(props: DailyDataTableProps) {
           throw new Error(errorMessage);
         }
         const entries = await response.json();
-        sortedDesc(entries);
-        setDailyData(entries);
+        setDailyEntries(sortedDesc(entries));
       } catch (err: unknown) {
-        setDailyData([]);
+        setDailyEntries([]);
         if (err instanceof Error) {
           props.showToast("error", err.message);
         }
@@ -102,10 +132,14 @@ export default function DailyDataTable(props: DailyDataTableProps) {
             <tr className="data-table__header">
               <th className="data-table__cell">Entry Date</th>
               <th className="data-table__cell">Weight</th>
-              <th className="data-table__cell data-table__cell--action">Actions</th>
+              <th className="data-table__cell data-table__cell--action">
+                Actions
+              </th>
             </tr>
           </thead>
-          {dailyData.length > 0 && <tbody>{dailyData.map(dayToRow)}</tbody>}
+          {dailyEntries.length > 0 && (
+            <tbody>{dailyEntries.map(dayToRow)}</tbody>
+          )}
         </table>
       )}
     </section>

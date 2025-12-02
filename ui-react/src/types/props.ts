@@ -65,6 +65,7 @@ export type DailyDataTableProps = {
   dataUpdated: boolean;
   session: Session;
   showToast: ShowToastFn;
+  handleDataUpdate: () => void;
 };
 
 export type FiltersProps = {

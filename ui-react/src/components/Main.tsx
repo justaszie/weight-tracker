@@ -33,7 +33,7 @@ export default function Main(props: MainProps) {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [showAddDataModal, setshowAddDataModal] = useState(false);
-  const [dataViewMode, setDataViewMode] = useState<DataViewMode>("weekly");
+  const [dataViewMode, setDataViewMode] = useState<DataViewMode>("daily");
 
   useEffect(() => {
     setIsLoading(true);
@@ -179,6 +179,7 @@ export default function Main(props: MainProps) {
                   dataUpdated={props.dataUpdated}
                   session={props.session}
                   showToast={props.showToast}
+                  handleDataUpdate={props.handleDataUpdate}
                 />
               ) : (
                 <WeeklyDataTable

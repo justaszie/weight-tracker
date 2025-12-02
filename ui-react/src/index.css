@@ -475,7 +475,8 @@ body {
 }
 
 .data-table__cell--action {
-    text-align: end;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .data-table__cell--positive {
@@ -487,6 +488,8 @@ body {
 }
 
 .data-table__delete-cta {
+    display: flex;
+    justify-content: center;
     padding: 5px 10px;
     border-radius: var(--rounded-corners-btn);
     background-color: var(--clr-bg-inverse);
@@ -494,6 +497,9 @@ body {
     cursor: pointer;
     font-weight: 500;
 }
+
+/* .data-table__delete-cta--loading {
+} */
 
 .no-data-view {
     background-color: var(--clr-surface-muted);
