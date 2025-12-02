@@ -66,7 +66,7 @@ body {
 
 /* Utility class that gives consistent global padding */
 .main-content {
-    padding: 24px;
+    padding: 20px;
 }
 
 /* Utility class that spaces out elements on a row */
@@ -173,6 +173,37 @@ body {
 
 .goal-selection__icon {
     width: 0.9em;
+}
+
+.data-views {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.data-views__option {
+    flex-grow: 1;
+    text-align: center;
+    background-color: var(--clr-surface);
+    color: var(--clr-text-inactive);
+    border: 1px solid var(--clr-border);
+    padding: 10px 0;
+    border-radius: var(--rounded-corners-btn);
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.data-views__option--active {
+    background-color: var(--clr-bg-inverse);
+    color: var(--clr-text-inverse);
+}
+
+.data-views__option:hover {
+    background-color: var(--clr-bg-muted);
+}
+
+.data-views__option--active:hover {
+    background-color: var(--clr-bg-inverse-muted);
 }
 
 .data-controls {
@@ -358,7 +389,6 @@ body {
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: 1fr 1fr;
     gap: 10px;
-    margin-bottom: 20px;
 }
 
 .summary-card {
@@ -785,6 +815,6 @@ body {
     }
 
     .main-content {
-        padding: 20px 15px;
+        padding: 15px 15px;
     }
 }

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import type { MainProps } from "@/types/props";
 import type { WeightEntry } from "@/types/weight-entry";
 import type { DatesFilterValues, WeeksFilterValues } from "@/types/filter";
+import type { DataViewMode } from "@/types/utils";
 
 import { ReactComponent as Spinner } from "@/assets/spinner.svg";
 
@@ -31,6 +32,7 @@ export default function Main(props: MainProps) {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [showAddDataModal, setshowAddDataModal] = useState(false);
+  const [dataViewMode, setDataViewMode] = useState<DataViewMode>("weekly");
 
   useEffect(() => {
     setIsLoading(true);
@@ -74,12 +76,23 @@ export default function Main(props: MainProps) {
   }
 
   function resetFilterValues() {
-    setWeeksFilterValues({});
+    setWeeksFilterValues({ weeksLimit: DEFAULT_WEEKS_LIMIT });
     setDatesFilterValues({});
   }
 
   function toggleAddDataModal() {
     setshowAddDataModal(!showAddDataModal);
+  }
+
+  function handleDataViewModeChange(
+    event: React.MouseEvent<HTMLAnchorElement>
+  ) {
+    event.preventDefault();
+    const viewMode: DataViewMode = event.currentTarget.dataset
+      .viewMode as DataViewMode;
+    if (["daily", "weekly"].includes(viewMode)) {
+      setDataViewMode(viewMode);
+    }
   }
 
   return (
@@ -134,15 +147,42 @@ export default function Main(props: MainProps) {
                 session={props.session}
                 showToast={props.showToast}
               />
-
-              <WeeklyDataTable
-                goalSelected={props.goalSelected}
-                weeksFilterValues={weeksFilterValues}
-                datesFilterValues={datesFilterValues}
-                dataUpdated={props.dataUpdated}
-                session={props.session}
-                showToast={props.showToast}
-              />
+              {/* DATA VIEW SELECTION */}
+              <div className="data-views">
+                <a
+                  data-view-mode="weekly"
+                  onClick={handleDataViewModeChange}
+                  className={`data-views__option ${
+                    dataViewMode === "weekly"
+                      ? "data-views__option--active"
+                      : ""
+                  }`}
+                >
+                  Weekly View
+                </a>
+                <a
+                  data-view-mode="daily"
+                  onClick={handleDataViewModeChange}
+                  className={`data-views__option ${
+                    dataViewMode === "daily" ? "data-views__option--active" : ""
+                  }`}
+                >
+                  Daily View
+                </a>
+              </div>
+              {/* DATA TABLES (Daily / Weekly) */}
+              {dataViewMode === "daily" ? (
+                <p> DAILY DATA </p>
+              ) : (
+                <WeeklyDataTable
+                  goalSelected={props.goalSelected}
+                  weeksFilterValues={weeksFilterValues}
+                  datesFilterValues={datesFilterValues}
+                  dataUpdated={props.dataUpdated}
+                  session={props.session}
+                  showToast={props.showToast}
+                />
+              )}
             </>
           )}
         </div>
