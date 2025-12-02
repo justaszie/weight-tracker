@@ -77,3 +77,7 @@ class DataSourceClient(Protocol):
 
 class DuplicateEntryError(ValueError):
     pass
+
+
+class EntryNotFoundError(ValueError):
+    pass

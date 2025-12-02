@@ -17,6 +17,7 @@ import ManageDataCTA from "./ManageDataCTA";
 import AddDataModal from "./AddDataModal";
 
 const DEFAULT_WEEKS_LIMIT = 4;
+const DEFAULT_DATA_VIEW_MODE: DataViewMode = "weekly";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 const API_PREFIX = import.meta.env.VITE_API_PREFIX as string;
@@ -33,7 +34,9 @@ export default function Main(props: MainProps) {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [showAddDataModal, setshowAddDataModal] = useState(false);
-  const [dataViewMode, setDataViewMode] = useState<DataViewMode>("daily");
+  const [dataViewMode, setDataViewMode] = useState<DataViewMode>(
+    DEFAULT_DATA_VIEW_MODE
+  );
 
   useEffect(() => {
     setIsLoading(true);

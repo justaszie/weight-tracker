@@ -10,7 +10,7 @@ import pandas as pd
 from google.oauth2.credentials import Credentials
 from pydantic import TypeAdapter
 
-from .project_types import DuplicateEntryError, WeightEntry
+from .project_types import DuplicateEntryError, EntryNotFoundError, WeightEntry
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +96,7 @@ class FileStorage:
                 f"Delete on non-existing weight entry attempted."
                 f"Date: {entry_date} User: {user_id}"
             )
-            raise ValueError("Weight entry doesn't exist for this date.")
+            raise EntryNotFoundError("Weight entry doesn't exist for this date.")
 
         self._data = [
             entry
@@ -117,7 +117,7 @@ class FileStorage:
                 "Update on non-existing weight entry attempted."
                 f"Date: {entry_date}. User: {user_id}"
             )
-            raise ValueError(
+            raise EntryNotFoundError(
                 "Weight entry doesn't exist for this date. ' \
             'Use create method to create it."
             )
