@@ -44,7 +44,7 @@ function App() {
       if (!authenticated_session) {
         throw new Error("Must be signed in to get data");
       }
-      const route_url = `${API_BASE_URL}/${API_PREFIX}/sync-data`
+      const route_url = `${API_BASE_URL}/${API_PREFIX}/sync-data`;
       const response = await fetch(route_url, {
         method: "POST",
         headers: {
@@ -70,7 +70,10 @@ function App() {
       const body = await response.json();
       if (body.status === "sync_success") {
         // If sync success,  update state to trigger re-rendering
-        showToast("success", "Data updated successfully");
+        let entriesCount = body.new_entries_count;
+        let msg = `Data updated successfully |
+          ${entriesCount} new ${entriesCount > 1 ? "entries" : "entry"} added`;
+        showToast("success", msg);
         toggleDataUpdated();
       } else if (
         ["data_up_to_date", "no_data_received", "no_new_data"].includes(
@@ -140,7 +143,7 @@ function App() {
   return (
     <div className="page">
       {session == null ? (
-        <Authentication showToast={showToast}/>
+        <Authentication showToast={showToast} />
       ) : (
         <>
           <Header
