@@ -17,7 +17,7 @@ from sqlmodel import (
     select,
 )
 
-from .project_types import DuplicateEntryError, WeightEntry
+from .project_types import DuplicateEntryError, EntryNotFoundError, WeightEntry
 
 logger = logging.getLogger(__name__)
 
@@ -168,7 +168,7 @@ class DatabaseStorage:
                 logger.warning(
                     f"Update on non-existing weight entry attempted. date: {entry_date}"
                 )
-                raise ValueError(
+                raise EntryNotFoundError(
                     "Weight entry doesn't exist for this date. "
                     "Use create method to create it."
                 )
@@ -185,7 +185,7 @@ class DatabaseStorage:
                 logger.warning(
                     f"Delete on non-existing weight entry attempted. date: {entry_date}"
                 )
-                raise ValueError("Weight entry doesn't exist for this date.")
+                raise EntryNotFoundError("Weight entry doesn't exist for this date.")
 
             session.delete(entry)
             session.commit()

@@ -59,6 +59,15 @@ export type WeeklyDataTableProps = {
   showToast: ShowToastFn;
 };
 
+export type DailyDataTableProps = {
+  weeksFilterValues?: WeeksFilterValues;
+  datesFilterValues?: DatesFilterValues;
+  dataUpdated: boolean;
+  session: Session;
+  showToast: ShowToastFn;
+  handleDataUpdate: () => void;
+};
+
 export type FiltersProps = {
   weeksFilterValues?: WeeksFilterValues;
   datesFilterValues?: DatesFilterValues;

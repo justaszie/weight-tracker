@@ -13,7 +13,7 @@ from app.db_storage import (
     DBWeightEntry,
     DBGoogleCredentials,
 )
-from app.project_types import WeightEntry
+from app.project_types import EntryNotFoundError, WeightEntry
 
 TEST_DB_CONN_STRING = (
     "postgresql+psycopg2://postgres@localhost:5432/test_weight_tracker"
@@ -246,14 +246,14 @@ def test_create_duplicate_weight_entry(storage_sample, sample_daily_entries):
 
 
 def test_update_nonexistent_weight_entry(storage_empty):
-    with pytest.raises(ValueError):
+    with pytest.raises(EntryNotFoundError):
         storage_empty.update_weight_entry(
             TEST_USER_ID, entry_date=dt.date(1990, 1, 1), weight=56
         )
 
 
 def test_delete_nonexistent_weight_entry(storage_sample):
-    with pytest.raises(ValueError):
+    with pytest.raises(EntryNotFoundError):
         storage_sample.delete_weight_entry(TEST_USER_ID, entry_date=dt.date(1850, 2, 2))
 
 

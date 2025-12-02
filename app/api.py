@@ -34,6 +34,7 @@ from .project_types import (
     DataSourceName,
     DataStorage,
     DuplicateEntryError,
+    EntryNotFoundError,
     FitnessGoal,
     ProgressSummary,
     WeeklyAggregateEntry,
@@ -411,11 +412,34 @@ def create_daily_entry(
         data_storage.create_weight_entry(
             entry_date=entry.entry_date, user_id=user_id, weight=entry.weight
         )
+        logger.info(
+            f"Weight entry created for date={entry.entry_date} | user={user_id}"
+        )
         return entry
     except DuplicateEntryError as e:
         raise HTTPException(
             status_code=409,
             detail=f"Weight entry for for {entry.entry_date} already exists",
+        ) from e
+
+
+@router_v1.delete("/daily-entry", status_code=204)
+def delete_daily_entry(
+    user_id: UserDependency,
+    entry_date: dt.date,
+    data_storage: DataStorageDependency,
+) -> None:
+    try:
+        data_storage.delete_weight_entry(entry_date=entry_date, user_id=user_id)
+        logger.info(f"Weight entry deleted for date={entry_date} | user={user_id}")
+    except EntryNotFoundError as e:
+        raise HTTPException(
+            status_code=404, detail=f"Entry for {entry_date} not found"
+        ) from e
+    except Exception as e:
+        logger.exception("Deleting daily weight entry failed")
+        raise HTTPException(
+            status_code=500, detail="Error while deleting weight entry"
         ) from e
 
 

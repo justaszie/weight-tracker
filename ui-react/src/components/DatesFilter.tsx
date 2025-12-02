@@ -6,22 +6,24 @@ function isValidISODate(date: string) {
 }
 
 export default function DatesFilter(props: DatesFilterProps) {
-
   function handleDateFilterChange(event: ChangeEvent<HTMLInputElement>) {
-
     let { dateFrom, dateTo } = props.selectedValues ?? {};
 
     if (event.target.name === "date_from") {
       dateFrom = event.target.value;
-      if(dateFrom !== "" && !isValidISODate(dateFrom)) {
-        props.showToast('error', "Invalid date from value");
-        return ;
+      if (dateFrom !== "" && !isValidISODate(dateFrom)) {
+        props.showToast("error", "Invalid 'date from' value");
+        return;
       }
     } else if (event.target.name === "date_to") {
       dateTo = event.target.value;
-      if(dateTo != "" && !isValidISODate(dateTo)) {
-        props.showToast('error', "Invalid date to value");
-        return ;
+      if (dateTo != "" && !isValidISODate(dateTo)) {
+        props.showToast("error", "Invalid 'date to' value");
+        return;
+      }
+      if (dateTo != "" && dateFrom && dateFrom != "" && dateTo < dateFrom) {
+        props.showToast("error", "'Date To' must be after 'Date From'");
+        return;
       }
     }
 

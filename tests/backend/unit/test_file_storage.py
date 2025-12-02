@@ -10,7 +10,7 @@ from google.oauth2.credentials import Credentials
 from pydantic import TypeAdapter, ValidationError
 
 from app.file_storage import FileStorage
-from app.project_types import WeightEntry
+from app.project_types import EntryNotFoundError, WeightEntry
 
 
 TEST_USER_ID = UUID("3760183f-61fa-4ee1-badf-2668fbec152d")
@@ -284,11 +284,10 @@ class TestWeightStorageProtocol:
         assert new_weight == weight
 
     def test_update_nonexistent_weight_entry(self, sample_storage):
-        user_id = TEST_USER_ID
         date = dt.date(1990, 1, 1)
         weight = 98.1
         assert sample_storage.get_weight_entry(TEST_USER_ID, date) == None
-        with pytest.raises(ValueError):
+        with pytest.raises(EntryNotFoundError):
             sample_storage.update_weight_entry(TEST_USER_ID, date, weight)
 
     def test_delete_existing_weight_entry(self, sample_storage):
@@ -319,7 +318,7 @@ class TestWeightStorageProtocol:
         date = dt.date(1990, 1, 1)
         count_before = len(sample_storage.get_weight_entries(TEST_USER_ID))
         assert sample_storage.get_weight_entry(TEST_USER_ID, date) == None
-        with pytest.raises(ValueError):
+        with pytest.raises(EntryNotFoundError):
             sample_storage.delete_weight_entry(TEST_USER_ID, date)
         assert len(sample_storage.get_weight_entries(TEST_USER_ID)) == count_before
 
