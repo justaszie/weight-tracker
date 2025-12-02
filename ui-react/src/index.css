@@ -196,6 +196,8 @@ body {
 .data-views__option--active {
     background-color: var(--clr-bg-inverse);
     color: var(--clr-text-inverse);
+    font-weight: 600;
+
 }
 
 .data-views__option:hover {
@@ -472,12 +474,25 @@ body {
     text-align: start;
 }
 
+.data-table__cell--action {
+    text-align: end;
+}
+
 .data-table__cell--positive {
     color: var(--clr-positive);
 }
 
 .data-table__cell--negative {
     color: var(--clr-negative);
+}
+
+.data-table__delete-cta {
+    padding: 5px 10px;
+    border-radius: var(--rounded-corners-btn);
+    background-color: var(--clr-bg-inverse);
+    color: var(--clr-text-inverse);
+    cursor: pointer;
+    font-weight: 500;
 }
 
 .no-data-view {

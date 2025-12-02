@@ -10,6 +10,7 @@ import { ReactComponent as Spinner } from "@/assets/spinner.svg";
 import Filters from "./Filters";
 import Summary from "./Summary";
 import WeeklyDataTable from "./WeeklyDataTable";
+import DailyDataTable from "./DailyDataTable";
 import NoDataView from "./NoDataView";
 import GetDataSelection from "./GetDataSelection";
 import ManageDataCTA from "./ManageDataCTA";
@@ -172,7 +173,13 @@ export default function Main(props: MainProps) {
               </div>
               {/* DATA TABLES (Daily / Weekly) */}
               {dataViewMode === "daily" ? (
-                <p> DAILY DATA </p>
+                <DailyDataTable
+                  weeksFilterValues={weeksFilterValues}
+                  datesFilterValues={datesFilterValues}
+                  dataUpdated={props.dataUpdated}
+                  session={props.session}
+                  showToast={props.showToast}
+                />
               ) : (
                 <WeeklyDataTable
                   goalSelected={props.goalSelected}
