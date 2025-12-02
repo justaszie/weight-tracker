@@ -77,7 +77,7 @@ export default function Main(props: MainProps) {
   }
 
   function resetFilterValues() {
-    setWeeksFilterValues({ weeksLimit: DEFAULT_WEEKS_LIMIT });
+    setWeeksFilterValues({});
     setDatesFilterValues({});
   }
 

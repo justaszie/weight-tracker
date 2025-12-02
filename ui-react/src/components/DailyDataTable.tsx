@@ -6,7 +6,6 @@ import type { DailyDataUrlParams } from "@/types/daily-table";
 import { ReactComponent as Spinner } from "@/assets/spinner.svg";
 import type { WeightEntry } from "@/types/weight-entry";
 
-
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 const API_PREFIX = import.meta.env.VITE_API_PREFIX as string;
 
@@ -57,8 +56,8 @@ export default function dailyEntriesTable(props: DailyDataTableProps) {
       prev.filter((entry) => entry.entry_date !== entryDate)
     );
     setIsLoading(false);
-    props.handleDataUpdate()
-    props.showToast("success", `Entry deleted for ${entryDate}`)
+    props.handleDataUpdate();
+    props.showToast("success", `Entry deleted for ${entryDate}`);
   }
 
   function sortedDesc(entries: WeightEntry[]): WeightEntry[] {
@@ -72,6 +71,12 @@ export default function dailyEntriesTable(props: DailyDataTableProps) {
     return entries;
   }
 
+  function calculateStartDate(weeksLookbackCount: number): string {
+    const lookbackMs = weeksLookbackCount * 7 * 24 * 3600 * 1000;
+    const startDate = new Date(Date.now() - lookbackMs);
+    return startDate.toISOString().split("T")[0];
+  }
+
   // Fetching data when filter values change
   useEffect(() => {
     setIsLoading(true);
@@ -80,14 +85,14 @@ export default function dailyEntriesTable(props: DailyDataTableProps) {
       const { dateTo, dateFrom } = props.datesFilterValues ?? {};
 
       const urlParams: DailyDataUrlParams = {};
-      if (weeksLimit) {
-        urlParams["weeks_limit"] = String(weeksLimit);
-      }
       if (dateFrom) {
         urlParams["date_from"] = dateFrom;
       }
       if (dateTo) {
         urlParams["date_to"] = dateTo;
+      } else if (weeksLimit) {
+        urlParams["date_to"] = new Date().toISOString().split("T")[0];
+        urlParams["date_from"] = calculateStartDate(weeksLimit);
       }
       const dailyEntriesURL = new URL(
         `${API_BASE_URL}/${API_PREFIX}/daily-entries`
