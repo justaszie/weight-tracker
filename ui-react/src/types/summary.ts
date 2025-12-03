@@ -1,3 +1,5 @@
+import type { WeeklyDataEntry } from '@/types/weekly-table';
+
 export type SummaryUrlParams = {
   weeks_limit?: string;
   date_to?: string;
@@ -13,4 +15,5 @@ export type SummaryMetrics = {
 
 export type SummaryData = {
   metrics?: SummaryMetrics | null;
+  latest_week?: WeeklyDataEntry | null;
 };

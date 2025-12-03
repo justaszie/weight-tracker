@@ -194,8 +194,14 @@ class TestDemoGetData:
         )
 
         metrics_data = get_summary(weekly_data)
+        latest_week = sorted(
+            weekly_data, key=lambda week: week.week_start, reverse=True
+        )[0]
 
-        expected_json = {"metrics": metrics_data.model_dump(mode="json")}
+        expected_json = {
+            "latest_week": latest_week.model_dump(mode="json"),
+            "metrics": metrics_data.model_dump(mode="json"),
+        }
 
         assert response.status_code == 200
         assert response.json() == expected_json

@@ -126,7 +126,7 @@ export default function Main(props: MainProps) {
                 ) : (
                   latestEntry !== null && (
                     <p>
-                      Latest entry: {latestEntry.entry_date ?? "No Data Yet"}
+                      {`Latest entry on ${latestEntry.entry_date} (${latestEntry.weight}kg)`}
                     </p>
                   )
                 )}

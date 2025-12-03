@@ -35,6 +35,7 @@ class ProgressMetrics(BaseModel):
 
 class ProgressSummary(BaseModel):
     metrics: ProgressMetrics | None = None
+    latest_week: WeeklyAggregateEntry | None = None
 
 
 class DataStorage(Protocol):

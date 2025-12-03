@@ -413,9 +413,19 @@ class TestAPIEndpoints:
         assert "detail" in response.json()
 
     def _test_dates_params_usage(
-        self, client, mocker, mock_storage, endpoint_name, date_from, date_to
+        self,
+        client,
+        mocker,
+        mock_storage,
+        endpoint_name,
+        date_from,
+        date_to,
+        sample_weekly_entries,
     ):
         fetch_daily_fn = mocker.patch("app.api.get_filtered_daily_entries")
+        mocker.patch(
+            "app.api.get_filtered_weekly_entries"
+        ).return_value = sample_weekly_entries
 
         params = {}
         if date_from:
@@ -435,11 +445,19 @@ class TestAPIEndpoints:
         )
 
     def _test_weekly_aggregates_params_usage(
-        self, client, mocker, endpoint_name, sample_daily_entries, goal, weeks_limit
+        self,
+        client,
+        mocker,
+        endpoint_name,
+        sample_daily_entries,
+        goal,
+        weeks_limit,
+        sample_weekly_entries,
     ):
         fetch_daily_fn = mocker.patch("app.api.get_filtered_daily_entries")
         fetch_daily_fn.return_value = sample_daily_entries
         fetch_weekly_fn = mocker.patch("app.api.get_filtered_weekly_entries")
+        fetch_weekly_fn.return_value = sample_weekly_entries
 
         params = {}
         if weeks_limit:
@@ -459,42 +477,78 @@ class TestAPIEndpoints:
 
     @pytest.mark.parametrize("date_from, date_to", DATE_PARAMS_TEST_CASES)
     def test_daily_entries_date_params_usage(
-        self, client, mocker, mock_storage, date_from, date_to
+        self, client, mocker, mock_storage, date_from, date_to, sample_weekly_entries
     ) -> None:
         self._test_dates_params_usage(
-            client, mocker, mock_storage, "daily-entries", date_from, date_to
+            client,
+            mocker,
+            mock_storage,
+            "daily-entries",
+            date_from,
+            date_to,
+            sample_weekly_entries,
         )
 
     @pytest.mark.parametrize("date_from, date_to", DATE_PARAMS_TEST_CASES)
     def test_weekly_aggregates_date_params_usage(
-        self, client, mocker, mock_storage, date_from, date_to
+        self, client, mocker, mock_storage, date_from, date_to, sample_weekly_entries
     ):
         self._test_dates_params_usage(
-            client, mocker, mock_storage, "weekly-aggregates", date_from, date_to
+            client,
+            mocker,
+            mock_storage,
+            "weekly-aggregates",
+            date_from,
+            date_to,
+            sample_weekly_entries,
         )
 
     @pytest.mark.parametrize("date_from, date_to", DATE_PARAMS_TEST_CASES)
     def test_summary_date_params_usage(
-        self, client, mocker, mock_storage, date_from, date_to
+        self, client, mocker, mock_storage, date_from, date_to, sample_weekly_entries
     ):
         self._test_dates_params_usage(
-            client, mocker, mock_storage, "summary", date_from, date_to
+            client,
+            mocker,
+            mock_storage,
+            "summary",
+            date_from,
+            date_to,
+            sample_weekly_entries,
         )
 
     @pytest.mark.parametrize("goal, weeks_limit", WEEKLY_PARAMS_TEST_CASES)
     def test_weekly_aggregates_weekly_params_usage(
-        self, client, mocker, sample_daily_entries, goal, weeks_limit
+        self,
+        client,
+        mocker,
+        sample_daily_entries,
+        goal,
+        weeks_limit,
+        sample_weekly_entries,
     ):
         self._test_weekly_aggregates_params_usage(
-            client, mocker, "weekly-aggregates", sample_daily_entries, goal, weeks_limit
+            client,
+            mocker,
+            "weekly-aggregates",
+            sample_daily_entries,
+            goal,
+            weeks_limit,
+            sample_weekly_entries,
         )
 
     @pytest.mark.parametrize("weeks_limit", ["1", "10", "3"])
     def test_summary_weekly_params_usage(
-        self, client, mocker, sample_daily_entries, weeks_limit
+        self, client, mocker, sample_daily_entries, weeks_limit, sample_weekly_entries
     ):
         self._test_weekly_aggregates_params_usage(
-            client, mocker, "summary", sample_daily_entries, None, weeks_limit
+            client,
+            mocker,
+            "summary",
+            sample_daily_entries,
+            None,
+            weeks_limit,
+            sample_weekly_entries,
         )
 
     def test_get_daily_entries(self, client, mocker, sample_daily_entries):
@@ -606,7 +660,7 @@ class TestAPIEndpoints:
 
     def test_summary_return_value(self, client, mocker):
         mocker.patch("app.api.get_filtered_daily_entries")
-        mocker.patch("app.api.get_filtered_weekly_entries")
+        get_weekly_entries_fn = mocker.patch("app.api.get_filtered_weekly_entries")
         get_summary_fn = mocker.patch("app.api.analytics.get_summary")
 
         test_metrics_data = {
@@ -616,12 +670,28 @@ class TestAPIEndpoints:
             "avg_net_calories": -235,
         }
 
-        get_summary_fn.return_value = ProgressMetrics.model_validate(test_metrics_data)
+        test_weekly_data = [
+            {
+                "week_start": "2025-09-01",
+                "avg_weight": 72.5,
+                "weight_change": -0.88,
+                "weight_change_prc": -1.2,
+                "net_calories": -978,
+                "result": "positive",
+            }
+        ]
 
+        get_summary_fn.return_value = ProgressMetrics.model_validate(test_metrics_data)
+        get_weekly_entries_fn.return_value = TypeAdapter(
+            list[WeeklyAggregateEntry]
+        ).validate_python(test_weekly_data)
         response = client.get("/api/v1/summary")
 
         assert response.status_code == 200
-        assert response.json() == {"metrics": test_metrics_data}
+        assert response.json() == {
+            "metrics": test_metrics_data,
+            "latest_week": test_weekly_data[0],
+        }
 
     def test_summary_invalid_dates(self, client):
         params = {
