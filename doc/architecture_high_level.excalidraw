@@ -237,16 +237,16 @@
       ],
       "lastCommittedPoint": null,
       "startBinding": {
-        "mode": "orbit",
         "elementId": "Z40iOEySOrgXn78eVKIIc",
+        "mode": "orbit",
         "fixedPoint": [
           0.2208801661423533,
           0.7791198338576467
         ]
       },
       "endBinding": {
-        "mode": "orbit",
         "elementId": "KnDYOkDLJAHpOP_VvOmGv",
+        "mode": "orbit",
         "fixedPoint": [
           0.24951529381336499,
           0.2495152938133647
@@ -339,16 +339,16 @@
       ],
       "lastCommittedPoint": null,
       "startBinding": {
-        "mode": "orbit",
         "elementId": "Z40iOEySOrgXn78eVKIIc",
+        "mode": "orbit",
         "fixedPoint": [
           0.5987176564245004,
           0.5987176564245006
         ]
       },
       "endBinding": {
-        "mode": "orbit",
         "elementId": "KnDYOkDLJAHpOP_VvOmGv",
+        "mode": "orbit",
         "fixedPoint": [
           0.6015063136249283,
           0.3984936863750717
@@ -398,10 +398,10 @@
     {
       "id": "vfq8vCNiobeCuxLV16TIs",
       "type": "rectangle",
-      "x": 493.8352420577098,
-      "y": 398.38598160962954,
+      "x": 493.5898000304842,
+      "y": 375.38598160962954,
       "width": 294.1500618066582,
-      "height": 260,
+      "height": 285,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -417,8 +417,8 @@
         "type": 3
       },
       "seed": 47335693,
-      "version": 500,
-      "versionNonce": 522016129,
+      "version": 528,
+      "versionNonce": 993905408,
       "isDeleted": false,
       "boundElements": [
         {
@@ -426,17 +426,17 @@
           "id": "fP6guChkJfaeUph6EKW08"
         }
       ],
-      "updated": 1764497896450,
+      "updated": 1764744529147,
       "link": null,
       "locked": false
     },
     {
       "id": "fP6guChkJfaeUph6EKW08",
       "type": "text",
-      "x": 522.4704078487342,
-      "y": 403.38598160962954,
+      "x": 522.2249658215086,
+      "y": 380.38598160962954,
       "width": 236.87973022460938,
-      "height": 250,
+      "height": 275,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -450,20 +450,20 @@
       "index": "b0C",
       "roundness": null,
       "seed": 229180259,
-      "version": 581,
-      "versionNonce": 174651169,
+      "version": 651,
+      "versionNonce": 2023253248,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1764497899786,
+      "updated": 1764744529147,
       "link": null,
       "locked": false,
-      "text": "REST API Routes\n\n- GET /daily-entries\n- POST /daily-entry\n- GET /weekly-aggregates\n- GET /summary\n- GET /latest-entry\n- GET /healthz\n- POST /sync-data\n",
+      "text": "REST API Routes\n\n- GET /daily-entries\n- POST /daily-entry\n- DELETE /daily-entry\n- GET /weekly-aggregates\n- GET /summary\n- GET /latest-entry\n- GET /healthz\n- POST /sync-data\n",
       "fontSize": 20,
       "fontFamily": 6,
       "textAlign": "center",
       "verticalAlign": "top",
       "containerId": "vfq8vCNiobeCuxLV16TIs",
-      "originalText": "REST API Routes\n\n- GET /daily-entries\n- POST /daily-entry\n- GET /weekly-aggregates\n- GET /summary\n- GET /latest-entry\n- GET /healthz\n- POST /sync-data\n",
+      "originalText": "REST API Routes\n\n- GET /daily-entries\n- POST /daily-entry\n- DELETE /daily-entry\n- GET /weekly-aggregates\n- GET /summary\n- GET /latest-entry\n- GET /healthz\n- POST /sync-data\n",
       "autoResize": true,
       "lineHeight": 1.25
     },
@@ -597,16 +597,16 @@
       ],
       "lastCommittedPoint": null,
       "startBinding": {
-        "mode": "orbit",
         "elementId": "KnDYOkDLJAHpOP_VvOmGv",
+        "mode": "orbit",
         "fixedPoint": [
           0.6259183527323804,
           0.37408164726762005
         ]
       },
       "endBinding": {
-        "mode": "orbit",
         "elementId": "cAv_vR9LV7PfTdike1v0o",
+        "mode": "orbit",
         "fixedPoint": [
           0.42835568658982215,
           0.5716443134101759
@@ -658,7 +658,7 @@
       "id": "devt-EvK6yBTu2Gfc-G5M",
       "type": "rectangle",
       "x": 490.19916594320375,
-      "y": 689.7577049895539,
+      "y": 697.7577049895539,
       "width": 291.97320556640625,
       "height": 110,
       "angle": 0,
@@ -676,8 +676,8 @@
         "type": 3
       },
       "seed": 1218301859,
-      "version": 671,
-      "versionNonce": 16047725,
+      "version": 748,
+      "versionNonce": 1645815040,
       "isDeleted": false,
       "boundElements": [
         {
@@ -689,7 +689,7 @@
           "type": "arrow"
         }
       ],
-      "updated": 1764061455813,
+      "updated": 1764744532944,
       "link": null,
       "locked": false
     },
@@ -697,7 +697,7 @@
       "id": "97j913mwqu4hQdmho_7cO",
       "type": "text",
       "x": 536.7758642464262,
-      "y": 694.7577049895539,
+      "y": 702.7577049895539,
       "width": 198.81980895996094,
       "height": 100,
       "angle": 0,
@@ -713,11 +713,11 @@
       "index": "b0M",
       "roundness": null,
       "seed": 539616067,
-      "version": 706,
-      "versionNonce": 532385763,
+      "version": 783,
+      "versionNonce": 1127721728,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1764061447002,
+      "updated": 1764744532944,
       "link": null,
       "locked": false,
       "text": "Google OAuth Routes\n\n- GET /google-signin\n- GET /google-auth",
@@ -928,16 +928,16 @@
       ],
       "lastCommittedPoint": null,
       "startBinding": {
-        "mode": "orbit",
         "elementId": "KnDYOkDLJAHpOP_VvOmGv",
+        "mode": "orbit",
         "fixedPoint": [
           0.5137179652863285,
           0.5137179652863282
         ]
       },
       "endBinding": {
-        "mode": "orbit",
         "elementId": "J6VlnGBS3lgXMvM_3Xoia",
+        "mode": "orbit",
         "fixedPoint": [
           0.4998413983628558,
           0.4998413983628546
@@ -1034,16 +1034,16 @@
       ],
       "lastCommittedPoint": null,
       "startBinding": {
-        "mode": "orbit",
         "elementId": "KnDYOkDLJAHpOP_VvOmGv",
+        "mode": "orbit",
         "fixedPoint": [
           0.31184631256278805,
           0.31184631256278805
         ]
       },
       "endBinding": {
-        "mode": "orbit",
         "elementId": "tDzUTBteMESBOuJ7cwtUD",
+        "mode": "orbit",
         "fixedPoint": [
           0.5986925363313387,
           0.598692536331339
@@ -1136,16 +1136,16 @@
       ],
       "lastCommittedPoint": null,
       "startBinding": {
-        "mode": "orbit",
         "elementId": "KnDYOkDLJAHpOP_VvOmGv",
+        "mode": "orbit",
         "fixedPoint": [
           0.39391191265708,
           0.6060880873429202
         ]
       },
       "endBinding": {
-        "mode": "orbit",
         "elementId": "LF6ezM48f_Wbgs6_ll4FU",
+        "mode": "orbit",
         "fixedPoint": [
           0.5098548836398655,
           0.49014511636013336
@@ -1238,16 +1238,16 @@
       ],
       "lastCommittedPoint": null,
       "startBinding": {
-        "mode": "orbit",
         "elementId": "Z40iOEySOrgXn78eVKIIc",
+        "mode": "orbit",
         "fixedPoint": [
           0.8241417742438174,
           0.8241417742438177
         ]
       },
       "endBinding": {
-        "mode": "orbit",
         "elementId": "cAv_vR9LV7PfTdike1v0o",
+        "mode": "orbit",
         "fixedPoint": [
           0.356191037951805,
           0.356191037951804
@@ -1493,16 +1493,16 @@
       ],
       "lastCommittedPoint": null,
       "startBinding": {
-        "mode": "orbit",
         "elementId": "KnDYOkDLJAHpOP_VvOmGv",
+        "mode": "orbit",
         "fixedPoint": [
           0.8353674863688649,
           0.8353674863688648
         ]
       },
       "endBinding": {
-        "mode": "orbit",
         "elementId": "KOMzTsm43C7c-bcjiyxVO",
+        "mode": "orbit",
         "fixedPoint": [
           0.3659128798897784,
           0.3659128798897786
