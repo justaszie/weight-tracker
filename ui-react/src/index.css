@@ -55,7 +55,7 @@ html {
 body {
     max-width: 1100px;
     margin: 0 auto;
-    padding: 40px 0;
+    padding: 25px 0;
     background-color: var(--clr-bg);
 }
 
@@ -66,7 +66,7 @@ body {
 
 /* Utility class that gives consistent global padding */
 .main-content {
-    padding: 20px;
+    padding: 15px;
 }
 
 /* Utility class that spaces out elements on a row */

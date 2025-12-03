@@ -288,7 +288,11 @@ def get_summary(
             f"Weight progress metrics calculated for {len(weekly_entries)} + 1 weeks"
         )
 
-        body = ProgressSummary(metrics=progress_metrics)
+        latest_week: WeeklyAggregateEntry = sorted(
+            weekly_entries, key=lambda week: week.week_start, reverse=True
+        )[0]
+
+        body = ProgressSummary(metrics=progress_metrics, latest_week=latest_week)
         return body
     except Exception as e:
         logger.exception("Fetching weight progress summary failed")

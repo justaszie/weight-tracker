@@ -31,8 +31,8 @@ export default function NoDataView(props: NoDataViewProps) {
         source of your choice:
       </p>
       <div className="get-data">
-        <GetDataSelection onCTAClick={props.onGetDataCTAClick} />
         <ManageDataCTA ctaText="+ Add Data" onCTAClick={props.onAddDataCTAClick}/>
+        <GetDataSelection onCTAClick={props.onGetDataCTAClick} />
       </div>
     </section>
   );

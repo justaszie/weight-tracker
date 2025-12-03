@@ -204,12 +204,20 @@ def test_summary_daily_filter(client_with_storage):
     )
 
     expected = {
+        "latest_week": {
+            "week_start": "2025-09-01",
+            "avg_weight": 73,
+            "weight_change": -0.38,
+            "weight_change_prc": -0.52,
+            "net_calories": -422,
+            "result": "positive",
+        },
         "metrics": {
             "total_change": 0.5,
             "avg_change": 0.25,
             "avg_change_prc": 0.34,
             "avg_net_calories": 278,
-        }
+        },
     }
 
     assert response.status_code == 200
@@ -220,12 +228,20 @@ def test_summary_weekly_filter(client_with_storage):
     response = client_with_storage.get("/api/v1/summary", params={"weeks_limit": "1"})
 
     expected = {
+        "latest_week": {
+            "week_start": "2025-09-01",
+            "avg_weight": 72.5,
+            "weight_change": -0.88,
+            "weight_change_prc": -1.2,
+            "net_calories": -978,
+            "result": "positive",
+        },
         "metrics": {
             "total_change": -0.88,
             "avg_change": -0.88,
             "avg_change_prc": -1.2,
             "avg_net_calories": -978,
-        }
+        },
     }
 
     assert response.status_code == 200

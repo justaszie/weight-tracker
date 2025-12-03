@@ -99,7 +99,7 @@ export default function Summary(props: SummaryProps) {
         <Spinner className="spinner" />
       ) : (
         <ul className="summary__cards-container">
-          {props.latestEntry && props.latestEntry.weight && (
+          {summaryData && summaryData.latest_week && (
             <li className="summary-card">
               <p className="summary-card__header">
                 <svg
@@ -118,16 +118,16 @@ export default function Summary(props: SummaryProps) {
                   <path d="M12 3v18"></path>
                   <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path>
                 </svg>
-                <span>Latest Weight</span>
+                <span>Most Recent Weekly Average</span>
               </p>
               <div className="summary-card__value-group">
                 <h3 className="summary-card__value">
-                  {props.latestEntry.weight.toFixed(2)}
+                  {summaryData.latest_week.avg_weight.toFixed(2)}
                 </h3>
                 <span className="summary-card__subtitle">kg</span>
               </div>
               <p className="summary-card__header">
-                on <span>{props.latestEntry.entry_date}</span>
+                Week starting <span>{summaryData.latest_week.week_start}</span>
               </p>
             </li>
           )}

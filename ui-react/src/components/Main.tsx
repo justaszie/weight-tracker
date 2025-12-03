@@ -103,55 +103,7 @@ export default function Main(props: MainProps) {
     <>
       <main>
         <div className="main-content">
-          <div className="data-controls">
-            <div className="filters">
-              <Filters
-                weeksFilterValues={weeksFilterValues}
-                datesFilterValues={datesFilterValues}
-                handleWeeksFilterChange={handleWeeksFilterChange}
-                handleDatesFilterChange={handleDatesFilterChange}
-                showToast={props.showToast}
-                resetFilterValues={resetFilterValues}
-              />
-            </div>
-            <div className="get-data">
-              <GetDataSelection onCTAClick={props.onGetDataCTAClick} />
-              <ManageDataCTA
-                ctaText="+ Add Weight"
-                onCTAClick={toggleAddDataModal}
-              />
-              <div>
-                {isLoading ? (
-                  <Spinner className="spinner" />
-                ) : (
-                  latestEntry !== null && (
-                    <p>
-                      Latest entry: {latestEntry.entry_date ?? "No Data Yet"}
-                    </p>
-                  )
-                )}
-              </div>
-            </div>
-          </div>
-          {isLoading ? (
-            <Spinner className="spinner" />
-          ) : latestEntry == null ? (
-            <NoDataView
-              onGetDataCTAClick={props.onGetDataCTAClick}
-              onAddDataCTAClick={toggleAddDataModal}
-            />
-          ) : (
-            <>
-              <Summary
-                latestEntry={latestEntry}
-                goalSelected={props.goalSelected}
-                weeksFilterValues={weeksFilterValues}
-                datesFilterValues={datesFilterValues}
-                dataUpdated={props.dataUpdated}
-                session={props.session}
-                showToast={props.showToast}
-              />
-              {/* DATA VIEW SELECTION */}
+          {/* DATA VIEW SELECTION */}
               <div className="data-views">
                 <a
                   data-view-mode="weekly"
@@ -174,6 +126,54 @@ export default function Main(props: MainProps) {
                   Daily View
                 </a>
               </div>
+          <div className="data-controls">
+            <div className="filters">
+              <Filters
+                weeksFilterValues={weeksFilterValues}
+                datesFilterValues={datesFilterValues}
+                handleWeeksFilterChange={handleWeeksFilterChange}
+                handleDatesFilterChange={handleDatesFilterChange}
+                showToast={props.showToast}
+                resetFilterValues={resetFilterValues}
+              />
+            </div>
+            <div className="get-data">
+              <ManageDataCTA
+                ctaText="+ Add Weight"
+                onCTAClick={toggleAddDataModal}
+              />
+              <GetDataSelection onCTAClick={props.onGetDataCTAClick} />
+              <div>
+                {isLoading ? (
+                  <Spinner className="spinner" />
+                ) : (
+                  latestEntry !== null && (
+                    <p>
+                      {`Latest entry on ${latestEntry.entry_date} (${latestEntry.weight}kg)`}
+                    </p>
+                  )
+                )}
+              </div>
+            </div>
+          </div>
+          {isLoading ? (
+            <Spinner className="spinner" />
+          ) : latestEntry == null ? (
+            <NoDataView
+              onGetDataCTAClick={props.onGetDataCTAClick}
+              onAddDataCTAClick={toggleAddDataModal}
+            />
+          ) : (
+            <>
+              { dataViewMode == 'weekly' && (<Summary
+                latestEntry={latestEntry}
+                goalSelected={props.goalSelected}
+                weeksFilterValues={weeksFilterValues}
+                datesFilterValues={datesFilterValues}
+                dataUpdated={props.dataUpdated}
+                session={props.session}
+                showToast={props.showToast}
+              />)}
               {/* DATA TABLES (Daily / Weekly) */}
               {dataViewMode === "daily" ? (
                 <DailyDataTable
