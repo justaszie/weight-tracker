@@ -410,7 +410,7 @@ def create_daily_entry(
 ) -> APIWeightEntry:
     try:
         data_storage.create_weight_entry(
-            entry_date=entry.entry_date, user_id=user_id, weight=entry.weight
+            user_id=user_id, entry_date=entry.entry_date, weight=entry.weight
         )
         logger.info(
             f"Weight entry created for date={entry.entry_date} | user={user_id}"
@@ -430,7 +430,7 @@ def delete_daily_entry(
     data_storage: DataStorageDependency,
 ) -> None:
     try:
-        data_storage.delete_weight_entry(entry_date=entry_date, user_id=user_id)
+        data_storage.delete_weight_entry(user_id=user_id, entry_date=entry_date)
         logger.info(f"Weight entry deleted for date={entry_date} | user={user_id}")
     except EntryNotFoundError as e:
         raise HTTPException(
