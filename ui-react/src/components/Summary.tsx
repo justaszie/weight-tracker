@@ -118,7 +118,7 @@ export default function Summary(props: SummaryProps) {
                   <path d="M12 3v18"></path>
                   <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path>
                 </svg>
-                <span>Most Recent Week</span>
+                <span>Most Recent Weekly Average</span>
               </p>
               <div className="summary-card__value-group">
                 <h3 className="summary-card__value">
@@ -127,7 +127,7 @@ export default function Summary(props: SummaryProps) {
                 <span className="summary-card__subtitle">kg</span>
               </div>
               <p className="summary-card__header">
-                Starting <span>{summaryData.latest_week.week_start}</span>
+                Week starting <span>{summaryData.latest_week.week_start}</span>
               </p>
             </li>
           )}

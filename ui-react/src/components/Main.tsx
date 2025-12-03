@@ -115,11 +115,11 @@ export default function Main(props: MainProps) {
               />
             </div>
             <div className="get-data">
-              <GetDataSelection onCTAClick={props.onGetDataCTAClick} />
               <ManageDataCTA
                 ctaText="+ Add Weight"
                 onCTAClick={toggleAddDataModal}
               />
+              <GetDataSelection onCTAClick={props.onGetDataCTAClick} />
               <div>
                 {isLoading ? (
                   <Spinner className="spinner" />
