@@ -103,6 +103,29 @@ export default function Main(props: MainProps) {
     <>
       <main>
         <div className="main-content">
+          {/* DATA VIEW SELECTION */}
+              <div className="data-views">
+                <a
+                  data-view-mode="weekly"
+                  onClick={handleDataViewModeChange}
+                  className={`data-views__option ${
+                    dataViewMode === "weekly"
+                      ? "data-views__option--active"
+                      : ""
+                  }`}
+                >
+                  Weekly View
+                </a>
+                <a
+                  data-view-mode="daily"
+                  onClick={handleDataViewModeChange}
+                  className={`data-views__option ${
+                    dataViewMode === "daily" ? "data-views__option--active" : ""
+                  }`}
+                >
+                  Daily View
+                </a>
+              </div>
           <div className="data-controls">
             <div className="filters">
               <Filters
@@ -142,7 +165,7 @@ export default function Main(props: MainProps) {
             />
           ) : (
             <>
-              <Summary
+              { dataViewMode == 'weekly' && (<Summary
                 latestEntry={latestEntry}
                 goalSelected={props.goalSelected}
                 weeksFilterValues={weeksFilterValues}
@@ -150,30 +173,7 @@ export default function Main(props: MainProps) {
                 dataUpdated={props.dataUpdated}
                 session={props.session}
                 showToast={props.showToast}
-              />
-              {/* DATA VIEW SELECTION */}
-              <div className="data-views">
-                <a
-                  data-view-mode="weekly"
-                  onClick={handleDataViewModeChange}
-                  className={`data-views__option ${
-                    dataViewMode === "weekly"
-                      ? "data-views__option--active"
-                      : ""
-                  }`}
-                >
-                  Weekly View
-                </a>
-                <a
-                  data-view-mode="daily"
-                  onClick={handleDataViewModeChange}
-                  className={`data-views__option ${
-                    dataViewMode === "daily" ? "data-views__option--active" : ""
-                  }`}
-                >
-                  Daily View
-                </a>
-              </div>
+              />)}
               {/* DATA TABLES (Daily / Weekly) */}
               {dataViewMode === "daily" ? (
                 <DailyDataTable
