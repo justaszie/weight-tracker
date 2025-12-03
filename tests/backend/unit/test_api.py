@@ -18,6 +18,7 @@ from app.data_integration import DataSyncError, SourceFetchError, SourceNoDataEr
 from app.main import app
 from app.project_types import (
     DuplicateEntryError,
+    EntryNotFoundError,
     WeightEntry,
     WeeklyAggregateEntry,
     ProgressMetrics,
@@ -358,6 +359,7 @@ class TestAPIEndpoints:
         "summary": app.url_path_for("get_summary"),
         "sync-data": app.url_path_for("sync_data"),
         "post-daily-entry": app.url_path_for("create_daily_entry"),
+        "delete-daily-entry": app.url_path_for("delete_daily_entry"),
     }
 
     @pytest.fixture
@@ -827,7 +829,7 @@ class TestAPIEndpoints:
         assert len(response_body["detail"]) > 0 and "msg" in response_body["detail"][0]
         mock_storage.create_weight_entry.assert_not_called()
 
-    def test_create_dupliacate_entry(self, client, sample_daily_entries, mock_storage):
+    def test_create_duplicate_entry(self, client, sample_daily_entries, mock_storage):
         existing_date = sample_daily_entries[0].entry_date
         request_body = {
             "entry_date": existing_date.isoformat(),
@@ -842,3 +844,32 @@ class TestAPIEndpoints:
 
         assert response.status_code == 409
         assert "detail" in response.json()
+
+    def test_delete_existing_entry(self, client, mock_storage):
+        test_entry_date = "2025-10-01"
+        response = client.delete(
+            self.ENDPOINT_URLS["delete-daily-entry"],
+            params={
+                "entry_date": test_entry_date,
+            },
+        )
+
+        mock_storage.delete_weight_entry.assert_called_once_with(
+            user_id=TEST_USER_ID, entry_date=dt.date.fromisoformat(test_entry_date)
+        )
+
+    def test_delete_nonexisting_entry(self, client, mock_storage):
+        test_entry_date = "2025-10-01"
+        mock_storage.delete_weight_entry.side_effect = EntryNotFoundError("not found")
+
+        response = client.delete(
+            self.ENDPOINT_URLS["delete-daily-entry"],
+            params={
+                "entry_date": test_entry_date,
+            },
+        )
+
+        mock_storage.delete_weight_entry.assert_called_once_with(
+            user_id=TEST_USER_ID, entry_date=dt.date.fromisoformat(test_entry_date)
+        )
+        assert response.status_code == 404

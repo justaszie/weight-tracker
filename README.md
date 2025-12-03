@@ -4,10 +4,9 @@
 # Weight Tracker - Full Stack Portfolio Project
 
 This is a full-stack weight tracking application that:
-- Fetches weight data from external sources (Google Fit API),
-- Cleans, stores, and aggregates it
-- Allows user to manually enter their daily weight
-- Presents weekly trends and weight goal-based insights in a modern web UI.
+- Fetches weight data from external sources (Google Fit API), cleans, stores, and aggregates it
+- Allows user to manually add or remove their daily weight entries
+- Presents weekly trends and weight goal-based insights in a modern web UI
 
 I built it as a portfolio project to demonstrate end-to-end skills: full-stack development, OAuth 2.0, 3rd-party API integration, modular backend architecture, automated testing, and CI/CD.
 
@@ -83,7 +82,7 @@ This is the first full-stack application I shipped to production. It helped me b
 ### User Features
 
 **Getting Data**
-- **Manual entry** - the user can enter their daily weight using the app
+- **Manual entry** - the user can enter their daily weight, view it using dail view and delete it using the app
 - **Syncing data with external sources** - the user can also request to get data from their selected source (currently only Google Fit supported)
 
 **Progress Dashboard**
@@ -264,7 +263,8 @@ Below are key React components that constitute the frontend (smaller components 
 | **Main.tsx** | Layout of the main section of the app. Also contains filter components and a selection of CTAs to trigger data sync from various sources |
 | **Summary.tsx**  | Cards that summarize the weight change over the selected period |
 | **WeeklyDataTable.tsx**  | Table with one row for each week in the selected period with key metrics for that week. Color coded results based on selected goal  |
-| **AddDataModal.tsx** | Modal component that allows manually adding new entries
+| **DailyDataTable.tsx**  | Table with one row for each daily entry in the selected period and an option to delete the entry |
+| **AddDataModal.tsx** | Modal component that allows manually adding new entries |
 | **Filters.tsx**  | Controls to select the data period (last N weeks or from dates X to Y) |
 
 The screenshot below shows the layout of the key components in the UI:
@@ -275,7 +275,7 @@ The screenshot below shows the layout of the key components in the UI:
 ## API Documentation
 ### Authentication
 
-All API endpoints require Authorization header with JWT, validated via Supabase Auth.
+All API endpoints require Authorization header with JWT, validated via Supabase Auth. The API routes use the JWT token in the Authorization header to determine which user's data should be read / modified.
 
 **Authorization Header:**
 ```http
@@ -289,6 +289,7 @@ Currently, the APIs can only be accessed from the domain hosting the React Front
 The app is powered by the following endpoints (only data associated with authenticated user is returned)
 - **`GET /daily-entries`** -> the user's daily weight entries stored in DB
 - **`POST /daily-entries`** -> create a new weight entry in DB
+- **`DELETE /daily-entries`** -> delete a weight entry in DB
 - **`GET /weekly-aggregates`** -> calculates weekly averages and other key metrics grouped by week
 - **`GET /summary`** -> total weight change metrics over a given period
 - **`GET /latest-entry`** -> the latest daily weight entry (for date closest to current date)
@@ -685,7 +686,7 @@ interface SummaryProps {
 
 ### Enhancements
 - The users' Google OAuth access and refresh tokens should be encrypted before storing them in PostgreSQL DB. This would mitigate the risk of the Supabase PostgreSQL DB being breached.
-- UI can be more polished - e.g. consistent feedback to the user when a component is being refreshed, etc.
+- The frontend React app should be refactored to make it more maintainable.
 ---
 
 ## Contact Me

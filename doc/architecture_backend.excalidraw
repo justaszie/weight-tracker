@@ -463,8 +463,8 @@
         "type": 2
       },
       "seed": 88182897,
-      "version": 745,
-      "versionNonce": 1897970625,
+      "version": 746,
+      "versionNonce": 1144431872,
       "isDeleted": false,
       "boundElements": [
         {
@@ -472,7 +472,7 @@
           "id": "emogdTJesigjHxIE27YWy"
         }
       ],
-      "updated": 1764497838136,
+      "updated": 1764744624827,
       "link": null,
       "locked": false,
       "points": [
@@ -513,9 +513,9 @@
     {
       "id": "emogdTJesigjHxIE27YWy",
       "type": "text",
-      "x": 425.091377975657,
+      "x": 416.8813941499734,
       "y": 320.8602017023128,
-      "width": 166.69979858398438,
+      "width": 183.11976623535156,
       "height": 50,
       "angle": 0,
       "strokeColor": "#1e1e1e",
@@ -530,20 +530,20 @@
       "index": "aN",
       "roundness": null,
       "seed": 108278559,
-      "version": 63,
-      "versionNonce": 1007760527,
+      "version": 81,
+      "versionNonce": 145812224,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1764497837678,
+      "updated": 1764744624475,
       "link": null,
       "locked": false,
-      "text": "read + create daily\nweight entries",
+      "text": "read, create, delete\n daily weight entries",
       "fontSize": 20,
       "fontFamily": 6,
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "gaL6CUyQDDJuLeniRHSBZ",
-      "originalText": "read + create daily\nweight entries",
+      "originalText": "read, create, delete\n daily weight entries",
       "autoResize": true,
       "lineHeight": 1.25
     },

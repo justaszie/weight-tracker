@@ -369,3 +369,40 @@ def test_create_duplicate_daily_entry(client_with_storage, sample_daily_entries)
         len(existing_entry_after) == 1
         and existing_entry_after[0]["weight"] == existing_weight
     )
+
+
+def test_delete_existing_entry(client_with_storage, sample_daily_entries):
+    existing_entry = next(
+        entry for entry in sample_daily_entries if entry["user_id"] == TEST_USER_ID
+    )
+
+    response = client_with_storage.get("/api/v1/daily-entries")
+    count_entries_before = len(response.json())
+
+    response = client_with_storage.delete(
+        "/api/v1/daily-entry",
+        params={"entry_date": existing_entry["entry_date"].isoformat()},
+    )
+
+    assert response.status_code == 204
+
+    response = client_with_storage.get("/api/v1/daily-entries")
+    entries_after = response.json()
+
+    assert count_entries_before - len(entries_after) == 1
+    assert not any(
+        entry["entry_date"] == existing_entry["entry_date"].isoformat()
+        and entry["user_id"] == str(TEST_USER_ID)
+        for entry in entries_after
+    )
+
+
+def test_delete_nonexisting_entry(client_with_storage):
+    test_entry_date = "2040-02-02"
+    response = client_with_storage.delete(
+        "/api/v1/daily-entry",
+        params={"entry_date": test_entry_date},
+    )
+
+    assert response.status_code == 404
+    assert "detail" in response.json()
