@@ -501,6 +501,11 @@ body {
 /* .data-table__delete-cta--loading {
 } */
 
+.weekly-chart {
+    width: 100%;
+    padding-top: 20px;
+}
+
 .no-data-view {
     background-color: var(--clr-surface-muted);
     border-radius: var(--rounded-corners-main);

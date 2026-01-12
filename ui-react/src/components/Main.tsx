@@ -10,6 +10,7 @@ import { ReactComponent as Spinner } from "@/assets/spinner.svg";
 import Filters from "./Filters";
 import Summary from "./Summary";
 import WeeklyDataTable from "./WeeklyDataTable";
+import WeeklyDataChart from "./WeeklyDataChart";
 import DailyDataTable from "./DailyDataTable";
 import NoDataView from "./NoDataView";
 import GetDataSelection from "./GetDataSelection";
@@ -185,14 +186,26 @@ export default function Main(props: MainProps) {
                   handleDataUpdate={props.handleDataUpdate}
                 />
               ) : (
-                <WeeklyDataTable
-                  goalSelected={props.goalSelected}
-                  weeksFilterValues={weeksFilterValues}
-                  datesFilterValues={datesFilterValues}
-                  dataUpdated={props.dataUpdated}
-                  session={props.session}
-                  showToast={props.showToast}
-                />
+                <>
+                  <WeeklyDataTable
+                    goalSelected={props.goalSelected}
+                    weeksFilterValues={weeksFilterValues}
+                    datesFilterValues={datesFilterValues}
+                    dataUpdated={props.dataUpdated}
+                    session={props.session}
+                    showToast={props.showToast}
+                  />
+                  {/*  TODO - For performace, do the weekly data loading once and use it for both table and chart view
+                    One weekly data component that renders both table and chart.
+                    Also, review styling.
+                  */}
+                  <WeeklyDataChart
+                    weeksFilterValues={weeksFilterValues}
+                    datesFilterValues={datesFilterValues}
+                    dataUpdated={props.dataUpdated}
+                    session={props.session}
+                  />
+                </>
               )}
             </>
           )}
