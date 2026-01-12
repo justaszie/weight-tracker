@@ -59,7 +59,7 @@ export type WeeklyDataTableProps = {
   showToast: ShowToastFn;
 };
 
-export type WeeklyDataChartProps = {
+export type WeeklyDataChartsProps = {
   weeksFilterValues?: WeeksFilterValues;
   datesFilterValues?: DatesFilterValues;
   dataUpdated: boolean;

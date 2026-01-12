@@ -10,7 +10,7 @@ import { ReactComponent as Spinner } from "@/assets/spinner.svg";
 import Filters from "./Filters";
 import Summary from "./Summary";
 import WeeklyDataTable from "./WeeklyDataTable";
-import WeeklyDataChart from "./WeeklyDataChart";
+import WeeklyDataCharts from "./WeeklyDataCharts";
 import DailyDataTable from "./DailyDataTable";
 import NoDataView from "./NoDataView";
 import GetDataSelection from "./GetDataSelection";
@@ -105,28 +105,26 @@ export default function Main(props: MainProps) {
       <main>
         <div className="main-content">
           {/* DATA VIEW SELECTION */}
-              <div className="data-views">
-                <a
-                  data-view-mode="weekly"
-                  onClick={handleDataViewModeChange}
-                  className={`data-views__option ${
-                    dataViewMode === "weekly"
-                      ? "data-views__option--active"
-                      : ""
-                  }`}
-                >
-                  Weekly View
-                </a>
-                <a
-                  data-view-mode="daily"
-                  onClick={handleDataViewModeChange}
-                  className={`data-views__option ${
-                    dataViewMode === "daily" ? "data-views__option--active" : ""
-                  }`}
-                >
-                  Daily View
-                </a>
-              </div>
+          <div className="data-views">
+            <a
+              data-view-mode="weekly"
+              onClick={handleDataViewModeChange}
+              className={`data-views__option ${
+                dataViewMode === "weekly" ? "data-views__option--active" : ""
+              }`}
+            >
+              Weekly View
+            </a>
+            <a
+              data-view-mode="daily"
+              onClick={handleDataViewModeChange}
+              className={`data-views__option ${
+                dataViewMode === "daily" ? "data-views__option--active" : ""
+              }`}
+            >
+              Daily View
+            </a>
+          </div>
           <div className="data-controls">
             <div className="filters">
               <Filters
@@ -166,15 +164,17 @@ export default function Main(props: MainProps) {
             />
           ) : (
             <>
-              { dataViewMode == 'weekly' && (<Summary
-                latestEntry={latestEntry}
-                goalSelected={props.goalSelected}
-                weeksFilterValues={weeksFilterValues}
-                datesFilterValues={datesFilterValues}
-                dataUpdated={props.dataUpdated}
-                session={props.session}
-                showToast={props.showToast}
-              />)}
+              {dataViewMode == "weekly" && (
+                <Summary
+                  latestEntry={latestEntry}
+                  goalSelected={props.goalSelected}
+                  weeksFilterValues={weeksFilterValues}
+                  datesFilterValues={datesFilterValues}
+                  dataUpdated={props.dataUpdated}
+                  session={props.session}
+                  showToast={props.showToast}
+                />
+              )}
               {/* DATA TABLES (Daily / Weekly) */}
               {dataViewMode === "daily" ? (
                 <DailyDataTable
@@ -187,6 +187,16 @@ export default function Main(props: MainProps) {
                 />
               ) : (
                 <>
+                  {/*  TODO - For performace, do the weekly data loading once and use it for both table and chart view
+                    One weekly data component that renders both table and chart.
+                    Also, review styling.
+                  */}
+                  <WeeklyDataCharts
+                    weeksFilterValues={weeksFilterValues}
+                    datesFilterValues={datesFilterValues}
+                    dataUpdated={props.dataUpdated}
+                    session={props.session}
+                  />
                   <WeeklyDataTable
                     goalSelected={props.goalSelected}
                     weeksFilterValues={weeksFilterValues}
@@ -194,16 +204,6 @@ export default function Main(props: MainProps) {
                     dataUpdated={props.dataUpdated}
                     session={props.session}
                     showToast={props.showToast}
-                  />
-                  {/*  TODO - For performace, do the weekly data loading once and use it for both table and chart view
-                    One weekly data component that renders both table and chart.
-                    Also, review styling.
-                  */}
-                  <WeeklyDataChart
-                    weeksFilterValues={weeksFilterValues}
-                    datesFilterValues={datesFilterValues}
-                    dataUpdated={props.dataUpdated}
-                    session={props.session}
                   />
                 </>
               )}

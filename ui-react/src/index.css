@@ -452,6 +452,7 @@ body {
 .data-table {
     border-collapse: collapse;
     width: 100%;
+    margin-top: 30px;
 }
 
 .data-table__row {
@@ -501,14 +502,17 @@ body {
 /* .data-table__delete-cta--loading {
 } */
 
-.weekly-weight-chart {
-    width: 100%;
-    padding-top: 20px;
-}
-
+.weekly-weight-chart,
 .weekly-change-chart {
     width: 100%;
-    padding-top: 20px;
+    padding-top: 10px;
+}
+
+.weekly-weight-chart__title,
+.weekly-change-chart__title {
+    font-size: var(--fs-insights-header);
+    font-weight: 700;
+    margin-bottom: 10px;
 }
 
 .no-data-view {
