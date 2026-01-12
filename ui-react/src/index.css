@@ -501,7 +501,12 @@ body {
 /* .data-table__delete-cta--loading {
 } */
 
-.weekly-chart {
+.weekly-weight-chart {
+    width: 100%;
+    padding-top: 20px;
+}
+
+.weekly-change-chart {
     width: 100%;
     padding-top: 20px;
 }

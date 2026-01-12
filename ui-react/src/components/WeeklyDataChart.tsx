@@ -9,7 +9,7 @@ import type {
 
 import { ReactComponent as Spinner } from "@/assets/spinner.svg";
 
-import { BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Label, Bar} from 'recharts';
+import { BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Bar, LineChart, Line} from 'recharts';
 import { RechartsDevtools } from '@recharts/devtools';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
@@ -23,6 +23,7 @@ export default function WeeklyDataChart(props: WeeklyDataChartProps) {
     return {
       week: week.week_start,
       "Weight Change": week.weight_change,
+      "Weight": week.avg_weight,
     }
   }
 
@@ -89,18 +90,40 @@ export default function WeeklyDataChart(props: WeeklyDataChartProps) {
       {isLoading ? (
         <Spinner className="spinner" />
       ) : (
-        <div className="weekly-chart">
-          <BarChart style={{ width: '100%', maxHeight: '30vh', aspectRatio: 1 }} responsive data={weeklyData.map(week => weekToBar(week))}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="week" />
-            <YAxis width="auto" />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="Weight Change" fill="#4b5563"/>
-            <RechartsDevtools />
-          </BarChart>
-
+        <>
+          <div className="weekly-weight-chart">
+            <LineChart
+              style={{ width: '100%', height: '100%', maxHeight: '30vh', aspectRatio: 1.618 }}
+              responsive
+              data={weeklyData.map(week => weekToBar(week))}
+              margin={{
+                top: 5,
+                right: 5,
+                left: 5,
+                bottom: 5,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="week" />
+              <YAxis width="auto" domain={['dataMin - 1', 'dataMax + 1']}/>
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="Weight" stroke="#4b5563" activeDot={{ r: 6 }} />
+              <RechartsDevtools />
+            </LineChart>
+          <div className="weekly-change-chart">
+            <BarChart style={{ width: '100%', maxHeight: '30vh', aspectRatio: 1.618 }} responsive data={weeklyData.map(week => weekToBar(week))}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="week" />
+              <YAxis width="auto" />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="Weight Change" fill="#4b5563"/>
+              <RechartsDevtools />
+            </BarChart>
+          </div>
         </div>
+        </>
       )}
     </section>
   );
