@@ -73,12 +73,12 @@ export default function WeeklyDataCharts(props: WeeklyDataChartsProps) {
           throw new Error(errorMessage);
         }
         const body = await response.json();
-        let weeklyData: Array<WeeklyDataEntry> = [...body["weekly_data"]];
+        const weeklyData: Array<WeeklyDataEntry> = [...body["weekly_data"]];
         // For the chart we want the data sorted by week start date, in ascending order
-        let sortedByWeekStart = weeklyData.sort((weekA, weekB) =>
+        const sortedByWeekStart = weeklyData.sort((weekA, weekB) =>
           sortByWeekStart(weekA, weekB)
         );
-        setWeeklyData(sortedByWeekStart.slice(1)); // Excluding the reference because it has 0 change
+        setWeeklyData(sortedByWeekStart); // Excluding the reference because it has 0 change
       } catch (err: unknown) {
         setWeeklyData([]);
       } finally {
@@ -133,11 +133,12 @@ export default function WeeklyDataCharts(props: WeeklyDataChartsProps) {
             </LineChart>
           </div>
           <div className="weekly-change-chart">
-            <h2 className="weekly-change-chart__title">Loss/Gain Over Time</h2>
+            <h2 className="weekly-change-chart__title">Loss / Gain Over Time</h2>
             <BarChart
               style={{ width: "100%", maxHeight: "30vh", aspectRatio: 1.618 }}
               responsive
-              data={weeklyData.map((week) => weekToBar(week))}
+              // Exclude the 1st week (reference week as it has no change)
+              data={weeklyData.slice(1).map((week) => weekToBar(week))}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="week" />
