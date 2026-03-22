@@ -1,19 +1,46 @@
-import type { ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import type { WeeksFilterProps } from "@/types/props";
 
+const DEBOUNCE_MS = 350;
+
 export default function WeeksFilter(props: WeeksFilterProps) {
-  function handleWeeksLimitChange(event: ChangeEvent<HTMLInputElement>) {
-    const valueEntered = event.target.value;
-    if (valueEntered === "") {
-      props.handleValueChange({});
-    } else {
-      const numericValue = Number(valueEntered);
-      if (numericValue < 1 || Number.isNaN(numericValue)) {
-        props.showToast("error", "Weeks selection must be 1 or above");
-        return ;
+  const [draft, setDraft] = useState(() =>
+    props.selectedValues?.weeksLimit != null
+      ? String(props.selectedValues.weeksLimit)
+      : ""
+  );
+
+  const handleValueChangeRef = useRef(props.handleValueChange);
+  const showToastRef = useRef(props.showToast);
+  handleValueChangeRef.current = props.handleValueChange;
+  showToastRef.current = props.showToast;
+
+  useEffect(() => {
+    const fromProps =
+      props.selectedValues?.weeksLimit != null
+        ? String(props.selectedValues.weeksLimit)
+        : "";
+    setDraft(fromProps);
+  }, [props.selectedValues?.weeksLimit]);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      if (draft === "") {
+        handleValueChangeRef.current({});
+        return;
       }
-      props.handleValueChange({weeksLimit: numericValue})
-    }
+      const numericValue = Number(draft);
+      if (numericValue < 1 || Number.isNaN(numericValue)) {
+        showToastRef.current("error", "Weeks selection must be 1 or above");
+        return;
+      }
+      handleValueChangeRef.current({ weeksLimit: numericValue });
+    }, DEBOUNCE_MS);
+    return () => window.clearTimeout(id);
+  }, [draft]);
+
+  function handleWeeksLimitChange(event: ChangeEvent<HTMLInputElement>) {
+    setDraft(event.target.value);
   }
 
   return (
@@ -34,7 +61,7 @@ export default function WeeksFilter(props: WeeksFilterProps) {
       <input
         name="weeks_limit"
         type="number"
-        value={props.selectedValues?.weeksLimit ?? ""}
+        value={draft}
         id="weeks_limit"
         className="weeks-filter__input"
         onChange={handleWeeksLimitChange}
