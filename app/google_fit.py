@@ -212,7 +212,7 @@ class GoogleFitAuth:
         ):
             # If token has expired but we have a refresh token, refresh the access token
             try:
-                creds.refresh(GoogleRequest())  # type: ignore
+                creds.refresh(GoogleRequest())
                 # Save the credentials for future runs
                 logger.info("Gfit access token refreshed successfully")
                 self.save_credentials(storage, user_id, creds)
@@ -322,7 +322,8 @@ class GoogleFitClient:
 
         df["weight"] = df["value"].apply(extract_weight_value)  # pyright: ignore
 
-        df["user_id"] = self.user_id
+        # Pandas type stubs don't include UUID scalar assignment for DataFrame columns.
+        df["user_id"] = str(self.user_id)
 
         df.drop(
             columns=[
