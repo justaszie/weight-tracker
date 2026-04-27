@@ -7,7 +7,7 @@ authors = ["Justas Zieminykas <justaxsz@gmail.com>"]
 # readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.13"
 google-auth = "^2.38.0"
 google-auth-oauthlib = "^1.2.1"
 google-auth-httplib2 = "^0.2.0"
