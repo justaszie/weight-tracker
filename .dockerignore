@@ -1,0 +1,35 @@
+# VCS / editor
+.git
+.github
+.vscode
+.DS_Store
+
+# Python envs and caches
+.venv
+venv
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Test and coverage artifacts
+.coverage
+htmlcov/
+tests/
+
+# Local config/secrets (keep out of build context)
+.env
+.env.*
+*.pem
+*.key
+
+# Docs and non-backend apps not needed by backend image
+doc/
+ui-react/
+supabase/
+
+# Build/tooling noise
+*.log
