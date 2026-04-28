@@ -22,9 +22,15 @@ tests/
 
 # Local config/secrets (keep out of build context)
 .env
+app/.env
 .env.*
 *.pem
 *.key
+
+app/data/
+app/auth/
+app/throwaway/
+app/__pycache__/
 
 # Docs and non-backend apps not needed by backend image
 doc/
