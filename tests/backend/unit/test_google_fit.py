@@ -1,5 +1,6 @@
 import datetime as dt
 import json
+from urllib.parse import urlencode
 
 import pytest
 from fastapi.testclient import TestClient
@@ -14,6 +15,7 @@ from app.google_fit import (
     handle_google_auth_callback,
     HttpError,
     NoCredentialsError,
+    REDIRECT_URI,
 )
 from app.main import app
 from app.project_types import WeightEntry
@@ -340,6 +342,7 @@ class TestGoogleFitAuthEndpoints:
         mock_flow_obj = mocker.patch(
             "app.google_fit.Flow"
         ).from_client_config.return_value
+        mock_flow_obj.code_verifier = "pkce-verifier-123"
 
         test_auth_url = "https://url.test"
         test_state = "random123"
@@ -386,10 +389,16 @@ class TestGoogleFitAuthEndpoints:
         mock_request_obj.session = {
             "state": "random_value",
             "user_id": str(TEST_USER_ID),
+            "code_verifier": "pkce-verifier-123",
         }
         mock_storage_obj = mocker.Mock()
         mock_request_obj.app.state.data_storage = mock_storage_obj
-        mock_request_obj.url = "https://url.sample"
+        query_items = [
+            ("state", "random_value"),
+            ("code", "sample-code"),
+            ("scope", "scope-a scope-b"),
+        ]
+        mock_request_obj.query_params.multi_items.return_value = query_items
 
         mock_flow_obj = mocker.patch(
             "app.google_fit.Flow.from_client_config"
@@ -411,8 +420,12 @@ class TestGoogleFitAuthEndpoints:
             result.headers["location"]
             == f"{redirect_url_host}?initiator=data_source_auth_success&source=gfit"
         )
+        expected_authorization_response = (
+            f"{REDIRECT_URI}?{urlencode(query_items, doseq=True)}"
+        )
         fetch_token_fn.assert_called_once_with(
-            authorization_response=mock_request_obj.url
+            authorization_response=expected_authorization_response,
+            code_verifier="pkce-verifier-123",
         )
         mock_auth_client.save_credentials.assert_called_once_with(
             mock_storage_obj, TEST_USER_ID, mock_creds_obj
@@ -420,4 +433,5 @@ class TestGoogleFitAuthEndpoints:
         assert (
             mock_request_obj.session.get("state") is None
             and mock_request_obj.session.get("user_id") is None
+            and mock_request_obj.session.get("code_verifier") is None
         )
