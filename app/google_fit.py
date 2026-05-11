@@ -4,6 +4,7 @@ import logging
 import os
 from pathlib import Path
 from typing import Annotated, Any, cast
+from urllib.parse import urlencode
 from uuid import UUID
 
 import pandas as pd
@@ -107,10 +108,13 @@ def google_signin(request: Request, user_id: UUID) -> RedirectResponse:
             access_type="offline", include_granted_scopes="true", prompt="consent"
         )
     )
+    code_verifier = getattr(flow, "code_verifier", None)
 
     # Store the state in the session so you can verify the callback request
     request.session["state"] = state
     request.session["user_id"] = str(user_id)
+    if code_verifier:
+        request.session["code_verifier"] = code_verifier
 
     authorization_url = cast(str, authorization_url)
     logger.info("Redirecting user to Google API consent URL")
@@ -124,6 +128,7 @@ def google_signin(request: Request, user_id: UUID) -> RedirectResponse:
 def handle_google_auth_callback(request: Request) -> RedirectResponse:
     state = request.session.get("state", None)
     user_id = request.session.get("user_id", None)
+    code_verifier = request.session.get("code_verifier", None)
 
     gfit_auth = GoogleFitAuth()
 
@@ -132,11 +137,16 @@ def handle_google_auth_callback(request: Request) -> RedirectResponse:
     )
 
     flow.redirect_uri = REDIRECT_URI
+    if code_verifier:
+        flow.code_verifier = code_verifier
 
-    # Use the authorization server's response to fetch the OAuth 2.0 tokens
-    authorization_response = str(request.url)
+    # Build callback URL from configured redirect URI to avoid proxy-scheme issues
+    # (e.g. HTTPS at edge but HTTP seen by app server).
+    query_string = urlencode(list(request.query_params.multi_items()), doseq=True)
+    authorization_response = f"{REDIRECT_URI}?{query_string}"
     flow.fetch_token(  # pyright: ignore[reportUnknownMemberType]
-        authorization_response=authorization_response
+        authorization_response=authorization_response,
+        code_verifier=code_verifier,
     )
 
     creds: Credentials = flow.credentials  # pyright: ignore
@@ -156,6 +166,7 @@ def handle_google_auth_callback(request: Request) -> RedirectResponse:
 
     request.session.pop("state", None)
     request.session.pop("user_id", None)
+    request.session.pop("code_verifier", None)
 
     initiator_query_str = "initiator=data_source_auth_success&source=gfit"
 
